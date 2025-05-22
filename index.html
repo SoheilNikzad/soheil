@@ -32,7 +32,6 @@
 
     h1 {
       margin-top: 40px;
-      margin-bottom: 6px; /* کم‌ترش کردیم */
       font-size: 23px;
       font-weight: 300;
     }
@@ -41,17 +40,16 @@
       font-size: 26px;
       font-weight: 300;
       color: #333;
-      margin-top: 0;
-      margin-bottom: 0;
+      margin-top: 8px;
+      margin-bottom: 30px;
     }
 
     .divider {
-      margin: 30px auto; /* کمی کمتر از نسخه قبل */
+      width: 260px;
       height: 3px;
       background: orange;
+      margin: 40px auto;
       border-radius: 2px;
-      width: fit-content;
-      max-width: 100%;
     }
 
     p {
@@ -72,7 +70,7 @@
       justify-content: space-between;
       align-items: center;
       width: 260px;
-      padding: 8px 12px; /* باریک‌تر شد */
+      padding: 6px 15px;
       border: 1px solid #ccc;
       border-radius: 10px;
       text-decoration: none;
@@ -84,6 +82,14 @@
       background: #f0f0f0;
     }
 
+    .social-links span:first-child {
+      order: 2; /* English on the left */
+    }
+
+    .social-links span:last-child {
+      order: 1; /* Persian on the right */
+    }
+
     footer {
       margin-top: 30px;
       font-size: 14px;
@@ -93,7 +99,7 @@
 </head>
 <body>
   <h1 lang="en">MirSoheil Nikzad Kalurazi</h1>
-  <h2 lang="fa">میــرسـهیـل نیــک‌زاد کلـــورزی</h2>
+  <h2 lang="fa">میرسهیل نیک‌زاد کلورزی</h2>
   <div class="divider"></div>
 
   <p lang="en">Hello! Welcome to my personal page. To access my info & social media profiles please click on the buttons below.</p>
@@ -110,7 +116,7 @@
   </div>
 
   <footer>
-    <p lang="en">Thanks for your visit.</p>
+    <p lang="en">.Thanks for your visit</p>
     <p lang="fa">با تشکر از بازدید شما.</p>
   </footer>
 </body>
