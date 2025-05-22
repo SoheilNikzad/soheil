@@ -1,15 +1,17 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MirSoheil Nikzad Kalurazi</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@200;300&family=Vazirmatn:wght@200;300;400;500;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@200;300&family=Vazirmatn:wght@200;300&display=swap');
+
+    html {
+      font-size: 16px;
+    }
 
     body {
-      font-family: 'Vazirmatn', 'Comfortaa', sans-serif;
-      font-weight: 200;
       margin: 0;
       padding: 0;
       background: #fff;
@@ -17,16 +19,29 @@
       text-align: center;
     }
 
+    body:lang(fa) {
+      font-family: 'Vazirmatn';
+      font-weight: 200;
+    }
+
+    body:lang(en),
+    *:lang(en) {
+      font-family: 'Comfortaa';
+      font-weight: 200;
+    }
+
+    h1, h2 {
+      font-weight: 300;
+    }
+
     h1 {
       margin-top: 40px;
       font-size: 24px;
-      font-weight: 300;
     }
 
     h2 {
       margin-top: 0;
       font-size: 20px;
-      font-weight: 300;
       color: #333;
     }
 
@@ -39,10 +54,8 @@
     }
 
     p {
-      font-size: 16px;
       margin: 10px auto;
       max-width: 600px;
-      font-weight: 200;
     }
 
     .social-links {
@@ -62,7 +75,6 @@
       border: 1px solid #ccc;
       border-radius: 10px;
       text-decoration: none;
-      font-weight: 200;
       background: #f9f9f9;
       color: #000;
     }
@@ -79,20 +91,22 @@
   </style>
 </head>
 <body>
-  <h1>MirSoheil Nikzad Kalurazi</h1>
+  <h1 lang="en">MirSoheil Nikzad Kalurazi</h1>
   <h2>میرسهیل نیک‌زاد کلورزی</h2>
   <div class="divider"></div>
-  <p>Hello! Welcome to my personal page. To access my social media profiles please click on the buttons below.</p>
+  <p lang="en">Hello! Welcome to my personal page. To access my social media profiles please click on the buttons below.</p>
   <p>سلام! به صفحه شخصی من خوش آمدید. برای دسترسی به پروفایل‌های من در شبکه‌های اجتماعی روی دکمه‌های زیر کلیک کنید.</p>
+
   <div class="social-links">
-    <a href="https://www.linkedin.com/in/soheilnikzad/" target="_blank">LinkedIn <span>لینکدین</span></a>
-    <a href="https://github.com/SoheilNikzad" target="_blank">GitHub <span>گیت‌هاب</span></a>
-    <a href="https://t.me/SoheilNikzad" target="_blank">Telegram <span>تلگرام</span></a>
-    <a href="https://www.instagram.com/amuzanjirbaaf/" target="_blank">Instagram <span>اینستاگرام</span></a>
-    <a href="https://www.facebook.com/mirsoheilnikzad/" target="_blank">Facebook <span>فیسبوک</span></a>
+    <a href="https://www.linkedin.com/in/soheilnikzad/" target="_blank"><span>LinkedIn</span> <span>لینکدین</span></a>
+    <a href="https://github.com/SoheilNikzad" target="_blank"><span>GitHub</span> <span>گیت‌هاب</span></a>
+    <a href="https://t.me/SoheilNikzad" target="_blank"><span>Telegram</span> <span>تلگرام</span></a>
+    <a href="https://www.instagram.com/amuzanjirbaaf/" target="_blank"><span>Instagram</span> <span>اینستاگرام</span></a>
+    <a href="https://www.facebook.com/mirsoheilnikzad/" target="_blank"><span>Facebook</span> <span>فیسبوک</span></a>
   </div>
+
   <footer>
-    <p>Thank you for visit.<br>با تشکر از بازدید شما.</p>
+    <p lang="en">Thank you for visit.<br><span lang="fa">با تشکر از بازدید شما.</span></p>
   </footer>
 </body>
 </html>
