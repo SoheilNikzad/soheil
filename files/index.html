@@ -19,20 +19,15 @@
 <div id="treeview">در حال بارگذاری...</div>
 
 <script>
-  const SHEET_URL = "https://docs.google.com/spreadsheets/d/1nwOdG8vVxOKqMRutimVER04XMWt9ThV_UojvljPgnsk/gviz/tq?tqx=out:csv";
+  const SHEET_URL = "https://script.google.com/macros/s/AKfycbx_dPNXFH84wtGgXPhIzDnPZopct8ftPiqDl7vfInuXNJTzB6NjWHoGclj5J7ZViwZz/exec";
 
-  function fetchCSV(url, callback) {
+  function fetchJSON(url, callback) {
     fetch(url)
-      .then(response => response.text())
-      .then(text => {
-        const rows = text.trim().split('\\n').map(r => r.split(','));
-        const headers = rows[0];
-        const items = rows.slice(1).map(row => {
-          let obj = {};
-          headers.forEach((key, i) => obj[key.trim()] = row[i]?.trim());
-          return obj;
-        });
-        callback(items);
+      .then(response => response.json())
+      .then(data => callback(data))
+      .catch(err => {
+        document.getElementById('treeview').innerText = '⚠️ خطا در بارگذاری اطلاعات';
+        console.error(err);
       });
   }
 
@@ -57,4 +52,36 @@
       nodes.forEach(node => {
         const li = document.createElement('li');
 
-        if (node.
+        if (node.Type === "Folder" && node.children.length > 0) {
+          const span = document.createElement('span');
+          span.textContent = node.Name;
+          span.className = "toggle folder";
+          span.onclick = () => nested.classList.toggle('active');
+          li.appendChild(span);
+          const nested = createTree(node.children);
+          nested.classList.add('nested');
+          li.appendChild(nested);
+        } else {
+          const a = document.createElement('a');
+          a.href = node.URL;
+          a.textContent = node.Name;
+          a.target = "_blank";
+          a.className = node.Type === "Folder" ? "folder" : "file";
+          li.appendChild(a);
+        }
+
+        ul.appendChild(li);
+      });
+      return ul;
+    }
+
+    const treeView = document.getElementById('treeview');
+    treeView.innerHTML = '';
+    treeView.appendChild(createTree(roots));
+  }
+
+  fetchJSON(SHEET_URL, createTreeFromItems);
+</script>
+
+</body>
+</html>
