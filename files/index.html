@@ -1,33 +1,64 @@
 <!DOCTYPE html>
-<html>
+<html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8">
   <title>MoneyLab Files</title>
   <style>
-    body { font-family: sans-serif; line-height: 1.6; direction: rtl; }
-    ul { list-style: none; padding-left: 20px; }
-    .folder::before { content: "📁 "; }
-    .file::before { content: "📄 "; }
-    .toggle { cursor: pointer; font-weight: bold; }
-    .nested { display: none; }
-    .active { display: block; }
+    body {
+      font-family: sans-serif;
+      line-height: 1.6;
+      background: #fff;
+      color: #111;
+      padding: 2rem;
+      direction: ltr;
+    }
+    ul {
+      list-style: none;
+      padding-left: 1.5rem;
+    }
+    .folder::before {
+      content: "📁 ";
+    }
+    .file::before {
+      content: "📄 ";
+    }
+    .toggle {
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .nested {
+      display: none;
+    }
+    .active {
+      display: block;
+    }
+    a {
+      text-decoration: none;
+      color: #0056b3;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
 
-<h2>📂 لیست فایل‌های MoneyLab</h2>
-<div id="treeview">در حال بارگذاری...</div>
+<h2>📂 MoneyLab Files</h2>
+<div id="treeview">Loading...</div>
 
 <script>
   const SHEET_URL = "https://script.google.com/macros/s/AKfycbx_dPNXFH84wtGgXPhIzDnPZopct8ftPiqDl7vfInuXNJTzB6NjWHoGclj5J7ZViwZz/exec";
 
   function fetchJSON(url, callback) {
     fetch(url)
-      .then(response => response.json())
+      .then(response => {
+        if (!response.ok) throw new Error("Network response was not ok");
+        return response.json();
+      })
       .then(data => callback(data))
       .catch(err => {
-        document.getElementById('treeview').innerText = '⚠️ خطا در بارگذاری اطلاعات';
-        console.error(err);
+        document.getElementById('treeview').innerText = '⚠️ Error loading data';
+        console.error("Fetch error:", err);
       });
   }
 
