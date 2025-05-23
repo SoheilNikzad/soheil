@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>MoneyLab Files</title>
+  <style>
+    body { font-family: sans-serif; line-height: 1.6; direction: rtl; }
+    ul { list-style: none; padding-left: 20px; }
+    .folder::before { content: "📁 "; }
+    .file::before { content: "📄 "; }
+    .toggle { cursor: pointer; font-weight: bold; }
+    .nested { display: none; }
+    .active { display: block; }
+  </style>
+</head>
+<body>
+
+<h2>📂 لیست فایل‌های MoneyLab</h2>
+<div id="treeview">در حال بارگذاری...</div>
+
+<script>
+  const SHEET_URL = "https://docs.google.com/spreadsheets/d/1nwOdG8vVxOKqMRutimVER04XMWt9ThV_UojvljPgnsk/gviz/tq?tqx=out:csv";
+
+  function fetchCSV(url, callback) {
+    fetch(url)
+      .then(response => response.text())
+      .then(text => {
+        const rows = text.trim().split('\\n').map(r => r.split(','));
+        const headers = rows[0];
+        const items = rows.slice(1).map(row => {
+          let obj = {};
+          headers.forEach((key, i) => obj[key.trim()] = row[i]?.trim());
+          return obj;
+        });
+        callback(items);
+      });
+  }
+
+  function createTreeFromItems(items) {
+    const treeData = {};
+    const roots = [];
+
+    items.forEach(item => {
+      treeData[item.ID] = { ...item, children: [] };
+    });
+
+    items.forEach(item => {
+      if (item.ParentID === 'root') {
+        roots.push(treeData[item.ID]);
+      } else if (treeData[item.ParentID]) {
+        treeData[item.ParentID].children.push(treeData[item.ID]);
+      }
+    });
+
+    function createTree(nodes) {
+      const ul = document.createElement('ul');
+      nodes.forEach(node => {
+        const li = document.createElement('li');
+
+        if (node.
