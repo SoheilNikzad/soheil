@@ -6,35 +6,191 @@
   <title>CRID Messenger</title>
   <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300&family=Vazirmatn&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@metamask/detect-provider"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Comfortaa', sans-serif;
+      background-color: #f7f7f7;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #1e1e1e;
+      color: white;
+      padding: 1em 2em;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.2em;
+    }
+    header h1 a {
+      color: white;
+      text-decoration: none;
+    }
+    header button {
+      background: #f7931a;
+      color: white;
+      border: none;
+      padding: 0.7em 1.4em;
+      border-radius: 8px;
+      font-size: 1em;
+      font-weight: bold;
+      font-family: inherit;
+      cursor: pointer;
+    }
+    main {
+      display: flex;
+      flex: 1;
+    }
+    #sidebar {
+      width: 220px;
+      background: #1e1e1e;
+      color: white;
+      padding: 2em 1em;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2em;
+    }
+    #sidebar a {
+      color: white;
+      text-decoration: none;
+      font-size: 1.1em;
+      cursor: pointer;
+    }
+    .content {
+      flex-grow: 1;
+      padding: 2em;
+    }
+    .card {
+      background: white;
+      padding: 2em;
+      border-radius: 14px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      max-width: 500px;
+      margin: auto;
+    }
+    .card input, .card select, .card button {
+      width: 100%;
+      margin-bottom: 1em;
+      padding: 0.8em;
+      font-size: 1em;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-family: inherit;
+    }
+    .card button {
+      background: #f7931a;
+      color: white;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+    }
+    .card button:hover {
+      background: #e67e00;
+    }
+    #clearLocalStorage {
+      background: #f44336;
+      color: white;
+      border: none;
+      padding: 0.5em 1em;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body lang="en">
-<select id="networkSelect">
-  <option value="0x1">Ethereum Mainnet</option>
-  <option value="0x89">Polygon</option>
-  <option value="0xa">Optimism</option>
-  <option value="0xa4b1">Arbitrum One</option>
-</select>
-<div id="networkStatus" style="margin: 1em 0;"></div>
-<button id="clearLocalStorage" style="background: #f44336; color: white; border: none; padding: 0.5em 1em; border-radius: 6px; cursor: pointer;">🧹 Clear Local Storage</button>
+  <header>
+    <h1><a href="#" onclick="location.reload()">CRID Messenger</a></h1>
+    <button id="connectBtn">Connect Wallet</button>
+  </header>
+  <main>
+    <div id="sidebar">
+      <a href="#" onclick="renderSection('inbox')">Inbox</a>
+      <a href="#" onclick="renderSection('contacts')">Contacts</a>
+      <a href="#" onclick="renderSection('settings')">Settings</a>
+      <a href="#" onclick="renderSection('about')">About</a>
+    </div>
+    <div class="content">
+      <div class="card" id="cardContent">
+        <div id="status">Wallet not connected</div>
+        <input type="text" id="yourWallet" placeholder="Your Wallet Address" readonly>
+        <input type="text" id="recipient" placeholder="Recipient Wallet Address">
+        <input type="text" id="message" placeholder="Your Message">
+        <button id="sendBtn">Send Message</button>
+        <select id="networkSelect">
+          <option value="0x1">Ethereum Mainnet</option>
+          <option value="0x89">Polygon</option>
+          <option value="0xa">Optimism</option>
+          <option value="0xa4b1">Arbitrum One</option>
+        </select>
+        <div id="networkStatus" style="margin: 1em 0;"></div>
+        <button id="clearLocalStorage">🧹 Clear Local Storage</button>
+      </div>
+    </div>
+  </main>
 <script>
-window.addEventListener('DOMContentLoaded', async () => {
-  const connectBtn = document.getElementById('connectBtn');
-  const statusEl = document.getElementById('status');
+function renderSection(section) {
+  const content = document.getElementById('cardContent');
+  if (section === 'contacts') {
+    content.innerHTML = '<h3>📒 Contacts</h3><p>Contact list will appear here.</p>';
+  } else if (section === 'inbox') {
+    content.innerHTML = '<h3>📥 Inbox</h3><p>Your messages will appear here.</p>';
+  } else if (section === 'settings') {
+    content.innerHTML = `
+      <h3>⚙️ Settings</h3>
+      <select id="networkSelect">
+        <option value="0x1">Ethereum Mainnet</option>
+        <option value="0x89">Polygon</option>
+        <option value="0xa">Optimism</option>
+        <option value="0xa4b1">Arbitrum One</option>
+      </select>
+      <div id="networkStatus" style="margin: 1em 0;"></div>
+      <button id="clearLocalStorage">🧹 Clear Local Storage</button>
+    `;
+    attachSettingsListeners();
+  } else if (section === 'about') {
+    content.innerHTML = '<h3>ℹ️ About</h3><p>This is a demo of CRID Messenger, a decentralized app prototype.</p>';
+  }
+}
+
+function attachSettingsListeners() {
   const networkSelect = document.getElementById('networkSelect');
   const networkStatus = document.getElementById('networkStatus');
   const clearBtn = document.getElementById('clearLocalStorage');
 
-  clearBtn.addEventListener('click', () => {
+  clearBtn?.addEventListener('click', () => {
     localStorage.clear();
     alert('Local storage cleared.');
   });
+
+  networkSelect?.addEventListener('change', async () => {
+    const chainId = networkSelect.value;
+    try {
+      await window.ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId }]
+      });
+      networkStatus.textContent = `✅ Switched to network with Chain ID: ${chainId}`;
+    } catch (switchError) {
+      networkStatus.textContent = `❌ Failed to switch network: ${switchError.message}`;
+    }
+  });
+}
+
+window.addEventListener('DOMContentLoaded', async () => {
+  const connectBtn = document.getElementById('connectBtn');
+  const statusEl = document.getElementById('status');
+  const yourWalletInput = document.getElementById('yourWallet');
 
   if (window.ethereum) {
     connectBtn?.addEventListener('click', async () => {
       try {
         const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
         const walletAddress = accounts[0];
-        const yourWalletInput = document.getElementById('yourWallet');
         if (yourWalletInput) yourWalletInput.value = walletAddress;
         if (statusEl) statusEl.textContent = `✅ Connected: ${walletAddress}`;
       } catch (err) {
@@ -42,24 +198,11 @@ window.addEventListener('DOMContentLoaded', async () => {
       }
     });
 
-    networkSelect.addEventListener('change', async () => {
-      const chainId = networkSelect.value;
-      try {
-        await window.ethereum.request({
-          method: 'wallet_switchEthereumChain',
-          params: [{ chainId }]
-        });
-        networkStatus.textContent = `✅ Switched to network with Chain ID: ${chainId}`;
-      } catch (switchError) {
-        networkStatus.textContent = `❌ Failed to switch network: ${switchError.message}`;
-      }
-    });
+    attachSettingsListeners();
 
   } else {
-    if (connectBtn) {
-      connectBtn.disabled = true;
-      connectBtn.textContent = 'MetaMask not installed';
-    }
+    connectBtn.disabled = true;
+    connectBtn.textContent = 'MetaMask not installed';
   }
 });
 </script>
