@@ -1,15 +1,16 @@
 <script>
 window.addEventListener("DOMContentLoaded", () => {
-  const recipientInput = document.getElementById('recipient');
+  const contactsLink = document.getElementById('contactsLink');
+  const inboxLink = document.getElementById('inboxLink');
+  const cardContent = document.getElementById('cardContent');
 
-  if (!recipientInput) return console.error("Required elements not found - recipient input is missing");
-  if (!document.getElementById('contactsLink') || !document.getElementById('inboxLink') || !document.getElementById('cardContent')) {
+  if (!contactsLink || !inboxLink || !cardContent) {
     console.error("Sidebar links or cardContent missing in DOM");
     return;
   }
 
   // ✅ CONTACTS: Load and make selectable
-  document.getElementById('contactsLink').addEventListener('click', () => {
+  contactsLink.addEventListener('click', () => {
     const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
     let html = `<h3>Contacts</h3><ul style='list-style: none; padding-left: 0;'>`;
     html += contacts.map(c => `<li style='margin-bottom: 0.5em;'>
@@ -19,7 +20,7 @@ window.addEventListener("DOMContentLoaded", () => {
     </li>`).join('');
     html += `</ul><hr/><input id='contactName' placeholder='Name'><input id='contactAddress' placeholder='Wallet Address'>
       <button onclick='addContact()'>+ Add Contact</button>`;
-    document.getElementById('cardContent').innerHTML = html;
+    cardContent.innerHTML = html;
   });
 
   window.selectContact = (address) => {
@@ -38,7 +39,7 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
   // ✅ INBOX: Display detailed messages
-  document.getElementById('inboxLink').addEventListener('click', () => {
+  inboxLink.addEventListener('click', () => {
     const messages = JSON.parse(localStorage.getItem('messages') || '[]');
     let html = `<h3>Inbox</h3>`;
     if (messages.length === 0) html += `<p>No messages found.</p>`;
@@ -48,7 +49,7 @@ window.addEventListener("DOMContentLoaded", () => {
         <strong>Message:</strong> ${m.text}<br>
         <small style='color:gray;'>${m.date || new Date().toLocaleString()}</small>
       </div>`).join('');
-    document.getElementById('cardContent').innerHTML = html;
+    cardContent.innerHTML = html;
   });
 });
 </script>
