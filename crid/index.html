@@ -32,30 +32,20 @@
     .topbar .controls {
       display: flex;
       align-items: center;
-      gap: 12px;
-    }
-
-    .topbar button, .topbar select {
-      padding: 6px 10px;
-      font-family: 'Comfortaa', sans-serif;
-      font-size: 14px;
-      border: none;
-      border-radius: 5px;
-      height: 36px;
-      display: flex;
-      align-items: center;
     }
 
     .topbar button {
+      font-family: 'Comfortaa', sans-serif;
+      font-size: 14px;
+      height: 36px;
+      padding: 0 14px;
+      border: none;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
       background-color: #f7931a;
       color: white;
       cursor: pointer;
-    }
-
-    .topbar select {
-      background-color: #ffffff;
-      color: #333;
-      border: 1px solid #ccc;
     }
 
     .main {
@@ -76,16 +66,26 @@
       margin-bottom: 16px;
     }
 
-    .sidebar a {
-      display: block;
-      margin: 10px 0;
-      text-decoration: none;
+    .sidebar nav {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-left: 16px;
+    }
+
+    .sidebar nav a,
+    .sidebar nav select {
       font-size: 16px;
+      font-family: 'Comfortaa', sans-serif;
       color: #333;
+      text-decoration: none;
+      border: none;
+      background: none;
       cursor: pointer;
     }
 
-    .sidebar a:hover {
+    .sidebar nav a:hover,
+    .sidebar nav select:hover {
       color: #f7931a;
     }
 
@@ -138,32 +138,36 @@
     <h1>CRID Messenger</h1>
     <div class="controls">
       <button id="connectBtn">Connect Wallet</button>
-      <select id="languageSelect">
-        <option value="en">English</option>
-        <option value="ru">Русский</option>
-        <option value="zh">中文</option>
-        <option value="ja">日本語</option>
-        <option value="ko">한국어</option>
-        <option value="ar">العربية</option>
-        <option value="ka">ქართული</option>
-        <option value="hi">हिन्दी</option>
-      </select>
     </div>
   </div>
 
   <div class="main">
     <div class="sidebar">
       <h2>Menu</h2>
-      <a id="inboxLink">📥 Inbox</a>
-      <a id="historyLink">📜 History</a>
-      <a id="settingsLink">⚙️ Settings</a>
+      <nav>
+        <a id="inboxLink">Inbox</a>
+        <a id="contactsLink">Contacts</a>
+        <a id="settingsLink">Settings</a>
+        <a id="aboutLink">About</a>
+        <select id="languageSelect">
+          <option value="en">English</option>
+          <option value="ru">Русский</option>
+          <option value="zh">中文</option>
+          <option value="ja">日本語</option>
+          <option value="ko">한국어</option>
+          <option value="ar">العربية</option>
+          <option value="ka">ქართული</option>
+          <option value="hi">हिन्दी</option>
+        </select>
+      </nav>
     </div>
     <div class="content">
       <div class="card">
         <div id="status">Wallet not connected</div>
+        <input type="text" id="yourWallet" placeholder="Your Wallet Address" readonly>
         <input type="text" id="recipient" placeholder="Recipient Wallet Address">
         <input type="text" id="message" placeholder="Your Message">
-        <button id="sendBtn">📨 Send Message</button>
+        <button id="sendBtn">Send Message</button>
         <div id="msgStatus"></div>
       </div>
     </div>
@@ -209,6 +213,7 @@
         const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
         walletAddress = accounts[0];
         document.getElementById('status').textContent = `✅ Connected: ${walletAddress}`;
+        document.getElementById('yourWallet').value = walletAddress;
       } catch (err) {
         document.getElementById('status').textContent = "❌ Wallet connection failed.";
       }
