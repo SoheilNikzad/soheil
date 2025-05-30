@@ -4,162 +4,37 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CRID Messenger</title>
-  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300&display=swap" rel="stylesheet">
   <style>
-    body {
-      margin: 0;
-      font-family: 'Comfortaa', sans-serif;
-      background-color: #f9f9f9;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-    }
-
-    .topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px 20px;
-      background-color: #1e1e1e;
-      color: white;
-    }
-
-    .topbar h1 {
-      font-size: 20px;
-      margin: 0;
-    }
-
-    .topbar .controls {
-      display: flex;
-      align-items: center;
-    }
-
-    .topbar button {
-      font-family: 'Comfortaa', sans-serif;
-      font-size: 14px;
-      height: 36px;
-      padding: 0 14px;
-      border: none;
-      border-radius: 5px;
-      display: flex;
-      align-items: center;
-      background-color: #f7931a;
-      color: white;
-      cursor: pointer;
-    }
-
-    .main {
-      display: flex;
-      flex: 1;
-      overflow: hidden;
-    }
-
-    .sidebar {
-      width: 220px;
-      background-color: #ffffff;
-      border-right: 1px solid #e0e0e0;
-      padding: 20px;
-    }
-
-    .sidebar h2 {
-      font-size: 18px;
-      margin-bottom: 16px;
-    }
-
-    .sidebar nav {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      margin-left: 16px;
-    }
-
-    .sidebar nav a,
-    .sidebar nav select {
-      font-size: 16px;
-      font-family: 'Comfortaa', sans-serif;
-      color: #333;
-      text-decoration: none;
-      border: none;
-      background: none;
-      cursor: pointer;
-    }
-
-    .sidebar nav a:hover,
-    .sidebar nav select:hover {
-      color: #f7931a;
-    }
-
-    .content {
-      flex: 1;
-      padding: 24px;
-      overflow-y: auto;
-    }
-
-    .card {
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-      padding: 20px;
-      max-width: 600px;
-      margin: 0 auto;
-    }
-
-    input, button {
-      width: 100%;
-      padding: 10px;
-      margin-top: 10px;
-      font-size: 15px;
-      border-radius: 6px;
-      border: 1px solid #ddd;
-      font-family: 'Comfortaa', sans-serif;
-      box-sizing: border-box;
-    }
-
-    button {
-      background-color: #f7931a;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #d67608;
-    }
-
-    #status, #msgStatus {
-      margin-top: 10px;
-      font-size: 14px;
-      color: #555;
-    }
+    body { font-family: sans-serif; margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; }
+    .topbar { background: #1e1e1e; color: white; padding: 1em; display: flex; justify-content: space-between; align-items: center; }
+    .main { display: flex; flex: 1; }
+    .sidebar { width: 200px; background: #f4f4f4; padding: 1em; }
+    .content { flex: 1; padding: 1em; }
+    .card input, .card button { display: block; margin: 10px 0; padding: 10px; width: 100%; }
+    select { width: 100%; padding: 8px; }
   </style>
 </head>
 <body>
   <div class="topbar">
-    <h1>CRID Messenger</h1>
-    <div class="controls">
-      <button id="connectBtn">Connect Wallet</button>
-    </div>
+    <div>CRID Messenger</div>
+    <button id="connectBtn">Connect Wallet</button>
   </div>
-
   <div class="main">
     <div class="sidebar">
-      <h2>Menu</h2>
-      <nav>
-        <a id="inboxLink">Inbox</a>
-        <a id="contactsLink">Contacts</a>
-        <a id="settingsLink">Settings</a>
-        <a id="aboutLink">About</a>
-        <select id="languageSelect">
-          <option value="en">English</option>
-          <option value="ru">Русский</option>
-          <option value="zh">中文</option>
-          <option value="ja">日本語</option>
-          <option value="ko">한국어</option>
-          <option value="ar">العربية</option>
-          <option value="ka">ქართული</option>
-          <option value="hi">हिन्दी</option>
-        </select>
-      </nav>
+      <a href="#" id="inboxLink">Inbox</a><br>
+      <a href="#" id="contactsLink">Contacts</a><br>
+      <a href="#" id="settingsLink">Settings</a><br>
+      <a href="#" id="aboutLink">About</a><br>
+      <select id="languageSelect">
+        <option value="en">English</option>
+        <option value="ru">Русский</option>
+        <option value="zh">中文</option>
+        <option value="ja">日本語</option>
+        <option value="ko">한국어</option>
+        <option value="ar">العربية</option>
+        <option value="ka">ქართული</option>
+        <option value="hi">हिन्दी</option>
+      </select>
     </div>
     <div class="content">
       <div class="card">
@@ -172,26 +47,27 @@
       </div>
     </div>
   </div>
-
-  <script>
+<script>
+  window.addEventListener("DOMContentLoaded", () => {
     const lang = {
       en: {
         connect: "Connect Wallet",
+        disconnect: "Disconnect Wallet",
         status: "Wallet not connected",
         recipient: "Recipient Wallet Address",
         message: "Your Message",
         send: "Send Message",
-        sent: (to, msg) => `✅ Message sent to ${to}: \"${msg}\"`
+        sent: (to, msg) => `✅ Message sent to ${to}: "${msg}"`
       }
     };
-
     let walletAddress = "";
     let currentLang = "en";
 
     function applyLang() {
       const t = lang[currentLang];
-      document.getElementById('connectBtn').textContent = t.connect;
-      document.getElementById('status').textContent = t.status;
+      const connectBtn = document.getElementById('connectBtn');
+      connectBtn.textContent = walletAddress ? t.disconnect : t.connect;
+      document.getElementById('status').textContent = walletAddress ? `✅ Connected: ${walletAddress}` : t.status;
       document.getElementById('recipient').placeholder = t.recipient;
       document.getElementById('message').placeholder = t.message;
       document.getElementById('sendBtn').textContent = t.send;
@@ -202,9 +78,14 @@
       applyLang();
     });
 
-    applyLang();
-
     document.getElementById('connectBtn').addEventListener('click', async () => {
+      if (walletAddress) {
+        walletAddress = "";
+        localStorage.removeItem('connectedWallet');
+        document.getElementById('yourWallet').value = "";
+        applyLang();
+        return;
+      }
       if (!window.ethereum) {
         alert("MetaMask is not installed");
         return;
@@ -212,8 +93,9 @@
       try {
         const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
         walletAddress = accounts[0];
-        document.getElementById('status').textContent = `✅ Connected: ${walletAddress}`;
         document.getElementById('yourWallet').value = walletAddress;
+        localStorage.setItem('connectedWallet', walletAddress);
+        applyLang();
       } catch (err) {
         document.getElementById('status').textContent = "❌ Wallet connection failed.";
       }
@@ -233,6 +115,40 @@
       }
       document.getElementById('msgStatus').textContent = t.sent(recipient, message);
     });
-  </script>
+
+    function showCard(contentHTML) {
+      document.querySelector(".card").innerHTML = contentHTML;
+    }
+
+    document.getElementById('contactsLink').addEventListener('click', () => {
+      const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
+      let html = `<h3>Contacts</h3><ul>` + contacts.map(c => `<li><b>${c.name}</b>: ${c.address}</li>`).join('') + `</ul>`;
+      html += `<input type='text' id='contactName' placeholder='Name'>`;
+      html += `<input type='text' id='contactAddress' placeholder='Wallet Address'>`;
+      html += `<button onclick='addContact()'>+ Add Contact</button>`;
+      showCard(html);
+    });
+
+    window.addContact = function () {
+      const name = document.getElementById('contactName').value.trim();
+      const address = document.getElementById('contactAddress').value.trim();
+      if (!name || !address) {
+        alert("Both name and address are required.");
+        return;
+      }
+      const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
+      contacts.push({ name, address });
+      localStorage.setItem('contacts', JSON.stringify(contacts));
+      document.getElementById('contactsLink').click();
+    }
+
+    if (localStorage.getItem('connectedWallet')) {
+      walletAddress = localStorage.getItem('connectedWallet');
+      document.getElementById('yourWallet').value = walletAddress;
+    }
+
+    applyLang();
+  });
+</script>
 </body>
 </html>
