@@ -3,33 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Connect Wallet - CRID</title>
+  <title>CRID Messenger</title>
   <style>
     body {
       font-family: sans-serif;
+      background: #f2f2f2;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       height: 100vh;
       margin: 0;
-      background-color: #f9f9f9;
     }
-    button {
-      padding: 12px 24px;
+    button, input {
       font-size: 16px;
-      background-color: #f7931a;
-      border: none;
+      padding: 10px;
+      margin: 5px;
       border-radius: 8px;
-      color: white;
-      cursor: pointer;
-      transition: background-color 0.3s;
-    }
-    button:hover {
-      background-color: #c6710f;
+      border: 1px solid #ccc;
     }
     #status {
-      margin-top: 20px;
+      margin-top: 10px;
       font-size: 14px;
       color: #333;
     }
@@ -37,32 +31,49 @@
 </head>
 <body>
 
-  <button id="connectBtn">Connect Wallet</button>
-  <div id="status"></div>
+  <button id="connectBtn">🔌 Connect Wallet</button>
+  <div id="status">Wallet not connected</div>
+
+  <input type="text" id="recipient" placeholder="Recipient Wallet Address" style="width: 300px;">
+  <input type="text" id="message" placeholder="Your Message" style="width: 300px;">
+  <button id="sendBtn">📨 Send Message</button>
+  <div id="msgStatus"></div>
 
   <script>
-    const connectBtn = document.getElementById('connectBtn');
-    const statusDiv = document.getElementById('status');
+    let walletAddress = "";
+    let provider;
 
-    async function connectWallet() {
-      if (typeof window.ethereum === 'undefined') {
-        statusDiv.textContent = 'MetaMask نصب نشده است. لطفاً آن را نصب کنید.';
+    document.getElementById('connectBtn').addEventListener('click', async () => {
+      if (!window.ethereum) {
+        alert("MetaMask is not installed");
+        return;
+      }
+      try {
+        const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+        walletAddress = accounts[0];
+        document.getElementById('status').textContent = `✅ Connected: ${walletAddress}`;
+      } catch (err) {
+        document.getElementById('status').textContent = "❌ Wallet connection failed.";
+      }
+    });
+
+    document.getElementById('sendBtn').addEventListener('click', async () => {
+      if (!walletAddress) {
+        alert("Please connect your wallet first");
         return;
       }
 
-      try {
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-        const address = accounts[0];
-        statusDiv.textContent = `Connected ✅\nآدرس کیف پول: ${address}`;
-        connectBtn.textContent = 'Connected ✅';
-        connectBtn.disabled = true;
-      } catch (err) {
-        console.error(err);
-        statusDiv.textContent = 'اتصال به کیف پول لغو شد یا با خطا مواجه شد.';
-      }
-    }
+      const recipient = document.getElementById('recipient').value.trim();
+      const message = document.getElementById('message').value.trim();
 
-    connectBtn.addEventListener('click', connectWallet);
+      if (!recipient || !message) {
+        alert("Please enter recipient address and message");
+        return;
+      }
+
+      // Just simulate sending
+      document.getElementById('msgStatus').textContent = `✅ Message sent to ${recipient}: "${message}"`;
+    });
   </script>
 
 </body>
