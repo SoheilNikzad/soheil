@@ -24,6 +24,18 @@
       justify-content: space-between;
       align-items: center;
     }
+    .topbar button {
+      background: #f7931a;
+      color: white;
+      border: none;
+      padding: 0.6em 1.2em;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .topbar button:hover {
+      background: #c96d0c;
+    }
     .main {
       display: flex;
       flex: 1;
@@ -46,10 +58,13 @@
     .sidebar a:hover {
       color: #f7931a;
     }
+    .sidebar .spacer {
+      flex-grow: 1;
+    }
     .sidebar select {
-      margin-top: auto;
       padding: 0.5em;
       font-size: 1em;
+      margin-top: 1em;
     }
     .content {
       flex: 1;
@@ -96,6 +111,7 @@
       <a href="#" id="contactsLink">Contacts</a>
       <a href="#" id="settingsLink">Settings</a>
       <a href="#" id="aboutLink">About</a>
+      <div class="spacer"></div>
       <select id="languageSelect">
         <option value="en">English</option>
         <option value="ru">Русский</option>
