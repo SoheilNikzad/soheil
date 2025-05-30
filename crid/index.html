@@ -1,228 +1,47 @@
-<!-- ✅ نسخه ارتقا یافته با Settings فعال، ترجمه‌پذیر، فرم تنظیمات کامل -->
-<!DOCTYPE html>
-<html lang="en" dir="ltr">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CRID Messenger</title>
-  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300&display=swap" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/vazirmatn@33.003/vazirmatn.min.css" rel="stylesheet" />
-  <style>
-    body {
-      font-family: 'Comfortaa', sans-serif;
-      font-weight: 300;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      background: #ffffff;
-      color: #1e1e1e;
-    }
-    .rtl { direction: rtl; font-family: 'Vazirmatn', sans-serif !important; }
-    .topbar {
-      background: #1e1e1e;
-      color: white;
-      padding: 1em;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .topbar a {
-      color: white;
-      text-decoration: none;
-      font-size: 1.1em;
-      font-weight: 600;
-    }
-    .topbar button {
-      background: #f7931a;
-      color: white;
-      border: none;
-      padding: 0.6em 1.2em;
-      border-radius: 6px;
-      font-weight: 300;
-      cursor: pointer;
-      font-family: inherit;
-    }
-    .main {
-      display: flex;
-      flex: 1;
-    }
-    .sidebar {
-      width: 220px;
-      background: #f2f2f2;
-      border-right: 1px solid #ccc;
-      padding: 1em;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    .sidebar a, .sidebar .language-menu {
-      text-decoration: none;
-      color: #1e1e1e;
-      padding: 0.5em 0;
-      font-weight: 600;
-      font-family: inherit;
-      cursor: pointer;
-    }
-    .sidebar .lang-options {
-      display: none;
-      flex-direction: column;
-      padding-left: 10px;
-      margin-top: -8px;
-    }
-    .sidebar .lang-options a {
-      padding: 0.3em 0;
-      font-weight: 300;
-      font-size: 0.9em;
-      text-decoration: none;
-      color: #333;
-    }
-    .content {
-      flex: 1;
-      padding: 2em;
-      background: #f9f9f9;
-    }
-    .card {
-      background: white;
-      border-radius: 14px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      padding: 2em;
-      max-width: 620px;
-      margin: 2em auto;
-      transition: all 0.2s ease;
-    }
-    .card input, .card button, .card select {
-      display: block;
-      margin: 16px 0;
-      padding: 14px;
-      width: 100%;
-      font-size: 1em;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      font-family: inherit;
-    }
-    .card button {
-      background: #f7931a;
-      color: white;
-      border: none;
-      cursor: pointer;
-      font-weight: 400;
-    }
-    .card button:hover {
-      background: #d57705;
-    }
-  </style>
-</head>
-<body>
-  <div class="topbar">
-    <a href="#" id="homeLink">CRID Messenger</a>
-    <button id="connectBtn">Connect Wallet</button>
-  </div>
-  <div class="main">
-    <div class="sidebar">
-      <a href="#" id="inboxLink">Inbox</a>
-      <a href="#" id="contactsLink">Contacts</a>
-      <a href="#" id="settingsLink">Settings</a>
-      <a href="#" id="aboutLink">About</a>
-      <div class="language-menu" id="languageMenu">Language ▸</div>
-      <div class="lang-options" id="langOptions">
-        <a href="#" data-lang="en">English</a>
-        <a href="#" data-lang="fa">فارسی</a>
-        <a href="#" data-lang="ru">Русский</a>
-        <a href="#" data-lang="zh">中文</a>
-        <a href="#" data-lang="ja">日本語</a>
-        <a href="#" data-lang="ko">한국어</a>
-        <a href="#" data-lang="ar">العربية</a>
-        <a href="#" data-lang="ka">ქართული</a>
-        <a href="#" data-lang="hi">हिन्दी</a>
-      </div>
-    </div>
-    <div class="content">
-      <div class="card" id="cardContent">
-        <div id="status">Wallet not connected</div>
-        <input type="text" id="yourWallet" placeholder="Your Wallet Address" readonly>
-        <input type="text" id="recipient" placeholder="Recipient Wallet Address">
-        <input type="text" id="message" placeholder="Your Message">
-        <button id="sendBtn">Send Message</button>
-        <div id="msgStatus"></div>
-      </div>
-    </div>
-  </div>
 <script>
-  const translations = {
-    en: {
-      walletNotConnected: "Wallet not connected",
-      yourWallet: "Your Wallet Address",
-      recipient: "Recipient Wallet Address",
-      message: "Your Message",
-      send: "Send Message",
-      connect: "Connect Wallet",
-      settingsTitle: "Settings",
-      network: "Select Network",
-      clear: "Clear Cache",
-      reset: "Reset Form"
-    },
-    fa: {
-      walletNotConnected: "کیف پول متصل نیست",
-      yourWallet: "آدرس کیف پول شما",
-      recipient: "آدرس گیرنده",
-      message: "پیام شما",
-      send: "ارسال پیام",
-      connect: "اتصال کیف پول",
-      settingsTitle: "تنظیمات",
-      network: "انتخاب شبکه",
-      clear: "پاک‌سازی کش",
-      reset: "بازنشانی فرم"
-    }
-  };
+window.addEventListener("DOMContentLoaded", () => {
+  const recipientInput = document.getElementById('recipient');
 
-  function applyLangUI(lang) {
-    const t = translations[lang] || translations.en;
-    document.getElementById('status').textContent = t.walletNotConnected;
-    document.getElementById('yourWallet').placeholder = t.yourWallet;
-    document.getElementById('recipient').placeholder = t.recipient;
-    document.getElementById('message').placeholder = t.message;
-    document.getElementById('sendBtn').textContent = t.send;
-    document.getElementById('connectBtn').textContent = t.connect;
-    window._langText = t;
-    if (lang === 'fa' || lang === 'ar') {
-      document.body.classList.add('rtl');
-    } else {
-      document.body.classList.remove('rtl');
-    }
+  // ✅ CONTACTS: Load and make selectable
+  document.getElementById('contactsLink').addEventListener('click', () => {
+    const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
+    let html = `<h3>Contacts</h3><ul style='list-style: none; padding-left: 0;'>`;
+    html += contacts.map(c => `<li style='margin-bottom: 0.5em;'>
+      <button onclick='selectContact("${c.address}")' style='width:100%;padding:0.6em;border:1px solid #ccc;border-radius:6px;'>
+        <strong>${c.name}</strong><br><span style='font-size:0.85em;'>${c.address}</span>
+      </button>
+    </li>`).join('');
+    html += `</ul><hr/><input id='contactName' placeholder='Name'><input id='contactAddress' placeholder='Wallet Address'>
+      <button onclick='addContact()'>+ Add Contact</button>`;
+    document.getElementById('cardContent').innerHTML = html;
+  });
+
+  window.selectContact = (address) => {
+    document.getElementById('recipient').value = address;
   }
 
-  window.addEventListener("DOMContentLoaded", () => {
-    document.getElementById('languageMenu').addEventListener('click', () => {
-      const langBox = document.getElementById('langOptions');
-      langBox.style.display = langBox.style.display === 'flex' ? 'none' : 'flex';
-    });
-    document.querySelectorAll('[data-lang]').forEach(el => {
-      el.addEventListener('click', e => {
-        e.preventDefault();
-        const selected = e.target.dataset.lang;
-        localStorage.setItem('preferredLang', selected);
-        applyLangUI(selected);
-        document.getElementById('langOptions').style.display = 'none';
-      });
-    });
+  window.addContact = () => {
+    const name = document.getElementById('contactName').value.trim();
+    const address = document.getElementById('contactAddress').value.trim();
+    if (!name || !address) return alert("Enter both fields");
+    const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
+    contacts.push({ name, address });
+    localStorage.setItem('contacts', JSON.stringify(contacts));
+    document.getElementById('contactsLink').click();
+  }
 
-    document.getElementById('settingsLink').addEventListener('click', () => {
-      const t = window._langText || translations.en;
-      const html = `
-        <h3>${t.settingsTitle}</h3>
-        <label>${t.network}</label>
-        <select><option>Polygon</option><option>Ethereum</option><option>Arbitrum</option></select>
-        <button>${t.clear}</button>
-        <button>${t.reset}</button>
-      `;
-      document.getElementById('cardContent').innerHTML = html;
-    });
-
-    const storedLang = localStorage.getItem('preferredLang') || 'en';
-    applyLangUI(storedLang);
+  // ✅ INBOX: Display detailed messages
+  document.getElementById('inboxLink').addEventListener('click', () => {
+    const messages = JSON.parse(localStorage.getItem('messages') || '[]');
+    let html = `<h3>Inbox</h3>`;
+    if (messages.length === 0) html += `<p>No messages found.</p>`;
+    else html += messages.map(m => `
+      <div style='margin-bottom:1em;padding:1em;border:1px solid #ddd;border-radius:6px;'>
+        <strong>From:</strong> ${m.from}<br>
+        <strong>Message:</strong> ${m.text}<br>
+        <small style='color:gray;'>${m.date || new Date().toLocaleString()}</small>
+      </div>`).join('');
+    document.getElementById('cardContent').innerHTML = html;
   });
+});
 </script>
-</body>
-</html>
