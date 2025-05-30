@@ -4,6 +4,62 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CRID Messenger</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background-color: #f7f7f7;
+    }
+    #sidebar {
+      background: #2c2c2c;
+      color: white;
+      padding: 1em;
+      display: flex;
+      gap: 1.5em;
+      font-weight: bold;
+    }
+    #sidebar a {
+      color: white;
+      text-decoration: none;
+    }
+    .content {
+      display: flex;
+      justify-content: center;
+      margin-top: 3em;
+    }
+    .card {
+      background: white;
+      padding: 2em;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      max-width: 480px;
+      width: 100%;
+    }
+    .card input {
+      display: block;
+      width: 100%;
+      padding: 1em;
+      margin-bottom: 1em;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1em;
+    }
+    .card button {
+      display: block;
+      width: 100%;
+      padding: 1em;
+      background: #f7931a;
+      color: white;
+      border: none;
+      font-weight: bold;
+      font-size: 1em;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .card button:hover {
+      background: #e67e00;
+    }
+  </style>
 </head>
 <body>
   <div id="sidebar">
