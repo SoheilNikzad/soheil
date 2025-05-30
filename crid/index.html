@@ -1,10 +1,12 @@
+<!-- ✅ نسخه ارتقا یافته با Settings فعال، ترجمه‌پذیر، فرم تنظیمات کامل -->
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CRID Messenger</title>
   <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/vazirmatn@33.003/vazirmatn.min.css" rel="stylesheet" />
   <style>
     body {
       font-family: 'Comfortaa', sans-serif;
@@ -17,6 +19,7 @@
       background: #ffffff;
       color: #1e1e1e;
     }
+    .rtl { direction: rtl; font-family: 'Vazirmatn', sans-serif !important; }
     .topbar {
       background: #1e1e1e;
       color: white;
@@ -24,6 +27,12 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+    }
+    .topbar a {
+      color: white;
+      text-decoration: none;
+      font-size: 1.1em;
+      font-weight: 600;
     }
     .topbar button {
       background: #f7931a;
@@ -33,10 +42,7 @@
       border-radius: 6px;
       font-weight: 300;
       cursor: pointer;
-      font-family: 'Comfortaa', sans-serif;
-    }
-    .topbar button:hover {
-      background: #c96d0c;
+      font-family: inherit;
     }
     .main {
       display: flex;
@@ -51,20 +57,13 @@
       flex-direction: column;
       gap: 12px;
     }
-    .sidebar a {
+    .sidebar a, .sidebar .language-menu {
       text-decoration: none;
       color: #1e1e1e;
       padding: 0.5em 0;
       font-weight: 600;
-      font-family: 'Comfortaa', sans-serif;
-    }
-    .sidebar a:hover {
-      color: #f7931a;
-    }
-    .sidebar .language-menu {
+      font-family: inherit;
       cursor: pointer;
-      font-weight: 600;
-      font-family: 'Comfortaa', sans-serif;
     }
     .sidebar .lang-options {
       display: none;
@@ -79,9 +78,6 @@
       text-decoration: none;
       color: #333;
     }
-    .sidebar .lang-options a:hover {
-      color: #f7931a;
-    }
     .content {
       flex: 1;
       padding: 2em;
@@ -89,37 +85,38 @@
     }
     .card {
       background: white;
-      border-radius: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-      padding: 1.5em;
-      max-width: 640px;
-      margin: 0 auto;
+      border-radius: 14px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      padding: 2em;
+      max-width: 620px;
+      margin: 2em auto;
+      transition: all 0.2s ease;
     }
-    .card input, .card button {
+    .card input, .card button, .card select {
       display: block;
-      margin: 10px 0;
-      padding: 12px;
+      margin: 16px 0;
+      padding: 14px;
       width: 100%;
       font-size: 1em;
       border: 1px solid #ddd;
-      border-radius: 6px;
-      font-family: 'Comfortaa', sans-serif;
+      border-radius: 8px;
+      font-family: inherit;
     }
     .card button {
       background: #f7931a;
       color: white;
       border: none;
       cursor: pointer;
-      font-weight: 300;
+      font-weight: 400;
     }
     .card button:hover {
-      background: #c96d0c;
+      background: #d57705;
     }
   </style>
 </head>
 <body>
   <div class="topbar">
-    <div>CRID Messenger</div>
+    <a href="#" id="homeLink">CRID Messenger</a>
     <button id="connectBtn">Connect Wallet</button>
   </div>
   <div class="main">
@@ -131,6 +128,7 @@
       <div class="language-menu" id="languageMenu">Language ▸</div>
       <div class="lang-options" id="langOptions">
         <a href="#" data-lang="en">English</a>
+        <a href="#" data-lang="fa">فارسی</a>
         <a href="#" data-lang="ru">Русский</a>
         <a href="#" data-lang="zh">中文</a>
         <a href="#" data-lang="ja">日本語</a>
@@ -141,7 +139,7 @@
       </div>
     </div>
     <div class="content">
-      <div class="card">
+      <div class="card" id="cardContent">
         <div id="status">Wallet not connected</div>
         <input type="text" id="yourWallet" placeholder="Your Wallet Address" readonly>
         <input type="text" id="recipient" placeholder="Recipient Wallet Address">
@@ -151,37 +149,80 @@
       </div>
     </div>
   </div>
-  <script>
-    window.addEventListener("DOMContentLoaded", () => {
-      const inboxLink = document.getElementById('inboxLink');
-      inboxLink.addEventListener('click', () => {
-        const dummyMessages = [
-          { from: '0xabc123...', content: 'Hello from Alice' },
-          { from: '0xdef456...', content: 'Meeting at 3 PM' },
-          { from: '0xghi789...', content: 'Invoice sent' }
-        ];
-        let html = `<h3>Inbox</h3><ul style='list-style: none; padding-left: 0;'>`;
-        html += dummyMessages.map(m => `<li style='margin-bottom: 1em;'><strong>From:</strong> ${m.from}<br><strong>Message:</strong> ${m.content}</li>`).join('');
-        html += `</ul>`;
-        document.querySelector(".card").innerHTML = html;
-      });
+<script>
+  const translations = {
+    en: {
+      walletNotConnected: "Wallet not connected",
+      yourWallet: "Your Wallet Address",
+      recipient: "Recipient Wallet Address",
+      message: "Your Message",
+      send: "Send Message",
+      connect: "Connect Wallet",
+      settingsTitle: "Settings",
+      network: "Select Network",
+      clear: "Clear Cache",
+      reset: "Reset Form"
+    },
+    fa: {
+      walletNotConnected: "کیف پول متصل نیست",
+      yourWallet: "آدرس کیف پول شما",
+      recipient: "آدرس گیرنده",
+      message: "پیام شما",
+      send: "ارسال پیام",
+      connect: "اتصال کیف پول",
+      settingsTitle: "تنظیمات",
+      network: "انتخاب شبکه",
+      clear: "پاک‌سازی کش",
+      reset: "بازنشانی فرم"
+    }
+  };
 
-      const languageMenu = document.getElementById('languageMenu');
-      const langOptions = document.getElementById('langOptions');
-      languageMenu.addEventListener('click', () => {
-        langOptions.style.display = langOptions.style.display === 'flex' ? 'none' : 'flex';
-      });
+  function applyLangUI(lang) {
+    const t = translations[lang] || translations.en;
+    document.getElementById('status').textContent = t.walletNotConnected;
+    document.getElementById('yourWallet').placeholder = t.yourWallet;
+    document.getElementById('recipient').placeholder = t.recipient;
+    document.getElementById('message').placeholder = t.message;
+    document.getElementById('sendBtn').textContent = t.send;
+    document.getElementById('connectBtn').textContent = t.connect;
+    window._langText = t;
+    if (lang === 'fa' || lang === 'ar') {
+      document.body.classList.add('rtl');
+    } else {
+      document.body.classList.remove('rtl');
+    }
+  }
 
-      langOptions.querySelectorAll('a').forEach(link => {
-        link.addEventListener('click', (e) => {
-          e.preventDefault();
-          const selectedLang = link.getAttribute('data-lang');
-          localStorage.setItem('preferredLang', selectedLang);
-          alert(`Language switched to ${selectedLang}`);
-          langOptions.style.display = 'none';
-        });
+  window.addEventListener("DOMContentLoaded", () => {
+    document.getElementById('languageMenu').addEventListener('click', () => {
+      const langBox = document.getElementById('langOptions');
+      langBox.style.display = langBox.style.display === 'flex' ? 'none' : 'flex';
+    });
+    document.querySelectorAll('[data-lang]').forEach(el => {
+      el.addEventListener('click', e => {
+        e.preventDefault();
+        const selected = e.target.dataset.lang;
+        localStorage.setItem('preferredLang', selected);
+        applyLangUI(selected);
+        document.getElementById('langOptions').style.display = 'none';
       });
     });
-  </script>
+
+    document.getElementById('settingsLink').addEventListener('click', () => {
+      const t = window._langText || translations.en;
+      const html = `
+        <h3>${t.settingsTitle}</h3>
+        <label>${t.network}</label>
+        <select><option>Polygon</option><option>Ethereum</option><option>Arbitrum</option></select>
+        <button>${t.clear}</button>
+        <button>${t.reset}</button>
+      `;
+      document.getElementById('cardContent').innerHTML = html;
+    });
+
+    const storedLang = localStorage.getItem('preferredLang') || 'en';
+    applyLangUI(storedLang);
+  });
+</script>
 </body>
 </html>
