@@ -2,6 +2,12 @@
 window.addEventListener("DOMContentLoaded", () => {
   const recipientInput = document.getElementById('recipient');
 
+  if (!recipientInput) return console.error("Required elements not found - recipient input is missing");
+  if (!document.getElementById('contactsLink') || !document.getElementById('inboxLink') || !document.getElementById('cardContent')) {
+    console.error("Sidebar links or cardContent missing in DOM");
+    return;
+  }
+
   // ✅ CONTACTS: Load and make selectable
   document.getElementById('contactsLink').addEventListener('click', () => {
     const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
@@ -17,12 +23,13 @@ window.addEventListener("DOMContentLoaded", () => {
   });
 
   window.selectContact = (address) => {
-    document.getElementById('recipient').value = address;
+    const recField = document.getElementById('recipient');
+    if (recField) recField.value = address;
   }
 
   window.addContact = () => {
-    const name = document.getElementById('contactName').value.trim();
-    const address = document.getElementById('contactAddress').value.trim();
+    const name = document.getElementById('contactName')?.value.trim();
+    const address = document.getElementById('contactAddress')?.value.trim();
     if (!name || !address) return alert("Enter both fields");
     const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
     contacts.push({ name, address });
