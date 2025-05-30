@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CRID Messenger</title>
   <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300&family=Vazirmatn&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/@metamask/detect-provider"></script>
   <style>
     body {
       margin: 0;
@@ -73,7 +72,17 @@
       max-width: 500px;
       margin: auto;
     }
-    .card input, .card select, .card button {
+    .card input.top-input {
+      width: 90%;
+      margin-bottom: 1em;
+      padding: 0.8em;
+      font-size: 1em;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-family: inherit;
+    }
+    .card select,
+    .card button {
       width: 100%;
       margin-bottom: 1em;
       padding: 0.8em;
@@ -117,9 +126,9 @@
     <div class="content">
       <div class="card" id="cardContent">
         <div id="status">Wallet not connected</div>
-        <input type="text" id="yourWallet" placeholder="Your Wallet Address" readonly>
-        <input type="text" id="recipient" placeholder="Recipient Wallet Address">
-        <input type="text" id="message" placeholder="Your Message">
+        <input type="text" id="yourWallet" class="top-input" placeholder="Your Wallet Address" readonly>
+        <input type="text" id="recipient" class="top-input" placeholder="Recipient Wallet Address">
+        <input type="text" id="message" class="top-input" placeholder="Your Message">
         <button id="sendBtn">Send Message</button>
         <select id="networkSelect">
           <option value="0x1">Ethereum Mainnet</option>
@@ -132,79 +141,5 @@
       </div>
     </div>
   </main>
-<script>
-function renderSection(section) {
-  const content = document.getElementById('cardContent');
-  if (section === 'contacts') {
-    content.innerHTML = '<h3>📒 Contacts</h3><p>Contact list will appear here.</p>';
-  } else if (section === 'inbox') {
-    content.innerHTML = '<h3>📥 Inbox</h3><p>Your messages will appear here.</p>';
-  } else if (section === 'settings') {
-    content.innerHTML = `
-      <h3>⚙️ Settings</h3>
-      <select id="networkSelect">
-        <option value="0x1">Ethereum Mainnet</option>
-        <option value="0x89">Polygon</option>
-        <option value="0xa">Optimism</option>
-        <option value="0xa4b1">Arbitrum One</option>
-      </select>
-      <div id="networkStatus" style="margin: 1em 0;"></div>
-      <button id="clearLocalStorage">🧹 Clear Local Storage</button>
-    `;
-    attachSettingsListeners();
-  } else if (section === 'about') {
-    content.innerHTML = '<h3>ℹ️ About</h3><p>This is a demo of CRID Messenger, a decentralized app prototype.</p>';
-  }
-}
-
-function attachSettingsListeners() {
-  const networkSelect = document.getElementById('networkSelect');
-  const networkStatus = document.getElementById('networkStatus');
-  const clearBtn = document.getElementById('clearLocalStorage');
-
-  clearBtn?.addEventListener('click', () => {
-    localStorage.clear();
-    alert('Local storage cleared.');
-  });
-
-  networkSelect?.addEventListener('change', async () => {
-    const chainId = networkSelect.value;
-    try {
-      await window.ethereum.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId }]
-      });
-      networkStatus.textContent = `✅ Switched to network with Chain ID: ${chainId}`;
-    } catch (switchError) {
-      networkStatus.textContent = `❌ Failed to switch network: ${switchError.message}`;
-    }
-  });
-}
-
-window.addEventListener('DOMContentLoaded', async () => {
-  const connectBtn = document.getElementById('connectBtn');
-  const statusEl = document.getElementById('status');
-  const yourWalletInput = document.getElementById('yourWallet');
-
-  if (window.ethereum) {
-    connectBtn?.addEventListener('click', async () => {
-      try {
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-        const walletAddress = accounts[0];
-        if (yourWalletInput) yourWalletInput.value = walletAddress;
-        if (statusEl) statusEl.textContent = `✅ Connected: ${walletAddress}`;
-      } catch (err) {
-        if (statusEl) statusEl.textContent = '❌ Connection failed';
-      }
-    });
-
-    attachSettingsListeners();
-
-  } else {
-    connectBtn.disabled = true;
-    connectBtn.textContent = 'MetaMask not installed';
-  }
-});
-</script>
 </body>
 </html>
