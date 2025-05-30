@@ -8,6 +8,7 @@
   <style>
     body {
       font-family: 'Comfortaa', sans-serif;
+      font-weight: 300;
       margin: 0;
       padding: 0;
       display: flex;
@@ -30,8 +31,9 @@
       border: none;
       padding: 0.6em 1.2em;
       border-radius: 6px;
-      font-weight: bold;
+      font-weight: 300;
       cursor: pointer;
+      font-family: 'Comfortaa', sans-serif;
     }
     .topbar button:hover {
       background: #c96d0c;
@@ -54,17 +56,31 @@
       color: #1e1e1e;
       padding: 0.5em 0;
       font-weight: 600;
+      font-family: 'Comfortaa', sans-serif;
     }
     .sidebar a:hover {
       color: #f7931a;
     }
-    .sidebar .spacer {
-      flex-grow: 1;
+    .sidebar .language-menu {
+      cursor: pointer;
+      font-weight: 600;
+      font-family: 'Comfortaa', sans-serif;
     }
-    .sidebar select {
-      padding: 0.5em;
-      font-size: 1em;
-      margin-top: 1em;
+    .sidebar .lang-options {
+      display: none;
+      flex-direction: column;
+      padding-left: 10px;
+      margin-top: -8px;
+    }
+    .sidebar .lang-options a {
+      padding: 0.3em 0;
+      font-weight: 300;
+      font-size: 0.9em;
+      text-decoration: none;
+      color: #333;
+    }
+    .sidebar .lang-options a:hover {
+      color: #f7931a;
     }
     .content {
       flex: 1;
@@ -87,13 +103,14 @@
       font-size: 1em;
       border: 1px solid #ddd;
       border-radius: 6px;
+      font-family: 'Comfortaa', sans-serif;
     }
     .card button {
       background: #f7931a;
       color: white;
       border: none;
       cursor: pointer;
-      font-weight: bold;
+      font-weight: 300;
     }
     .card button:hover {
       background: #c96d0c;
@@ -111,17 +128,17 @@
       <a href="#" id="contactsLink">Contacts</a>
       <a href="#" id="settingsLink">Settings</a>
       <a href="#" id="aboutLink">About</a>
-      <div class="spacer"></div>
-      <select id="languageSelect">
-        <option value="en">English</option>
-        <option value="ru">Русский</option>
-        <option value="zh">中文</option>
-        <option value="ja">日本語</option>
-        <option value="ko">한국어</option>
-        <option value="ar">العربية</option>
-        <option value="ka">ქართული</option>
-        <option value="hi">हिन्दी</option>
-      </select>
+      <div class="language-menu" id="languageMenu">Language ▸</div>
+      <div class="lang-options" id="langOptions">
+        <a href="#" data-lang="en">English</a>
+        <a href="#" data-lang="ru">Русский</a>
+        <a href="#" data-lang="zh">中文</a>
+        <a href="#" data-lang="ja">日本語</a>
+        <a href="#" data-lang="ko">한국어</a>
+        <a href="#" data-lang="ar">العربية</a>
+        <a href="#" data-lang="ka">ქართული</a>
+        <a href="#" data-lang="hi">हिन्दी</a>
+      </div>
     </div>
     <div class="content">
       <div class="card">
@@ -147,6 +164,22 @@
         html += dummyMessages.map(m => `<li style='margin-bottom: 1em;'><strong>From:</strong> ${m.from}<br><strong>Message:</strong> ${m.content}</li>`).join('');
         html += `</ul>`;
         document.querySelector(".card").innerHTML = html;
+      });
+
+      const languageMenu = document.getElementById('languageMenu');
+      const langOptions = document.getElementById('langOptions');
+      languageMenu.addEventListener('click', () => {
+        langOptions.style.display = langOptions.style.display === 'flex' ? 'none' : 'flex';
+      });
+
+      langOptions.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          const selectedLang = link.getAttribute('data-lang');
+          localStorage.setItem('preferredLang', selectedLang);
+          alert(`Language switched to ${selectedLang}`);
+          langOptions.style.display = 'none';
+        });
       });
     });
   </script>
