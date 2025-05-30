@@ -1,154 +1,74 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CRID Messenger</title>
-  <style>
-    body { font-family: sans-serif; margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; }
-    .topbar { background: #1e1e1e; color: white; padding: 1em; display: flex; justify-content: space-between; align-items: center; }
-    .main { display: flex; flex: 1; }
-    .sidebar { width: 200px; background: #f4f4f4; padding: 1em; }
-    .content { flex: 1; padding: 1em; }
-    .card input, .card button { display: block; margin: 10px 0; padding: 10px; width: 100%; }
-    select { width: 100%; padding: 8px; }
-  </style>
-</head>
-<body>
-  <div class="topbar">
-    <div>CRID Messenger</div>
-    <button id="connectBtn">Connect Wallet</button>
-  </div>
-  <div class="main">
-    <div class="sidebar">
-      <a href="#" id="inboxLink">Inbox</a><br>
-      <a href="#" id="contactsLink">Contacts</a><br>
-      <a href="#" id="settingsLink">Settings</a><br>
-      <a href="#" id="aboutLink">About</a><br>
-      <select id="languageSelect">
-        <option value="en">English</option>
-        <option value="ru">Русский</option>
-        <option value="zh">中文</option>
-        <option value="ja">日本語</option>
-        <option value="ko">한국어</option>
-        <option value="ar">العربية</option>
-        <option value="ka">ქართული</option>
-        <option value="hi">हिन्दी</option>
-      </select>
-    </div>
-    <div class="content">
-      <div class="card">
-        <div id="status">Wallet not connected</div>
-        <input type="text" id="yourWallet" placeholder="Your Wallet Address" readonly>
-        <input type="text" id="recipient" placeholder="Recipient Wallet Address">
-        <input type="text" id="message" placeholder="Your Message">
-        <button id="sendBtn">Send Message</button>
-        <div id="msgStatus"></div>
-      </div>
-    </div>
-  </div>
+<style>
+  body { font-family: 'Comfortaa', sans-serif; margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; background: #fefefe; color: #333; }
+  .topbar { background: #1e1e1e; color: white; padding: 1em; display: flex; justify-content: space-between; align-items: center; }
+  .main { display: flex; flex: 1; }
+  .sidebar {
+    width: 220px;
+    background: #ffffff;
+    border-right: 1px solid #ddd;
+    padding: 1em;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .sidebar a {
+    text-decoration: none;
+    color: #1e1e1e;
+    padding: 0.5em 0;
+  }
+  .sidebar a:hover {
+    color: #f7931a;
+  }
+  .sidebar select {
+    margin-top: auto;
+    padding: 0.5em;
+    font-size: 1em;
+  }
+  .content {
+    flex: 1;
+    padding: 2em;
+    background: #f9f9f9;
+  }
+  .card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    padding: 1.5em;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+  .card input, .card button {
+    display: block;
+    margin: 10px 0;
+    padding: 10px;
+    width: 100%;
+    font-size: 1em;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+  }
+  .card button {
+    background: #f7931a;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+  .card button:hover {
+    background: #d97706;
+  }
+</style>
 <script>
   window.addEventListener("DOMContentLoaded", () => {
-    const lang = {
-      en: {
-        connect: "Connect Wallet",
-        disconnect: "Disconnect Wallet",
-        status: "Wallet not connected",
-        recipient: "Recipient Wallet Address",
-        message: "Your Message",
-        send: "Send Message",
-        sent: (to, msg) => `✅ Message sent to ${to}: "${msg}"`
-      }
-    };
-    let walletAddress = "";
-    let currentLang = "en";
-
-    function applyLang() {
-      const t = lang[currentLang];
-      const connectBtn = document.getElementById('connectBtn');
-      connectBtn.textContent = walletAddress ? t.disconnect : t.connect;
-      document.getElementById('status').textContent = walletAddress ? `✅ Connected: ${walletAddress}` : t.status;
-      document.getElementById('recipient').placeholder = t.recipient;
-      document.getElementById('message').placeholder = t.message;
-      document.getElementById('sendBtn').textContent = t.send;
-    }
-
-    document.getElementById('languageSelect').addEventListener('change', (e) => {
-      currentLang = e.target.value;
-      applyLang();
+    const inboxLink = document.getElementById('inboxLink');
+    inboxLink.addEventListener('click', () => {
+      const dummyMessages = [
+        { from: '0xabc123...', content: 'Hello from Alice' },
+        { from: '0xdef456...', content: 'Meeting at 3 PM' },
+        { from: '0xghi789...', content: 'Invoice sent' }
+      ];
+      let html = `<h3>Inbox</h3><ul style='list-style: none; padding-left: 0;'>`;
+      html += dummyMessages.map(m => `<li style='margin-bottom: 1em;'><strong>From:</strong> ${m.from}<br><strong>Message:</strong> ${m.content}</li>`).join('');
+      html += `</ul>`;
+      document.querySelector(".card").innerHTML = html;
     });
-
-    document.getElementById('connectBtn').addEventListener('click', async () => {
-      if (walletAddress) {
-        walletAddress = "";
-        localStorage.removeItem('connectedWallet');
-        document.getElementById('yourWallet').value = "";
-        applyLang();
-        return;
-      }
-      if (!window.ethereum) {
-        alert("MetaMask is not installed");
-        return;
-      }
-      try {
-        const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
-        walletAddress = accounts[0];
-        document.getElementById('yourWallet').value = walletAddress;
-        localStorage.setItem('connectedWallet', walletAddress);
-        applyLang();
-      } catch (err) {
-        document.getElementById('status').textContent = "❌ Wallet connection failed.";
-      }
-    });
-
-    document.getElementById('sendBtn').addEventListener('click', () => {
-      if (!walletAddress) {
-        alert("Please connect your wallet first");
-        return;
-      }
-      const t = lang[currentLang];
-      const recipient = document.getElementById('recipient').value.trim();
-      const message = document.getElementById('message').value.trim();
-      if (!recipient || !message) {
-        alert("Please enter recipient address and message");
-        return;
-      }
-      document.getElementById('msgStatus').textContent = t.sent(recipient, message);
-    });
-
-    function showCard(contentHTML) {
-      document.querySelector(".card").innerHTML = contentHTML;
-    }
-
-    document.getElementById('contactsLink').addEventListener('click', () => {
-      const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
-      let html = `<h3>Contacts</h3><ul>` + contacts.map(c => `<li><b>${c.name}</b>: ${c.address}</li>`).join('') + `</ul>`;
-      html += `<input type='text' id='contactName' placeholder='Name'>`;
-      html += `<input type='text' id='contactAddress' placeholder='Wallet Address'>`;
-      html += `<button onclick='addContact()'>+ Add Contact</button>`;
-      showCard(html);
-    });
-
-    window.addContact = function () {
-      const name = document.getElementById('contactName').value.trim();
-      const address = document.getElementById('contactAddress').value.trim();
-      if (!name || !address) {
-        alert("Both name and address are required.");
-        return;
-      }
-      const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
-      contacts.push({ name, address });
-      localStorage.setItem('contacts', JSON.stringify(contacts));
-      document.getElementById('contactsLink').click();
-    }
-
-    if (localStorage.getItem('connectedWallet')) {
-      walletAddress = localStorage.getItem('connectedWallet');
-      document.getElementById('yourWallet').value = walletAddress;
-    }
-
-    applyLang();
   });
 </script>
-</body>
-</html>
