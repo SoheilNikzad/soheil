@@ -1,34 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRID Messenger</title>
+</head>
+<body>
+  <div id="sidebar">
+    <a href="#" id="inboxLink">Inbox</a>
+    <a href="#" id="contactsLink">Contacts</a>
+  </div>
+  <div class="content">
+    <div class="card" id="cardContent">
+      <div id="status">Wallet not connected</div>
+      <input type="text" id="yourWallet" placeholder="Your Wallet Address" readonly>
+      <input type="text" id="recipient" placeholder="Recipient Wallet Address">
+      <input type="text" id="message" placeholder="Your Message">
+      <button id="sendBtn">Send Message</button>
+      <div id="msgStatus"></div>
+    </div>
+  </div>
 <script>
-window.addEventListener("DOMContentLoaded", () => {
-  const contactsLink = document.getElementById('contactsLink');
-  const inboxLink = document.getElementById('inboxLink');
-  const cardContent = document.getElementById('cardContent');
+  function initCRIDMessenger() {
+    const contactsLink = document.getElementById('contactsLink');
+    const inboxLink = document.getElementById('inboxLink');
+    const cardContent = document.getElementById('cardContent');
 
-  if (!contactsLink || !inboxLink || !cardContent) {
-    console.error("Sidebar links or cardContent missing in DOM");
-    return;
+    if (!contactsLink || !inboxLink || !cardContent) {
+      console.warn("UI not ready. Will re-check in 200ms...");
+      return setTimeout(initCRIDMessenger, 200);
+    }
+
+    contactsLink.addEventListener('click', () => {
+      const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
+      let html = `<h3>Contacts</h3><ul style='list-style: none; padding-left: 0;'>`;
+      html += contacts.map(c => `<li style='margin-bottom: 0.5em;'>
+        <button onclick='selectContact("${c.address}")' style='width:100%;padding:0.6em;border:1px solid #ccc;border-radius:6px;'>
+          <strong>${c.name}</strong><br><span style='font-size:0.85em;'>${c.address}</span>
+        </button>
+      </li>`).join('');
+      html += `</ul><hr/><input id='contactName' placeholder='Name'><input id='contactAddress' placeholder='Wallet Address'>
+        <button onclick='addContact()'>+ Add Contact</button>`;
+      cardContent.innerHTML = html;
+    });
+
+    inboxLink.addEventListener('click', () => {
+      const messages = JSON.parse(localStorage.getItem('messages') || '[]');
+      let html = `<h3>Inbox</h3>`;
+      if (messages.length === 0) html += `<p>No messages found.</p>`;
+      else html += messages.map(m => `
+        <div style='margin-bottom:1em;padding:1em;border:1px solid #ddd;border-radius:6px;'>
+          <strong>From:</strong> ${m.from}<br>
+          <strong>Message:</strong> ${m.text}<br>
+          <small style='color:gray;'>${m.date || new Date().toLocaleString()}</small>
+        </div>`).join('');
+      cardContent.innerHTML = html;
+    });
   }
 
-  // ✅ CONTACTS: Load and make selectable
-  contactsLink.addEventListener('click', () => {
-    const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
-    let html = `<h3>Contacts</h3><ul style='list-style: none; padding-left: 0;'>`;
-    html += contacts.map(c => `<li style='margin-bottom: 0.5em;'>
-      <button onclick='selectContact("${c.address}")' style='width:100%;padding:0.6em;border:1px solid #ccc;border-radius:6px;'>
-        <strong>${c.name}</strong><br><span style='font-size:0.85em;'>${c.address}</span>
-      </button>
-    </li>`).join('');
-    html += `</ul><hr/><input id='contactName' placeholder='Name'><input id='contactAddress' placeholder='Wallet Address'>
-      <button onclick='addContact()'>+ Add Contact</button>`;
-    cardContent.innerHTML = html;
-  });
-
-  window.selectContact = (address) => {
+  function selectContact(address) {
     const recField = document.getElementById('recipient');
     if (recField) recField.value = address;
   }
 
-  window.addContact = () => {
+  function addContact() {
     const name = document.getElementById('contactName')?.value.trim();
     const address = document.getElementById('contactAddress')?.value.trim();
     if (!name || !address) return alert("Enter both fields");
@@ -38,18 +73,7 @@ window.addEventListener("DOMContentLoaded", () => {
     document.getElementById('contactsLink').click();
   }
 
-  // ✅ INBOX: Display detailed messages
-  inboxLink.addEventListener('click', () => {
-    const messages = JSON.parse(localStorage.getItem('messages') || '[]');
-    let html = `<h3>Inbox</h3>`;
-    if (messages.length === 0) html += `<p>No messages found.</p>`;
-    else html += messages.map(m => `
-      <div style='margin-bottom:1em;padding:1em;border:1px solid #ddd;border-radius:6px;'>
-        <strong>From:</strong> ${m.from}<br>
-        <strong>Message:</strong> ${m.text}<br>
-        <small style='color:gray;'>${m.date || new Date().toLocaleString()}</small>
-      </div>`).join('');
-    cardContent.innerHTML = html;
-  });
-});
+  document.addEventListener("DOMContentLoaded", initCRIDMessenger);
 </script>
+</body>
+</html>
