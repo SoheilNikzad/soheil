@@ -3,10 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Polygon Token Creator</title>
-
-  <!-- ✅ Load ethers.js FIRST -->
-  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
+  <title>Polygon Token Creator (v6)</title>
 </head>
 
 <body>
@@ -14,8 +11,9 @@
 
   <p>Network: <strong>Polygon Mainnet</strong> (via MetaMask)</p>
 
-  <button id="connectWallet">🔌 Connect Wallet</button>
-  <p id="walletAddress">Not connected</p>
+  <button id="connectBtn">🔌 Connect Wallet</button>
+  <p id="status">در انتظار اتصال...</p>
+  <input type="text" id="yourWallet" readonly />
 
   <div>
     <label for="name">Token Name:</label>
@@ -41,7 +39,8 @@
 
   <pre id="output"></pre>
 
-  <!-- ✅ Load main.js AFTER ethers.js -->
-  <script src="main.js"></script>
+  <!-- Load ethers.js v6 -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
+  <script defer src="main.js"></script>
 </body>
 </html>
