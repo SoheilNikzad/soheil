@@ -11,6 +11,9 @@
 
   <p>Network: <strong>Polygon Mainnet</strong> (via MetaMask)</p>
 
+  <button id="connectWallet">🔌 Connect Wallet</button>
+  <p id="walletAddress">Not connected</p>
+
   <div>
     <label for="name">Token Name:</label>
     <input type="text" id="name" />
@@ -35,9 +38,9 @@
 
   <pre id="output"></pre>
 
-  <!-- ⚠️ اول ethers.js لود میشه -->
+  <!-- Load ethers.js first -->
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
-  <!-- ✅ بعد main.js -->
+  <!-- Then load our app logic -->
   <script src="main.js"></script>
 </body>
 </html>
