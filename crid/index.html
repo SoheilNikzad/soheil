@@ -73,7 +73,7 @@
       margin: auto;
     }
     .card input.top-input {
-      width: 90%;
+      min-width: 472px;
       margin-bottom: 1em;
       padding: 0.8em;
       font-size: 1em;
@@ -109,6 +109,9 @@
       border-radius: 6px;
       cursor: pointer;
     }
+    #status{
+      padding-bottom: 15px;
+    }  
   </style>
 </head>
 <body lang="en">
@@ -136,7 +139,7 @@
           <option value="0xa">Optimism</option>
           <option value="0xa4b1">Arbitrum One</option>
         </select>
-        <div id="networkStatus" style="margin: 1em 0;"></div>
+        <div id="networkStatus"></div>
         <button id="clearLocalStorage">🧹 Clear Local Storage</button>
       </div>
     </div>
