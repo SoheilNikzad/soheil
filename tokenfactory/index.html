@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Polygon Token Creator</title>
+
+  <!-- ✅ Load ethers.js FIRST -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
 </head>
 
 <body>
@@ -38,9 +41,7 @@
 
   <pre id="output"></pre>
 
-  <!-- Load ethers.js first -->
-  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
-  <!-- Then load our app logic -->
+  <!-- ✅ Load main.js AFTER ethers.js -->
   <script src="main.js"></script>
 </body>
 </html>
