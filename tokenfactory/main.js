@@ -385,7 +385,7 @@ document.getElementById("createToken").addEventListener("click", async () => {
   }
 
   try {
-    const totalSupply = ethers.parseUnits(supply, decimals);
+    const totalSupply = ethers.parseUnits(supply, 18);
     const factory = new ethers.ContractFactory(erc20ABI, erc20Bytecode, signer);
     const contract = await factory.deploy(name, symbol, totalSupply);
 
