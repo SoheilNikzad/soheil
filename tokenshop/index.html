@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Polygon Token Creator (Final)</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f5f5f5;
+      padding: 2rem;
+      direction: rtl;
+    }
+    label {
+      display: block;
+      margin-top: 1rem;
+    }
+    input {
+      padding: 0.5rem;
+      width: 100%;
+      max-width: 400px;
+    }
+    button {
+      margin-top: 2rem;
+      padding: 0.7rem 1.5rem;
+      font-size: 1rem;
+    }
+    #output {
+      margin-top: 2rem;
+      white-space: pre-wrap;
+      background: #fff;
+      padding: 1rem;
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Polygon Token Creator</h1>
+
+  <p>Network: <strong>Polygon Mainnet</strong> (via MetaMask)</p>
+
+  <button id="connectBtn">🔌 اتصال کیف پول</button>
+  <p id="status">در انتظار اتصال...</p>
+  <input type="text" id="yourWallet" readonly />
+
+  <div>
+    <label for="name">نام توکن:</label>
+    <input type="text" id="name" placeholder="مثلاً: MyToken" />
+  </div>
+
+  <div>
+    <label for="symbol">نماد توکن (Symbol):</label>
+    <input type="text" id="symbol" placeholder="مثلاً: MTK" />
+  </div>
+
+  <div>
+    <label for="decimals">تعداد اعشار (ثابت ۱۸):</label>
+    <input type="number" id="decimals" value="18" readonly />
+  </div>
+
+  <div>
+    <label for="supply">کل عرضه:</label>
+    <input type="number" id="supply" placeholder="مثلاً: 1000000" />
+  </div>
+
+  <button id="createToken">ساخت توکن روی Polygon</button>
+
+  <pre id="output"></pre>
+
+  <!-- Load ethers.js v6 -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
+  <script defer src="main.js"></script>
+</body>
+</html>
