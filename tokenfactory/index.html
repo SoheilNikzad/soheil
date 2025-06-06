@@ -3,23 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Multi-Chain Token Creator</title>
+  <title>Polygon Token Creator</title>
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.41.0/lib/index.iife.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@solana/spl-token@0.3.6/lib/index.iife.min.js"></script>
 </head>
 
 <body>
-  <h1>Multi-Chain Token Creator</h1>
+  <h1>Polygon Token Creator</h1>
 
-  <button id="connectWallet">🔌 Connect Wallet</button>
-  <p id="walletAddress"></p>
-
-  <label for="network">Select Network:</label>
-  <select id="network">
-    <option value="ethereum">Ethereum (ERC-20)</option>
-    <option value="solana">Solana (SPL)</option>
-  </select>
+  <p>Network: <strong>Polygon Mainnet</strong> (via MetaMask)</p>
 
   <div>
     <label for="name">Token Name:</label>
@@ -41,7 +32,7 @@
     <input type="number" id="supply" />
   </div>
 
-  <button id="createToken">Create Token</button>
+  <button id="createToken">Create Token on Polygon</button>
 
   <pre id="output"></pre>
 
