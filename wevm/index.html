@@ -1,0 +1,143 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>WEVM – EVM Explorer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300&display=swap" rel="stylesheet">
+  <style>
+    * {
+      font-family: 'Comfortaa', cursive;
+      font-weight: 300;
+    }
+    body {
+      margin: 0;
+      background: #f7f7f7;
+    }
+    header {
+      background: #f7931a;
+      color: white;
+      text-align: center;
+      padding: 1rem;
+      font-size: 1.8rem;
+    }
+    main {
+      padding: 1rem;
+    }
+    .section {
+      background: white;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    select, input, button {
+      font-size: 1rem;
+      padding: 0.5rem;
+      margin-top: 0.5rem;
+      width: 100%;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      background-color: #f7931a;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #e68000;
+    }
+    .data-display {
+      margin-top: 0.5rem;
+      font-size: 1rem;
+      color: #444;
+    }
+    .block-list {
+      background: #f1f1f1;
+      padding: 1rem;
+      max-height: 300px;
+      overflow-y: auto;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+  <header>WEVM – EVM Explorer</header>
+  <main>
+    <div class="section">
+      <h3>🌐 Select Network</h3>
+      <select id="networkSelect" onchange="changeNetwork()">
+        <option value="https://mainnet.infura.io/v3/YOUR_INFURA_KEY">Ethereum Mainnet</option>
+        <option value="https://polygon-rpc.com">Polygon</option>
+        <option value="https://bsc-dataseed.binance.org/">BNB Chain</option>
+        <option value="https://arb1.arbitrum.io/rpc">Arbitrum One</option>
+        <option value="https://mainnet.optimism.io">Optimism</option>
+        <option value="https://api.avax.network/ext/bc/C/rpc">Avalanche C-Chain</option>
+        <option value="https://mainnet.base.org">Base</option>
+        <option value="https://rpcapi.fantom.network">Fantom</option>
+        <option value="https://rpc.raakh.net" selected>RAAKH DevNet</option>
+      </select>
+      <div id="networkStatus" class="data-display"></div>
+    </div>
+
+    <div class="section">
+      <h3>👛 Wallet Connection</h3>
+      <button onclick="connectWallet()">Connect Wallet</button>
+      <div id="walletAddress" class="data-display"></div>
+    </div>
+
+    <div class="section">
+      <h3>📦 Latest Blocks + Transactions</h3>
+      <button onclick="loadBlocks()">Load Explorer</button>
+      <div id="blockExplorer" class="block-list"></div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <script>
+    let provider;
+    let signer;
+    let currentAccount = "";
+
+    function changeNetwork() {
+      const rpcUrl = document.getElementById('networkSelect').value;
+      provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+      provider.getBlockNumber().then(block => {
+        document.getElementById('networkStatus').textContent = "✅ Connected. Latest block: " + block;
+      }).catch(() => {
+        document.getElementById('networkStatus').textContent = "❌ Failed to connect.";
+      });
+    }
+
+    async function connectWallet() {
+      if (window.ethereum) {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        currentAccount = accounts[0];
+        signer = (new ethers.providers.Web3Provider(window.ethereum)).getSigner();
+        document.getElementById('walletAddress').textContent = "Connected: " + currentAccount;
+      } else {
+        document.getElementById('walletAddress').textContent = "❌ MetaMask not available.";
+      }
+    }
+
+    async function loadBlocks() {
+      if (!provider) {
+        document.getElementById('blockExplorer').innerText = "❌ Connect to a network first.";
+        return;
+      }
+      const latest = await provider.getBlockNumber();
+      let html = "";
+      for (let i = latest; i > latest - 5; i--) {
+        const block = await provider.getBlockWithTransactions(i);
+        html += `<div><b>🔸 Block #${block.number}</b> | Miner: ${block.miner} | Txs: ${block.transactions.length}</div>`;
+        block.transactions.slice(0, 3).forEach(tx => {
+          html += `<div style="margin-left: 1rem; font-size: 0.9rem;">↳ From: ${tx.from} → To: ${tx.to || '🌀 Contract creation'}</div>`;
+        });
+        html += "<hr/>";
+      }
+      document.getElementById('blockExplorer').innerHTML = html;
+    }
+  </script>
+</body>
+</html>
