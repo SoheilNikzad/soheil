@@ -1,75 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Polygon Token Creator (Final)</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      background: #f5f5f5;
-      padding: 2rem;
-      direction: rtl;
-    }
-    label {
-      display: block;
-      margin-top: 1rem;
-    }
-    input {
-      padding: 0.5rem;
-      width: 100%;
-      max-width: 400px;
-    }
-    button {
-      margin-top: 2rem;
-      padding: 0.7rem 1.5rem;
-      font-size: 1rem;
-    }
-    #output {
-      margin-top: 2rem;
-      white-space: pre-wrap;
-      background: #fff;
-      padding: 1rem;
-      border: 1px solid #ccc;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TokenFactory</title>
+    <link rel="stylesheet" href="css/fonts.css">
+    <link rel="stylesheet" href="css/style.css">
 </head>
-
 <body>
-  <h1>Polygon Token Creator</h1>
+    <header>
+        <h1>TokenFactory</h1>
+        <nav>
+            <ul>
+                <li><a href="#tokenization">Tokenization</a></li>
+                <li><a href="#dao">DAO</a></li>
+                <li><a href="#p2p-market">P2P Market</a></li>
+                <li><a href="#dashboard">My Dashboard</a></li>
+                <li><a href="#about">About Us</a></li>
+            </ul>
+        </nav>
+    </header>
 
-  <p>Network: <strong>Polygon Mainnet</strong> (via MetaMask)</p>
+    <main>
+        <section id="tokenization">
+            <h2>Tokenization</h2>
+            <!-- Content for Tokenization will go here -->
+        </section>
 
-  <button id="connectBtn">🔌 اتصال کیف پول</button>
-  <p id="status">در انتظار اتصال...</p>
-  <input type="text" id="yourWallet" readonly />
+        <section id="dao">
+            <h2>DAO</h2>
+            <!-- Content for DAO will go here -->
+        </section>
 
-  <div>
-    <label for="name">نام توکن:</label>
-    <input type="text" id="name" placeholder="مثلاً: MyToken" />
-  </div>
+        <section id="p2p-market">
+            <h2>P2P Market</h2>
+            <!-- Content for P2P Market will go here -->
+        </section>
 
-  <div>
-    <label for="symbol">نماد توکن (Symbol):</label>
-    <input type="text" id="symbol" placeholder="مثلاً: MTK" />
-  </div>
+        <section id="dashboard">
+            <h2>My Dashboard</h2>
+            <!-- Content for My Dashboard will go here -->
+        </section>
 
-  <div>
-    <label for="decimals">تعداد اعشار (ثابت ۱۸):</label>
-    <input type="number" id="decimals" value="18" readonly />
-  </div>
+        <section id="about">
+            <h2>About Us</h2>
+            <!-- Content for About Us will go here -->
+        </section>
+    </main>
 
-  <div>
-    <label for="supply">کل عرضه:</label>
-    <input type="number" id="supply" placeholder="مثلاً: 1000000" />
-  </div>
+    <footer>
+        <p>&copy; 2023 TokenFactory</p>
+    </footer>
 
-  <button id="createToken">ساخت توکن روی Polygon</button>
-
-  <pre id="output"></pre>
-
-  <!-- Load ethers.js v6 -->
-  <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
-  <script defer src="main.js"></script>
+    <script src="js/app.js"></script>
 </body>
 </html>
