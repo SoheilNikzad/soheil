@@ -1,64 +1,72 @@
-const RPC = "https://rpc.raakh.net";
-const output = document.getElementById("output");
+const RPC="https://rpc.raakh.net";
+const out=document.getElementById("output");
 
-async function rpcCall(method, params = []) {
-  const res = await fetch(RPC, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
-  });
-  const json = await res.json();
-  return json.result;
+async function rpc(m,p=[]){
+  const r=await fetch(RPC,{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({jsonrpc:"2.0",id:1,method:m,params:p})});
+  return (await r.json()).result;
 }
 
-function dateToUnix(dateStr) {
-  return Math.floor(new Date(dateStr).getTime() / 1000);
+function fmtTS(hex){
+  const d=new Date(parseInt(hex,16)*1000);
+  return d.toLocaleString();
 }
 
-async function handleSearch() {
-  const q = document.getElementById("query").value.trim();
-  const fromTime = dateToUnix(document.getElementById("from").value);
-  const toTime = dateToUnix(document.getElementById("to").value);
+function renderTable(txs){
+  if(!txs.length) return "<p>No transactions found.</p>";
+  return `<table><thead><tr>
+  <th>Block</th><th>Tx Hash</th><th>Time</th>
+  <th>From</th><th>To</th><th>Value (ETH)</th><th>Status</th>
+  </tr></thead><tbody>` +
+    txs.map(tx=>{
+      const vals=(parseInt(tx.value,16)/1e18).toFixed(6);
+      const status=tx.receipt?.status==='0x1'?"success":"failed";
+      return `<tr>
+        <td>${parseInt(tx.blockNumber,16)}</td>
+        <td>${tx.hash.slice(0,10)}...</td>
+        <td>${fmtTS(tx.timestamp)}</td>
+        <td>${tx.from}</td><td>${tx.to||'-'}</td>
+        <td>${vals}</td>
+        <td class="status-${status}">${status}</td>
+      </tr>`;
+    }).join("") +
+    "</tbody></table>";
+}
 
-  if (!q.startsWith("0x") || q.length < 10) {
-    output.innerHTML = "❌ Invalid address or tx hash.";
-    return;
+async function handleSearch(){
+  const q=document.getElementById("query").value.trim().toLowerCase();
+  const fromT=new Date(document.getElementById("from").value).getTime()/1000;
+  const toT=new Date(document.getElementById("to").value).getTime()/1000;
+  if(!q.startsWith("0x")) return out.innerHTML="❌ Invalid input";
+  out.innerHTML="⏳ Searching...";
+  if(q.length===66){
+    const tx=await rpc("eth_getTransactionByHash",[q]);
+    const rec=await rpc("eth_getTransactionReceipt",[q]);
+    tx.receipt=rec;
+    tx.timestamp=(await rpc("eth_getBlockByNumber",[tx.blockNumber,true])).timestamp;
+    out.innerHTML=renderTable([tx]);
+  } else {
+    const latest=parseInt(await rpc("eth_blockNumber"),16);
+    let acc=[];
+    for(let i=latest; i>=0; i--){
+      const blk=await rpc("eth_getBlockByNumber",["0x"+i.toString(16),true]);
+      if(!blk) continue;
+      const ts=parseInt(blk.timestamp,16);
+      if(ts<fromT) break;
+      if(ts>toT) continue;
+      blk.transactions.forEach(tx=>{
+        if(tx.from===q || tx.to===q){
+          tx.receipt=null; acc.push(tx);
+        }
+      });
+      out.innerHTML=`🔄 scanning block ${i}, found ${acc.length} tx(s)...`;
+    }
+    // fetch receipts + timestamp
+    for(const tx of acc){
+      const blk=await rpc("eth_getBlockByNumber",[tx.blockNumber,true]);
+      tx.timestamp=blk.timestamp;
+      tx.receipt=await rpc("eth_getTransactionReceipt",[tx.hash]);
+    }
+    out.innerHTML=renderTable(acc);
   }
-
-  if (!fromTime || !toTime || fromTime >= toTime) {
-    output.innerHTML = "❌ Invalid date range.";
-    return;
-  }
-
-  output.innerHTML = "⏳ Searching...";
-
-  if (q.length === 66) {
-    const tx = await rpcCall("eth_getTransactionByHash", [q]);
-    const receipt = await rpcCall("eth_getTransactionReceipt", [q]);
-    output.innerHTML = `<h3>Transaction Details</h3><pre>${JSON.stringify({ ...tx, receipt }, null, 2)}</pre>`;
-    return;
-  }
-
-  const latest = parseInt(await rpcCall("eth_blockNumber"), 16);
-  const results = [];
-
-  for (let i = latest; i >= 0; i--) {
-    const hex = "0x" + i.toString(16);
-    const block = await rpcCall("eth_getBlockByNumber", [hex, true]);
-    if (!block || !block.timestamp) continue;
-
-    const ts = parseInt(block.timestamp, 16);
-    if (ts < fromTime) break;
-    if (ts > toTime) continue;
-
-    const txs = block.transactions.filter(tx =>
-      tx.from?.toLowerCase() === q.toLowerCase() ||
-      tx.to?.toLowerCase() === q.toLowerCase()
-    );
-    if (txs.length > 0) results.push(...txs);
-
-    output.innerHTML = `🔄 Scanning block ${i}... Found ${results.length} tx(s).`;
-  }
-
-  output.innerHTML = `<h3>Transactions for ${q}</h3><pre>${JSON.stringify(results, null, 2)}</pre>`;
 }
