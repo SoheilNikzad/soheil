@@ -12,6 +12,19 @@ function fmtTS(hex){
   return d.toLocaleString();
 }
 
+function short(addr){
+  return addr.slice(0,4) + '...' + addr.slice(-2);
+}
+
+function openPopup(content){
+  document.getElementById("popupContent").innerText = content;
+  document.getElementById("popup").style.display = "flex";
+}
+
+function closePopup(){
+  document.getElementById("popup").style.display = "none";
+}
+
 function renderTable(txs){
   if(!txs.length) return "<p>No transactions found.</p>";
   return `<table><thead><tr>
@@ -23,9 +36,10 @@ function renderTable(txs){
       const status=tx.receipt?.status==='0x1'?"success":"failed";
       return `<tr>
         <td>${parseInt(tx.blockNumber,16)}</td>
-        <td>${tx.hash.slice(0,10)}...</td>
+        <td onclick="openPopup('${tx.hash}')" style="cursor:pointer;" title="Click to view full">${short(tx.hash)}</td>
         <td>${fmtTS(tx.timestamp)}</td>
-        <td>${tx.from}</td><td>${tx.to||'-'}</td>
+        <td onclick="openPopup('${tx.from}')" style="cursor:pointer;" title="Click to view full">${short(tx.from)}</td>
+        <td onclick="openPopup('${tx.to||'-'}')" style="cursor:pointer;" title="Click to view full">${tx.to ? short(tx.to) : '-'}</td>
         <td>${vals}</td>
         <td class="status-${status}">${status}</td>
       </tr>`;
@@ -61,7 +75,6 @@ async function handleSearch(){
       });
       out.innerHTML=`🔄 scanning block ${i}, found ${acc.length} tx(s)...`;
     }
-    // fetch receipts + timestamp
     for(const tx of acc){
       const blk=await rpc("eth_getBlockByNumber",[tx.blockNumber,true]);
       tx.timestamp=blk.timestamp;
