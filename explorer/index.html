@@ -5,27 +5,103 @@
   <title>RAAKH Explorer</title>
   <script src="explorer.js" defer></script>
   <style>
-    body { font-family: sans-serif; background: #f2f2f2; padding: 20px; }
-    input, button { padding: 10px; margin: 5px; font-size: 16px; }
-    label { display: block; margin-top: 10px; }
-    .result { background: #fff; padding: 15px; border-radius: 8px; margin-top: 20px; box-shadow: 0 0 4px rgba(0,0,0,0.1); }
-    pre { background: #eee; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    :root {
+      --bg-color: #0d0f18;
+      --card-bg: #1a1d2e;
+      --accent: #f7931a;
+      --text-color: #ffffff;
+      --input-bg: #10121b;
+      --input-text: #f0f0f0;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Segoe UI", sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      background: var(--card-bg);
+      padding: 30px;
+      border-radius: 15px;
+      width: 400px;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.4);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: var(--text-color);
+    }
+
+    label {
+      margin: 10px 0 5px;
+      display: block;
+      color: #ccc;
+      font-size: 14px;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      background-color: var(--input-bg);
+      color: var(--input-text);
+      border-radius: 8px;
+      font-size: 15px;
+      margin-bottom: 15px;
+    }
+
+    button {
+      width: 100%;
+      background-color: var(--accent);
+      color: #fff;
+      font-weight: bold;
+      border: none;
+      padding: 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 10px;
+    }
+
+    .result {
+      background: #0e0f18;
+      padding: 15px;
+      margin-top: 20px;
+      border-radius: 10px;
+      color: #ccc;
+      font-size: 13px;
+      max-height: 300px;
+      overflow: auto;
+    }
+
+    pre {
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
   </style>
 </head>
 <body>
-  <h1>📡 RAAKH Testnet Explorer</h1>
+  <div class="container">
+    <h1>🔍 RAAKH Explorer</h1>
+    <label>Address or Tx Hash</label>
+    <input id="query" placeholder="0x..." />
 
-  <label>Address or Transaction Hash (0x...)</label>
-  <input id="query" placeholder="0x..." />
+    <label>From Date</label>
+    <input id="from" type="datetime-local" />
 
-  <label>From Date</label>
-  <input id="from" type="datetime-local" />
+    <label>To Date</label>
+    <input id="to" type="datetime-local" />
 
-  <label>To Date</label>
-  <input id="to" type="datetime-local" />
-
-  <button onclick="handleSearch()">Search</button>
-
-  <div id="output" class="result">Results will appear here...</div>
+    <button onclick="handleSearch()">Search</button>
+    <div id="output" class="result">Enter details to search...</div>
+  </div>
 </body>
 </html>
