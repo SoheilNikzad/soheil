@@ -28,29 +28,28 @@ function closePopup() {
   document.getElementById("popup").style.display = "none";
 }
 
-// 🔍 نوع تراکنش بر اساس کانترکت
 async function getTxType(tx) {
   const addr = tx.to;
   if (!addr) return "S.C";
+
   try {
-    // تست name و symbol برای توکن ERC20
     const nameData = await rpc("eth_call", [
-      { to: addr, data: "0x06fdde03" }, // name()
+      { to: addr, data: "0x06fdde03" },
       "latest",
     ]);
     const symbolData = await rpc("eth_call", [
-      { to: addr, data: "0x95d89b41" }, // symbol()
+      { to: addr, data: "0x95d89b41" },
       "latest",
     ]);
-    if (nameData && symbolData) {
+    if (nameData && symbolData && symbolData !== "0x") {
       const hex = symbolData.slice(2);
       const buf = hex.match(/.{1,2}/g).map((b) => String.fromCharCode(parseInt(b, 16)));
-      return buf.join("").replace(/\u0000/g, "") || "Token";
+      const symbol = buf.join("").replace(/\u0000/g, "");
+      if (symbol) return symbol;
     }
   } catch (e) {}
 
   try {
-    // تست استاندارد ERC721
     const support721 = await rpc("eth_call", [
       {
         to: addr,
@@ -61,7 +60,7 @@ async function getTxType(tx) {
     if (support721 === "0x1") return "NFT";
   } catch (e) {}
 
-  return "S.C";
+  return "KHAS";
 }
 
 function renderTable(txs) {
