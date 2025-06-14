@@ -33,7 +33,7 @@
     }
     h1 { text-align: center; margin-bottom: 30px; }
     label { margin: 12px 0 6px; display: block; color: var(--subtext); }
-    input, button, select {
+    input, button {
       width: 100%; padding: 14px; border: none; border-radius: 10px;
       box-sizing: border-box; font: 300 16px 'Comfortaa', sans-serif;
     }
@@ -49,7 +49,6 @@
     table {
       width: 100%; border-collapse: collapse;
       background: var(--input); border-radius: 10px;
-      overflow: hidden;
     }
     th, td {
       padding: 12px 8px; text-align: left;
@@ -60,21 +59,6 @@
     tr:hover { background: rgba(247,147,26,0.1); }
     .status-success { color: var(--green); }
     .status-failed { color: var(--red); }
-    .tooltip {
-      position: relative;
-    }
-    .tooltip:hover::after {
-      content: attr(data-full);
-      position: absolute;
-      bottom: -1.5em;
-      left: 0;
-      background: #333;
-      padding: 5px 10px;
-      color: white;
-      font-size: 12px;
-      border-radius: 6px;
-      white-space: nowrap;
-    }
     @media (max-width: 768px) {
       .container { padding: 25px; }
     }
@@ -84,8 +68,8 @@
   <div class="container">
     <h1>🔍 RAAKH Explorer</h1>
     <label>Address or Tx Hash</label><input id="query" placeholder="0x..." />
-    <label>From Date</label><input id="from" type="datetime-local" value="2025-06-14T14:24" />
-    <label>To Date</label><input id="to" type="datetime-local" value="2025-06-14T14:24" />
+    <label>From Date</label><input id="from" type="datetime-local" value="2025-06-14T14:29" />
+    <label>To Date</label><input id="to" type="datetime-local" value="2025-06-14T14:29" />
     <button onclick="handleSearch()">Search</button>
     <div id="output" class="result">Enter details to search...</div>
   </div>
