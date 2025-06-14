@@ -32,25 +32,28 @@ function shorten(str, len = 10) {
 
 function renderTable(txs) {
   if (!txs.length) return "<p>No transactions found.</p>";
-  return `<table><thead><tr>
-    <th>#</th><th>Block</th><th>Tx Hash</th><th>Time</th>
-    <th>From</th><th>To</th><th>Value (ETH)</th><th>Status</th><th>Token Info</th>
-  </tr></thead><tbody>` + txs.map((tx, i) => {
+  const headers = ['#', 'Block', 'Tx Hash', 'Time', 'From', 'To', 'Value (ETH)', 'Status', 'Token'];
+  let html = `<table><thead><tr>`;
+  headers.forEach(h => html += `<th onclick="sortBy('${h}')">${h}</th>`);
+  html += `</tr></thead><tbody>`;
+  html += txs.map((tx, i) => {
     const val = formatEth(tx.value || "0x0");
     const status = tx.receipt?.status === '0x1' ? "success" : "failed";
     const token = tx.tokenSymbol ? `${tx.tokenSymbol} (${tx.tokenDecimals})` : "-";
     return `<tr>
       <td>${i + 1}</td>
       <td>${parseInt(tx.blockNumber, 16)}</td>
-      <td class="tooltip" data-full="${tx.hash}">${shorten(tx.hash)}</td>
+      <td title="${tx.hash}">${shorten(tx.hash)}</td>
       <td>${fmtTS(tx.timestamp)}</td>
-      <td class="tooltip" data-full="${tx.from}">${shorten(tx.from)}</td>
-      <td class="tooltip" data-full="${tx.to || '-'}">${shorten(tx.to || '-')}</td>
+      <td title="${tx.from}">${shorten(tx.from)}</td>
+      <td title="${tx.to || '-'}">${shorten(tx.to || '-')}</td>
       <td>${val}</td>
-      <td class="status-${status}">${status === "success" ? "✅" : "❌"}</td>
+      <td class="status-${status}">${status}</td>
       <td>${token}</td>
     </tr>`;
-  }).join("") + "</tbody></table>";
+  }).join("");
+  html += "</tbody></table>";
+  return html;
 }
 
 async function getTokenInfo(addr) {
