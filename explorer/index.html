@@ -49,13 +49,17 @@
 
     input {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       border: none;
       background-color: var(--input-bg);
       color: var(--input-text);
-      border-radius: 8px;
+      border-radius: 10px;
       font-size: 15px;
       margin-bottom: 15px;
+    }
+
+    input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+      filter: invert(1);
     }
 
     button {
@@ -91,6 +95,7 @@
 <body>
   <div class="container">
     <h1>🔍 RAAKH Explorer</h1>
+
     <label>Address or Tx Hash</label>
     <input id="query" placeholder="0x..." />
 
@@ -103,5 +108,15 @@
     <button onclick="handleSearch()">Search</button>
     <div id="output" class="result">Enter details to search...</div>
   </div>
+
+  <script>
+    function setNowToInputs() {
+      const now = new Date();
+      const local = now.toISOString().slice(0, 16);
+      document.getElementById("from").value = local;
+      document.getElementById("to").value = local;
+    }
+    window.onload = setNowToInputs;
+  </script>
 </body>
 </html>
