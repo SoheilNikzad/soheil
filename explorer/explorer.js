@@ -108,7 +108,6 @@ async function displayBalances(address, tokenAddresses) {
     seen.add(tokenAddr);
 
     try {
-      // name()
       const symbolData = await rpc("eth_call", [
         {
           to: tokenAddr,
@@ -119,7 +118,6 @@ async function displayBalances(address, tokenAddresses) {
       const hex = symbolData.slice(2);
       const symbol = hex.match(/.{1,2}/g).map((b) => String.fromCharCode(parseInt(b, 16))).join("").replace(/\u0000/g, "");
 
-      // balanceOf()
       const balanceHex = await rpc("eth_call", [
         {
           to: tokenAddr,
@@ -140,12 +138,29 @@ async function displayBalances(address, tokenAddresses) {
 }
 
 async function handleSearch() {
-  const q = document.getElementById("query").value.trim().toLowerCase();
+  const qRaw = document.getElementById("query").value.trim();
+  const q = qRaw.toLowerCase();
   const fromT = new Date(document.getElementById("from").value).getTime() / 1000;
   const toT = new Date(document.getElementById("to").value).getTime() / 1000;
-  if (!q.startsWith("0x")) return (out.innerHTML = "❌ Invalid input");
   out.innerHTML = "⏳ Searching...";
   balanceSection.style.display = "none";
+
+  // 📦 حالت شماره بلاک
+  if (/^\d+$/.test(q)) {
+    const blk = await rpc("eth_getBlockByNumber", ["0x" + parseInt(q).toString(16), true]);
+    if (!blk || !blk.transactions) return out.innerHTML = "❌ Block not found.";
+    const txs = blk.transactions;
+    for (const tx of txs) {
+      tx.timestamp = blk.timestamp;
+      const rec = await rpc("eth_getTransactionReceipt", [tx.hash]);
+      tx.receipt = rec;
+      tx.type = await getTxType(tx);
+    }
+    out.innerHTML = renderTable(txs);
+    return;
+  }
+
+  if (!q.startsWith("0x")) return (out.innerHTML = "❌ Invalid input");
 
   if (q.length === 66) {
     const tx = await rpc("eth_getTransactionByHash", [q]);
@@ -155,7 +170,6 @@ async function handleSearch() {
     tx.type = await getTxType(tx);
     out.innerHTML = renderTable([tx]);
 
-    // نمایش موجودی برای آدرس‌های involved
     const tokens = rec.logs.map(l => l.address.toLowerCase());
     await displayBalances(tx.from.toLowerCase(), tokens);
   } else {
