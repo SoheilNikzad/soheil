@@ -119,12 +119,16 @@
   </div>
 
   <script>
-    function setNow(){
-      const now=new Date().toISOString().slice(0,16);
-      document.getElementById("from").value=now;
-      document.getElementById("to").value=now;
+    function setNow() {
+      const genesis = "2009-01-03T18:15";
+      const now = new Date();
+      const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000)
+        .toISOString()
+        .slice(0, 16);
+      document.getElementById("from").value = genesis;
+      document.getElementById("to").value = tomorrow;
     }
-    window.onload=setNow;
+    window.onload = setNow;
   </script>
 </body>
 </html>
