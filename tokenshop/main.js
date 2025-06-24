@@ -29,7 +29,7 @@ async function connectWallet() {
   }
 }
 
-const erc20ABI = [ {
+const erc20ABI = [{
     "inputs": [
       {
         "internalType": "string",
@@ -285,11 +285,11 @@ document.getElementById("createToken").addEventListener("click", async () => {
 
   const name = document.getElementById("name").value.trim();
   const symbol = document.getElementById("symbol").value.trim();
-  const decimals = Number(document.getElementById("decimals").value);
   const supply = document.getElementById("supply").value.trim();
+  const decimals = 18;
 
-  if (!name || !symbol || !supply) {
-    output.textContent = "⚠️ لطفاً تمام فیلدها را پر کنید.";
+  if (!name || !symbol || !supply || isNaN(Number(supply))) {
+    output.textContent = "⚠️ لطفاً تمام فیلدها را به‌درستی پر کنید (Supply باید عدد باشد).";
     return;
   }
 
