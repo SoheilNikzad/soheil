@@ -93,14 +93,12 @@ function renderTable(txs) {
 async function displayBalances(address, tokenAddresses) {
   balanceList.innerHTML = "";
 
-  // KHAS native balance
   const native = await rpc("eth_getBalance", [address, "latest"]);
   const val = (parseInt(native, 16) / 1e18).toFixed(6);
   const el = document.createElement("li");
   el.innerText = `KHAS: ${val}`;
   balanceList.appendChild(el);
 
-  // ERC20 tokens
   const seen = new Set();
   for (const tokenAddr of tokenAddresses) {
     if (!tokenAddr || tokenAddr === "0x0000000000000000000000000000000000000000") continue;
@@ -109,10 +107,7 @@ async function displayBalances(address, tokenAddresses) {
 
     try {
       const symbolData = await rpc("eth_call", [
-        {
-          to: tokenAddr,
-          data: "0x95d89b41",
-        },
+        { to: tokenAddr, data: "0x95d89b41" },
         "latest",
       ]);
       const hex = symbolData.slice(2);
@@ -145,7 +140,6 @@ async function handleSearch() {
   out.innerHTML = "⏳ Searching...";
   balanceSection.style.display = "none";
 
-  // 📦 حالت شماره بلاک
   if (/^\d+$/.test(q)) {
     const blk = await rpc("eth_getBlockByNumber", ["0x" + parseInt(q).toString(16), true]);
     if (!blk || !blk.transactions) return out.innerHTML = "❌ Block not found.";
@@ -170,38 +164,38 @@ async function handleSearch() {
     tx.type = await getTxType(tx);
     out.innerHTML = renderTable([tx]);
 
-    const tokens = rec.logs.map(l => l.address.toLowerCase());
-    await displayBalances(tx.from.toLowerCase(), tokens);
-  } else {
-    const latest = parseInt(await rpc("eth_blockNumber"), 16);
-    let acc = [];
-    let tokenSet = new Set();
-    for (let i = latest; i >= 0; i--) {
-      const blk = await rpc("eth_getBlockByNumber", ["0x" + i.toString(16), true]);
-      if (!blk) continue;
-      const ts = parseInt(blk.timestamp, 16);
-      if (ts < fromT) break;
-      if (ts > toT) continue;
-
-      blk.transactions.forEach((tx) => {
-        if (tx.from.toLowerCase() === q || tx.to?.toLowerCase() === q) {
-          tx.receipt = null;
-          acc.push(tx);
-        }
-      });
-      out.innerHTML = `🔄 scanning block ${i}, found ${acc.length} tx(s)...`;
-    }
-
-    for (const tx of acc) {
-      const blk = await rpc("eth_getBlockByNumber", [tx.blockNumber, true]);
-      tx.timestamp = blk.timestamp;
-      const rec = await rpc("eth_getTransactionReceipt", [tx.hash]);
-      tx.receipt = rec;
-      tx.type = await getTxType(tx);
-      rec.logs.forEach(l => tokenSet.add(l.address.toLowerCase()));
-    }
-
-    out.innerHTML = renderTable(acc);
-    await displayBalances(q, Array.from(tokenSet));
+    // ⚠️ حذف نمایش موجودی برای هش تراکنش
+    return;
   }
+
+  const latest = parseInt(await rpc("eth_blockNumber"), 16);
+  let acc = [];
+  let tokenSet = new Set();
+  for (let i = latest; i >= 0; i--) {
+    const blk = await rpc("eth_getBlockByNumber", ["0x" + i.toString(16), true]);
+    if (!blk) continue;
+    const ts = parseInt(blk.timestamp, 16);
+    if (ts < fromT) break;
+    if (ts > toT) continue;
+
+    blk.transactions.forEach((tx) => {
+      if (tx.from.toLowerCase() === q || tx.to?.toLowerCase() === q) {
+        tx.receipt = null;
+        acc.push(tx);
+      }
+    });
+    out.innerHTML = `🔄 scanning block ${i}, found ${acc.length} tx(s)...`;
+  }
+
+  for (const tx of acc) {
+    const blk = await rpc("eth_getBlockByNumber", [tx.blockNumber, true]);
+    tx.timestamp = blk.timestamp;
+    const rec = await rpc("eth_getTransactionReceipt", [tx.hash]);
+    tx.receipt = rec;
+    tx.type = await getTxType(tx);
+    rec.logs.forEach(l => tokenSet.add(l.address.toLowerCase()));
+  }
+
+  out.innerHTML = renderTable(acc);
+  await displayBalances(q, Array.from(tokenSet));
 }
