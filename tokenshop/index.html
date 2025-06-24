@@ -10,7 +10,7 @@
       --color-bg: #0d111c;
       --color-panel: #1c2230;
       --color-border: #2e374a;
-      --color-primary: #f7931a; /* Bitcoin Orange */
+      --color-primary: #f7931a;
       --color-muted: #94a3b8;
       --color-text: #ffffffcc;
     }
@@ -106,14 +106,21 @@
       font-size: 0.9rem;
       white-space: pre-wrap;
     }
+
+    .info {
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+      color: var(--color-muted);
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Token Shop</h1>
 
-    <button id="connectBtn"> Connect Wallet</button>
+    <button id="connectBtn">Connect Wallet</button>
     <p id="status">Waiting for connection...</p>
+    <p class="info" id="networkInfo"></p>
     <input type="text" id="yourWallet" readonly />
 
     <label for="name">Token Name:</label>
@@ -130,9 +137,6 @@
       <span>Drag and drop an image or GIF</span>
       <button disabled>Select a file</button>
     </div>
-    
-    <label for="decimals">Select EVM Network:</label>
-    <input type="text" id="decimals" value="Polygon" readonly />
 
     <label for="decimals">Decimals (fixed at 18):</label>
     <input type="number" id="decimals" value="18" readonly />
