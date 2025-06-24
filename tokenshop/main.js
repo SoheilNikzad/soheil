@@ -9,22 +9,6 @@ const networkInfo = document.getElementById('networkInfo');
 
 connectBtn.addEventListener('click', connectWallet);
 
-function getNetworkName(chainId) {
-  const knownNetworks = {
-    1: 'Ethereum Mainnet',
-    5: 'Goerli Testnet',
-    10: 'Optimism',
-    56: 'BNB Chain',
-    100: 'Gnosis',
-    137: 'Polygon',
-    80001: 'Polygon Mumbai',
-    42161: 'Arbitrum One',
-    43114: 'Avalanche C-Chain',
-    1337: 'RAAKH Network' 
-  };
-  return knownNetworks[chainId] || 'Custom Network';
-}
-
 async function connectWallet() {
   if (typeof window.ethereum === 'undefined') {
     statusDiv.innerText = '❌ MetaMask نصب نشده است.';
@@ -40,7 +24,7 @@ async function connectWallet() {
 
     yourWalletInput.value = address;
     statusDiv.innerText = `✅ Wallet connected: ${address.slice(0, 6)}...${address.slice(-4)}`;
-    networkInfo.innerText = `🌐 Network: ${getNetworkName(network.chainId)} (Chain ID: ${network.chainId})`;
+    networkInfo.innerText = `🌐 Network: ${network.name || 'Unknown'} (Chain ID: ${network.chainId})`;
 
     connected = true;
   } catch (err) {
