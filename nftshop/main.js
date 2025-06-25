@@ -1,4 +1,3 @@
-
 let provider;
 let signer;
 let connected = false;
@@ -31,7 +30,7 @@ async function connectWallet() {
 }
 
 // IMPORTANT: REPLACE THIS BYTECODE with the actual bytecode from your compiled ERC721 contract
-const erc721Bytecode = "0x0000000000000000000000000000000000000000000000000000000000000000";
+const erc721Bytecode = "0x0000000000000000000000000000000000000000000000000000000000000000"; 
 
 const erc721ABI = [
   {
@@ -216,10 +215,10 @@ document.getElementById("createToken").addEventListener("click", async () => {
     const contract = await factory.deploy(collectionName, collectionSymbol);
 
     output.textContent = `⏳ Waiting for transaction confirmation...\nTX Hash: ${contract.deploymentTransaction().hash}`;
-
+    
     await contract.waitForDeployment(); // Corrected: Removed .() from waitForDeployment
     const contractAddress = await contract.getAddress(); // Corrected: Removed .() from getAddress
-
+    
     output.textContent = `✅ NFT Collection deployed successfully!\nContract Address: ${contractAddress}\nTX Hash: ${contract.deploymentTransaction().hash}`;
   } catch (err) {
     output.textContent = `❌ Error: ${err.message || err}`;
