@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>P2P DEX on RAAKH</title>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.6.2/dist/ethers.umd.min.js"></script>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    input, button { margin: 5px; padding: 5px; }
+    .order { border: 1px solid #ccc; padding: 10px; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <h2>P2P DEX (RAAKH)</h2>
+  <button onclick="connectWallet()">🔌 Connect Wallet</button>
+  <div id="walletAddress"></div>
+
+  <h3>Create Order</h3>
+  <input id="tokenGive" placeholder="TokenGive address" size="42">
+  <input id="tokenGet" placeholder="TokenGet address" size="42"><br>
+  <input id="amountGive" placeholder="Amount Give">
+  <input id="amountGet" placeholder="Amount Get">
+  <button onclick="createOrder()">📤 Create Order</button>
+
+  <h3>Active Orders</h3>
+  <div id="orders"></div>
+
+  <script>
+    const CONTRACT_ADDRESS = "0x55417ba2ba2543ffd585190be6db3f272520066d";
+    const ABI_URL = "p2pdex_abi.json";
+    let provider, signer, contract;
+
+    async function connectWallet() {
+      if (window.ethereum) {
+        provider = new ethers.BrowserProvider(window.ethereum);
+        await provider.send("eth_requestAccounts", []);
+        signer = await provider.getSigner();
+        document.getElementById("walletAddress").innerText = "Connected: " + (await signer.getAddress());
+
+        const abi = await fetch(ABI_URL).then(r => r.json());
+        contract = new ethers.Contract(CONTRACT_ADDRESS, abi, signer);
+
+        loadOrders();
+      } else {
+        alert("Please install MetaMask.");
+      }
+    }
+
+    async function createOrder() {
+      const tokenGive = document.getElementById("tokenGive").value;
+      const tokenGet = document.getElementById("tokenGet").value;
+      const amountGive = ethers.parseUnits(document.getElementById("amountGive").value, 18);
+      const amountGet = ethers.parseUnits(document.getElementById("amountGet").value, 18);
+
+      const tokenContract = new ethers.Contract(tokenGive, ["function approve(address spender, uint amount) public returns (bool)", "function allowance(address owner, address spender) public view returns (uint256)", "function decimals() public view returns (uint8)"] , signer);
+
+      const allowance = await tokenContract.allowance(await signer.getAddress(), CONTRACT_ADDRESS);
+      if (allowance < amountGive) {
+        const tx = await tokenContract.approve(CONTRACT_ADDRESS, amountGive);
+        await tx.wait();
+      }
+
+      const tx2 = await contract.createOrder(tokenGive, tokenGet, amountGive, amountGet);
+      await tx2.wait();
+      alert("✅ Order Created!");
+      loadOrders();
+    }
+
+    async function loadOrders() {
+      const count = await contract.nextOrderId();
+      const container = document.getElementById("orders");
+      container.innerHTML = "";
+
+      for (let i = 0; i < count; i++) {
+        const order = await contract.orders(i);
+        if (order.isActive) {
+          const div = document.createElement("div");
+          div.className = "order";
+          div.innerHTML = `
+            <b>Order #${i}</b><br>
+            Creator: ${order.creator}<br>
+            Give: ${order.amountGive} of ${order.tokenGive}<br>
+            Get: ${order.amountGet} of ${order.tokenGet}<br>
+            <button onclick="acceptOrder(${i})">✅ Accept</button>
+            <button onclick="cancelOrder(${i})">❌ Cancel</button>
+          `;
+          container.appendChild(div);
+        }
+      }
+    }
+
+    async function acceptOrder(id) {
+      const tx = await contract.acceptOrder(id);
+      await tx.wait();
+      alert("✅ Order Accepted!");
+      loadOrders();
+    }
+
+    async function cancelOrder(id) {
+      const tx = await contract.cancelOrder(id);
+      await tx.wait();
+      alert("❌ Order Cancelled!");
+      loadOrders();
+    }
+  </script>
+</body>
+</html>
