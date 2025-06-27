@@ -4,28 +4,89 @@
   <meta charset="UTF-8">
   <title>P2P DEX on RAAKH</title>
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.6.2/dist/ethers.umd.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300&display=swap" rel="stylesheet">
   <style>
-    body { font-family: sans-serif; padding: 20px; }
-    input, button { margin: 5px; padding: 5px; }
-    .order { border: 1px solid #ccc; padding: 10px; margin-top: 10px; }
-    #status { margin: 10px 0; font-weight: bold; color: #444; }
+    body {
+      font-family: 'Comfortaa', sans-serif;
+      background-color: #0d1117;
+      color: #c9d1d9;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 40px;
+    }
+    .container {
+      background: #161b22;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      width: 100%;
+      max-width: 600px;
+    }
+    h2, h3 {
+      text-align: center;
+      color: #fff;
+      font-weight: 300;
+    }
+    input, button, textarea {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-family: 'Comfortaa', sans-serif;
+      box-sizing: border-box;
+    }
+    input, textarea {
+      background: #0d1117;
+      color: #c9d1d9;
+      border: 1px solid #30363d;
+    }
+    button {
+      background-color: #f7931a;
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s ease-in-out;
+    }
+    button:hover {
+      background-color: #e67e22;
+    }
+    .order {
+      border: 1px solid #30363d;
+      padding: 15px;
+      margin-top: 15px;
+      border-radius: 10px;
+      background-color: #0d1117;
+    }
+    #status {
+      margin-top: 15px;
+      font-weight: bold;
+      color: #f7931a;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
-  <h2>P2P DEX (RAAKH)</h2>
-  <button onclick="connectWallet()">🔌 Connect Wallet</button>
-  <div id="walletAddress"></div>
+  <div class="container">
+    <h2>P2P DEX (RAAKH)</h2>
+    <button onclick="connectWallet()">🔌 Connect Wallet</button>
+    <div id="walletAddress"></div>
 
-  <h3>Create Order</h3>
-  <input id="tokenGive" placeholder="TokenGive address" size="42">
-  <input id="tokenGet" placeholder="TokenGet address" size="42"><br>
-  <input id="amountGive" placeholder="Amount Give">
-  <input id="amountGet" placeholder="Amount Get">
-  <button onclick="createOrder()">📤 Create Order</button>
+    <h3>Create Order</h3>
+    <input id="tokenGive" placeholder="TokenGive address">
+    <input id="amountGive" placeholder="Amount Give">
+    <input id="tokenGet" placeholder="TokenGet address">
+    <input id="amountGet" placeholder="Amount Get">
+    <button onclick="createOrder()">📤 Create Order</button>
 
-  <h3>Active Orders</h3>
-  <div id="status"></div>
-  <div id="orders"></div>
+    <div id="status"></div>
+
+    <h3>Active Orders</h3>
+    <div id="orders"></div>
+  </div>
 
   <script>
     const CONTRACT_ADDRESS = "0x55417ba2ba2543ffd585190be6db3f272520066d";
@@ -60,7 +121,7 @@
         const amountGive = ethers.parseUnits(document.getElementById("amountGive").value, 18);
         const amountGet = ethers.parseUnits(document.getElementById("amountGet").value, 18);
 
-        const tokenContract = new ethers.Contract(tokenGive, ["function approve(address spender, uint amount) public returns (bool)", "function allowance(address owner, address spender) public view returns (uint256)", "function decimals() public view returns (uint8)"] , signer);
+        const tokenContract = new ethers.Contract(tokenGive, ["function approve(address spender, uint amount) public returns (bool)", "function allowance(address owner, address spender) public view returns (uint256)", "function decimals() public view returns (uint8)"], signer);
 
         const allowance = await tokenContract.allowance(await signer.getAddress(), CONTRACT_ADDRESS);
         if (allowance < amountGive) {
