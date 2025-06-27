@@ -8,6 +8,7 @@
     body { font-family: sans-serif; padding: 20px; }
     input, button { margin: 5px; padding: 5px; }
     .order { border: 1px solid #ccc; padding: 10px; margin-top: 10px; }
+    #status { margin: 10px 0; font-weight: bold; color: #444; }
   </style>
 </head>
 <body>
@@ -23,12 +24,17 @@
   <button onclick="createOrder()">📤 Create Order</button>
 
   <h3>Active Orders</h3>
+  <div id="status"></div>
   <div id="orders"></div>
 
   <script>
     const CONTRACT_ADDRESS = "0x55417ba2ba2543ffd585190be6db3f272520066d";
     const ABI_URL = "p2pdex_abi.json";
     let provider, signer, contract;
+
+    function setStatus(message) {
+      document.getElementById("status").innerText = message;
+    }
 
     async function connectWallet() {
       if (window.ethereum) {
@@ -47,23 +53,29 @@
     }
 
     async function createOrder() {
-      const tokenGive = document.getElementById("tokenGive").value;
-      const tokenGet = document.getElementById("tokenGet").value;
-      const amountGive = ethers.parseUnits(document.getElementById("amountGive").value, 18);
-      const amountGet = ethers.parseUnits(document.getElementById("amountGet").value, 18);
+      try {
+        setStatus("🔄 Approving token...");
+        const tokenGive = document.getElementById("tokenGive").value;
+        const tokenGet = document.getElementById("tokenGet").value;
+        const amountGive = ethers.parseUnits(document.getElementById("amountGive").value, 18);
+        const amountGet = ethers.parseUnits(document.getElementById("amountGet").value, 18);
 
-      const tokenContract = new ethers.Contract(tokenGive, ["function approve(address spender, uint amount) public returns (bool)", "function allowance(address owner, address spender) public view returns (uint256)", "function decimals() public view returns (uint8)"] , signer);
+        const tokenContract = new ethers.Contract(tokenGive, ["function approve(address spender, uint amount) public returns (bool)", "function allowance(address owner, address spender) public view returns (uint256)", "function decimals() public view returns (uint8)"] , signer);
 
-      const allowance = await tokenContract.allowance(await signer.getAddress(), CONTRACT_ADDRESS);
-      if (allowance < amountGive) {
-        const tx = await tokenContract.approve(CONTRACT_ADDRESS, amountGive);
-        await tx.wait();
+        const allowance = await tokenContract.allowance(await signer.getAddress(), CONTRACT_ADDRESS);
+        if (allowance < amountGive) {
+          const tx = await tokenContract.approve(CONTRACT_ADDRESS, amountGive);
+          await tx.wait();
+        }
+
+        setStatus("🚀 Creating order...");
+        const tx2 = await contract.createOrder(tokenGive, tokenGet, amountGive, amountGet);
+        await tx2.wait();
+        setStatus("✅ Order Created!");
+        loadOrders();
+      } catch (err) {
+        setStatus("❌ Error while creating order");
       }
-
-      const tx2 = await contract.createOrder(tokenGive, tokenGet, amountGive, amountGet);
-      await tx2.wait();
-      alert("✅ Order Created!");
-      loadOrders();
     }
 
     async function loadOrders() {
@@ -90,37 +102,44 @@
     }
 
     async function acceptOrder(id) {
-      const order = await contract.orders(id);
+      try {
+        const order = await contract.orders(id);
 
-      const tokenContract = new ethers.Contract(
-        order.tokenGet,
-        [
-          "function approve(address spender, uint amount) public returns (bool)",
-          "function allowance(address owner, address spender) public view returns (uint256)"
-        ],
-        signer
-      );
+        const tokenContract = new ethers.Contract(
+          order.tokenGet,
+          [
+            "function approve(address spender, uint amount) public returns (bool)",
+            "function allowance(address owner, address spender) public view returns (uint256)"
+          ],
+          signer
+        );
 
-      const allowance = await tokenContract.allowance(await signer.getAddress(), CONTRACT_ADDRESS);
-      if (allowance < order.amountGet) {
-        const txApprove = await tokenContract.approve(CONTRACT_ADDRESS, order.amountGet);
-        await txApprove.wait();
+        const allowance = await tokenContract.allowance(await signer.getAddress(), CONTRACT_ADDRESS);
+        if (allowance < order.amountGet) {
+          setStatus("🔐 Approving token to contract...");
+          const txApprove = await tokenContract.approve(CONTRACT_ADDRESS, order.amountGet);
+          await txApprove.wait();
+        }
+
+        setStatus("🚀 Sending transaction to accept order...");
+        const tx = await contract.acceptOrder(id);
+        await tx.wait();
+        setStatus("✅ Order Accepted!");
+        loadOrders();
+      } catch (err) {
+        setStatus("❌ Failed to accept order");
       }
-
-      const tx = await contract.acceptOrder(id);
-      await tx.wait();
-      alert("✅ Order Accepted!");
-      loadOrders();
     }
 
     async function cancelOrder(id) {
       try {
+        setStatus("🕐 Sending cancel transaction...");
         const tx = await contract.cancelOrder(id);
         await tx.wait();
-        alert("❌ Order Cancelled!");
+        setStatus("❌ Order Cancelled!");
         loadOrders();
       } catch (e) {
-        alert("❌ Failed to cancel order. Maybe you're not the creator.");
+        setStatus("❌ Failed to cancel order. Maybe you're not the creator.");
       }
     }
   </script>
