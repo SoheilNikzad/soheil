@@ -90,6 +90,23 @@
     }
 
     async function acceptOrder(id) {
+      const order = await contract.orders(id);
+
+      const tokenContract = new ethers.Contract(
+        order.tokenGet,
+        [
+          "function approve(address spender, uint amount) public returns (bool)",
+          "function allowance(address owner, address spender) public view returns (uint256)"
+        ],
+        signer
+      );
+
+      const allowance = await tokenContract.allowance(await signer.getAddress(), CONTRACT_ADDRESS);
+      if (allowance < order.amountGet) {
+        const txApprove = await tokenContract.approve(CONTRACT_ADDRESS, order.amountGet);
+        await txApprove.wait();
+      }
+
       const tx = await contract.acceptOrder(id);
       await tx.wait();
       alert("✅ Order Accepted!");
@@ -97,10 +114,14 @@
     }
 
     async function cancelOrder(id) {
-      const tx = await contract.cancelOrder(id);
-      await tx.wait();
-      alert("❌ Order Cancelled!");
-      loadOrders();
+      try {
+        const tx = await contract.cancelOrder(id);
+        await tx.wait();
+        alert("❌ Order Cancelled!");
+        loadOrders();
+      } catch (e) {
+        alert("❌ Failed to cancel order. Maybe you're not the creator.");
+      }
     }
   </script>
 </body>
