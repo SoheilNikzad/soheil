@@ -38,6 +38,10 @@
       font-size: 16px;
       font-family: 'Comfortaa', sans-serif;
       box-sizing: border-box;
+      transition: all 0.3s ease;
+    }
+    input:focus, button:hover {
+      transform: scale(1.02);
     }
     input, textarea {
       background: #0d1117;
@@ -49,7 +53,6 @@
       color: white;
       font-weight: 700;
       cursor: pointer;
-      transition: background 0.2s ease-in-out;
     }
     button:hover {
       background-color: #e67e22;
@@ -60,6 +63,10 @@
       margin-top: 15px;
       border-radius: 10px;
       background-color: #0d1117;
+      animation: fadeIn 0.6s ease;
+    }
+    .your-order {
+      border: 2px solid #f7931a;
     }
     #status {
       margin-top: 15px;
@@ -73,6 +80,17 @@
       color: #bbb;
       word-break: break-all;
       text-align: center;
+    }
+    .stats {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+      font-size: 14px;
+      color: #ccc;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
@@ -90,6 +108,7 @@
     <button onclick="createOrder()">📤 Create Order</button>
 
     <div id="status"></div>
+    <div class="stats" id="stats"></div>
 
     <h3>Active Orders</h3>
     <div id="orders"></div>
@@ -98,7 +117,7 @@
   <script>
     const CONTRACT_ADDRESS = "0x55417ba2ba2543ffd585190be6db3f272520066d";
     const ABI_URL = "p2pdex_abi.json";
-    let provider, signer, contract;
+    let provider, signer, contract, userAddress;
 
     function setStatus(message) {
       document.getElementById("status").innerText = message;
@@ -109,7 +128,8 @@
         provider = new ethers.BrowserProvider(window.ethereum);
         await provider.send("eth_requestAccounts", []);
         signer = await provider.getSigner();
-        document.getElementById("walletAddress").innerText = "Connected: " + (await signer.getAddress());
+        userAddress = (await signer.getAddress()).toLowerCase();
+        document.getElementById("walletAddress").innerText = "Connected: " + userAddress;
 
         const abi = await fetch(ABI_URL).then(r => r.json());
         contract = new ethers.Contract(CONTRACT_ADDRESS, abi, signer);
@@ -148,6 +168,7 @@
 
     async function loadOrders() {
       const count = await contract.nextOrderId();
+      let yourOrders = 0;
       const container = document.getElementById("orders");
       container.innerHTML = "";
 
@@ -156,12 +177,19 @@
         if (order.isActive) {
           const div = document.createElement("div");
           div.className = "order";
+
           const amountGiveFormatted = ethers.formatUnits(order.amountGive, 18);
           const amountGetFormatted = ethers.formatUnits(order.amountGet, 18);
+          const isOwner = userAddress === order.creator.toLowerCase();
+
+          if (isOwner) {
+            div.classList.add("your-order");
+            yourOrders++;
+          }
 
           div.innerHTML = `
             <b>Order #${i}</b><br>
-            Creator: ${order.creator}<br>
+            Creator: ${order.creator} ${isOwner ? "<span style='color:#f7931a'>(You)</span>" : ""}<br>
             Give: ${amountGiveFormatted} of ${order.tokenGive}<br>
             Get: ${amountGetFormatted} of ${order.tokenGet}<br>
             <button onclick="acceptOrder(${i})">✅ Accept</button>
@@ -170,6 +198,8 @@
           container.appendChild(div);
         }
       }
+
+      document.getElementById("stats").innerHTML = `🧾 Total Orders: ${count} | 👤 Your Orders: ${yourOrders}`;
     }
 
     async function acceptOrder(id) {
