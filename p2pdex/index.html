@@ -156,11 +156,14 @@
         if (order.isActive) {
           const div = document.createElement("div");
           div.className = "order";
+          const amountGiveFormatted = ethers.formatUnits(order.amountGive, 18);
+          const amountGetFormatted = ethers.formatUnits(order.amountGet, 18);
+
           div.innerHTML = `
             <b>Order #${i}</b><br>
             Creator: ${order.creator}<br>
-            Give: ${order.amountGive} of ${order.tokenGive}<br>
-            Get: ${order.amountGet} of ${order.tokenGet}<br>
+            Give: ${amountGiveFormatted} of ${order.tokenGive}<br>
+            Get: ${amountGetFormatted} of ${order.tokenGet}<br>
             <button onclick="acceptOrder(${i})">✅ Accept</button>
             <button onclick="cancelOrder(${i})">❌ Cancel</button>
           `;
