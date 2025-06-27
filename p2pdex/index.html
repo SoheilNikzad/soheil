@@ -64,6 +64,7 @@
       border-radius: 10px;
       background-color: #0d1117;
       animation: fadeIn 0.6s ease;
+      position: relative;
     }
     .your-order {
       border: 2px solid #f7931a;
@@ -78,7 +79,7 @@
       margin-top: 10px;
       font-size: 14px;
       color: #bbb;
-      word-break: break-all;
+      word-break: break-word;
       text-align: center;
     }
     .stats {
@@ -91,11 +92,29 @@
       flex-wrap: wrap;
       gap: 10px;
     }
-    .refresh-link {
-      text-decoration: underline;
-      cursor: pointer;
-      color: #f7931a;
-      font-size: 14px;
+    .order button {
+      margin-top: 8px;
+      width: 48%;
+      transition: background-color 0.2s ease, transform 0.2s ease;
+    }
+    .order button:hover {
+      transform: scale(1.03);
+    }
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background: #1d2228;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      z-index: 999;
+    }
+    .toast.show {
+      opacity: 1;
     }
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
@@ -117,16 +136,24 @@
     <button onclick="createOrder()">📤 Create Order</button>
 
     <div id="status"></div>
-    <div class="stats" id="stats" style="display: none;"></div>
+    <div class="stats" id="stats"></div>
 
     <h3>Active Orders</h3>
     <div id="orders"></div>
   </div>
+  <div id="toast" class="toast"></div>
 
   <script>
     const CONTRACT_ADDRESS = "0x55417ba2ba2543ffd585190be6db3f272520066d";
     const ABI_URL = "p2pdex_abi.json";
     let provider, signer, contract, userAddress;
+
+    function showToast(msg) {
+      const toast = document.getElementById("toast");
+      toast.innerText = msg;
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 3000);
+    }
 
     function setStatus(message) {
       document.getElementById("status").innerText = message;
@@ -143,7 +170,6 @@
         const abi = await fetch(ABI_URL).then(r => r.json());
         contract = new ethers.Contract(CONTRACT_ADDRESS, abi, signer);
 
-        document.getElementById("stats").style.display = "flex";
         loadOrders();
       } else {
         alert("Please install MetaMask.");
@@ -158,7 +184,10 @@
         const amountGive = ethers.parseUnits(document.getElementById("amountGive").value, 18);
         const amountGet = ethers.parseUnits(document.getElementById("amountGet").value, 18);
 
-        const tokenContract = new ethers.Contract(tokenGive, ["function approve(address spender, uint amount) public returns (bool)", "function allowance(address owner, address spender) public view returns (uint256)", "function decimals() public view returns (uint8)"], signer);
+        const tokenContract = new ethers.Contract(tokenGive, [
+          "function approve(address spender, uint amount) public returns (bool)",
+          "function allowance(address owner, address spender) public view returns (uint256)"
+        ], signer);
 
         const allowance = await tokenContract.allowance(await signer.getAddress(), CONTRACT_ADDRESS);
         if (allowance < amountGive) {
@@ -170,9 +199,11 @@
         const tx2 = await contract.createOrder(tokenGive, tokenGet, amountGive, amountGet);
         await tx2.wait();
         setStatus("✅ Order Created!");
+        showToast("✅ Order successfully created!");
         loadOrders();
       } catch (err) {
         setStatus("❌ Error while creating order");
+        showToast("❌ Failed to create order");
       }
     }
 
@@ -182,6 +213,10 @@
       let activeOrders = 0;
       const container = document.getElementById("orders");
       container.innerHTML = "";
+
+      if (count == 0) {
+        container.innerHTML = "<p style='text-align:center;color:#666;'>هیچ سفارشی ثبت نشده هنوز 🙃</p>";
+      }
 
       for (let i = 0; i < count; i++) {
         const order = await contract.orders(i);
@@ -211,10 +246,7 @@
         }
       }
 
-      document.getElementById("stats").innerHTML = `
-        🧾 Total Orders: ${count} | 🟢 Active Orders: ${activeOrders} | 👤 Your Orders: ${yourOrders} |
-        <span class="refresh-link" onclick="loadOrders()">🔄 Refresh</span>
-      `;
+      document.getElementById("stats").innerHTML = `🧾 Total Orders: ${count} | 🟢 Active Orders: ${activeOrders} | 👤 Your Orders: ${yourOrders} | <a href="#" onclick="loadOrders()" style="color:#f7931a;text-decoration:underline;">🔄 Refresh</a>`;
     }
 
     async function acceptOrder(id) {
@@ -241,9 +273,11 @@
         const tx = await contract.acceptOrder(id);
         await tx.wait();
         setStatus("✅ Order Accepted!");
+        showToast("✅ Order accepted!");
         loadOrders();
       } catch (err) {
         setStatus("❌ Failed to accept order");
+        showToast("❌ Failed to accept order");
       }
     }
 
@@ -253,9 +287,11 @@
         const tx = await contract.cancelOrder(id);
         await tx.wait();
         setStatus("❌ Order Cancelled!");
+        showToast("❌ Order cancelled!");
         loadOrders();
       } catch (e) {
         setStatus("❌ Failed to cancel order. Maybe you're not the creator.");
+        showToast("❌ Cancel failed.");
       }
     }
   </script>
