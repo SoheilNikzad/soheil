@@ -81,14 +81,31 @@
       word-break: break-all;
       text-align: center;
     }
-    .stats {
+    .stats-container {
       display: flex;
       justify-content: space-between;
+      align-items: center;
       margin-top: 20px;
       font-size: 14px;
       color: #ccc;
       flex-wrap: wrap;
       gap: 10px;
+    }
+    .stats-text {
+      flex-grow: 1;
+    }
+    .refresh-btn {
+      background-color: #f7931a;
+      color: white;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-family: 'Comfortaa', sans-serif;
+      border: none;
+      cursor: pointer;
+    }
+    .refresh-btn:hover {
+      background-color: #e67e22;
     }
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
@@ -110,7 +127,10 @@
     <button onclick="createOrder()">📤 Create Order</button>
 
     <div id="status"></div>
-    <div class="stats" id="stats"></div>
+    <div class="stats-container" id="statsContainer" style="display:none">
+      <div class="stats-text" id="stats"></div>
+      <button class="refresh-btn" onclick="loadOrders()">🔄 Refresh</button>
+    </div>
 
     <h3>Active Orders</h3>
     <div id="orders"></div>
@@ -136,6 +156,7 @@
         const abi = await fetch(ABI_URL).then(r => r.json());
         contract = new ethers.Contract(CONTRACT_ADDRESS, abi, signer);
 
+        document.getElementById("statsContainer").style.display = "flex";
         loadOrders();
       } else {
         alert("Please install MetaMask.");
