@@ -38,8 +38,7 @@ connectWalletBtn.addEventListener('click', async () => {
 async function initXmtp(signer) {
     try {
         statusDiv.textContent += ' در حال راه‌اندازی XMTP Client...';
-        // 🔧 اصلاح این خط
-        xmtpClient = await window.Client.create(signer, { env: 'dev' });
+        xmtpClient = await window.xmtp.Client.create(signer, { env: 'dev' });
 
         await xmtpClient.publishUserContact();
 
@@ -142,7 +141,7 @@ sendFileBtn.addEventListener('click', async () => {
     fileStatusDiv.textContent = `در حال آماده‌سازی فایل "${file.name}"...`;
 
     try {
-        await activeConversation.send(file, { contentType: window.Client.ContentTypes.Attachment });
+        await activeConversation.send(file, { contentType: window.xmtp.ContentTypes.Attachment });
         fileStatusDiv.textContent = `فایل "${file.name}" با موفقیت ارسال شد.`;
         fileInput.value = '';
     } catch (error) {
@@ -157,7 +156,7 @@ function displayMessage(message) {
     messageDiv.classList.add(message.senderAddress === xmtpClient.address ? 'self' : 'other');
 
     let contentToDisplay = message.content;
-    const ContentTypes = window.Client.ContentTypes;
+    const ContentTypes = window.xmtp.ContentTypes;
 
     if (message.contentType?.id === ContentTypes.Attachment.id) {
         contentToDisplay = `[پیوست: ${message.content.filename || 'فایل'}]`;
