@@ -1,68 +1,44 @@
 let signer;
-let derivedPrivateKey; // Uint8Array
-
-async function sha256(msgUint8) {
-  const hash = await crypto.subtle.digest('SHA-256', msgUint8);
-  return new Uint8Array(hash);
-}
-
-async function hkdf(inputKeyMaterial, length = 32) {
-  const salt = new Uint8Array(32); // zero salt
-  const key = await crypto.subtle.importKey(
-    "raw", inputKeyMaterial, "HKDF", false, ["deriveBits", "deriveKey"]
-  );
-  const derivedBits = await crypto.subtle.deriveBits(
-    {
-      name: "HKDF",
-      hash: "SHA-256",
-      salt,
-      info: new TextEncoder().encode("RAAKH Messenger Encryption")
-    },
-    key,
-    length * 8
-  );
-  return new Uint8Array(derivedBits);
-}
+let myKeyPair;
 
 document.getElementById("connectBtn").onclick = async () => {
-  if (!window.ethereum) return alert("Install MetaMask");
+  if (!window.ethereum) return alert("Install MetaMask first");
 
   const provider = new ethers.providers.Web3Provider(window.ethereum);
   await provider.send("eth_requestAccounts", []);
   signer = provider.getSigner();
+  const address = await signer.getAddress();
 
-  const signature = await signer.signMessage("Generate encryption keys for RAAKH Messenger");
-  const sigBytes = ethers.utils.arrayify(signature);
-  const digest = await sha256(sigBytes);
-  derivedPrivateKey = await hkdf(digest);
+  const sig = await signer.signMessage("RAAKH_ENCRYPTION_KEY");
+  const hash = await crypto.subtle.digest("SHA-256", ethers.utils.arrayify(sig));
+  const keyMaterial = await crypto.subtle.importKey("raw", hash, { name: "HKDF" }, false, ["deriveKey"]);
 
-  document.getElementById("status").innerText = "✅ Wallet connected & key derived";
-  document.getElementById("chatBox").classList.remove("hidden");
+  myKeyPair = await crypto.subtle.deriveKey({
+    name: "HKDF",
+    hash: "SHA-256",
+    salt: new Uint8Array(32),
+    info: new TextEncoder().encode("msg-key")
+  }, keyMaterial, { name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]);
 
-  const publicKeyHex = Array.from(derivedPrivateKey).map(b => b.toString(16).padStart(2, '0')).join('');
-  console.log("Public Key (hex):", publicKeyHex);
+  document.getElementById("status").textContent = `✅ Wallet connected: ${address}`;
 };
 
 document.getElementById("sendBtn").onclick = async () => {
-  const msg = document.getElementById("message").value;
-  const receiverHex = document.getElementById("receiverPub").value;
-
-  if (!msg || !receiverHex) {
-    alert("Please enter message and receiver's public key");
-    return;
-  }
-
-  // simulate E2E encryption using AES-GCM + shared secret
-  const keyBytes = Uint8Array.from(receiverHex.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
-  const sharedKey = await crypto.subtle.importKey("raw", keyBytes, "AES-GCM", false, ["encrypt"]);
+  const receiver = document.getElementById("recipient").value.trim();
+  const message = document.getElementById("message").value.trim();
+  if (!receiver || !message || !signer || !myKeyPair) return alert("Fill all fields + connect wallet");
 
   const iv = crypto.getRandomValues(new Uint8Array(12));
-  const encoded = new TextEncoder().encode(msg);
-  const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, sharedKey, encoded);
+  const encoded = new TextEncoder().encode(message);
+  const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, myKeyPair, encoded);
+  const fullData = ethers.utils.hexlify(iv) + ethers.utils.hexlify(new Uint8Array(encrypted)).slice(2);
 
-  const encryptedBase64 = btoa(String.fromCharCode(...new Uint8Array(encrypted)));
-  const ivHex = Array.from(iv).map(b => b.toString(16).padStart(2, '0')).join('');
+  const tx = await signer.sendTransaction({
+    to: receiver,
+    value: 0,
+    data: fullData
+  });
 
-  document.getElementById("status").innerHTML =
-    `🔐 Encrypted message:<br><textarea style="width:100%;height:100px">${ivHex}:${encryptedBase64}</textarea>`;
+  document.getElementById("status").textContent = "📤 Message sent! Tx: " + tx.hash;
+  document.getElementById("message").value = "";
 };
