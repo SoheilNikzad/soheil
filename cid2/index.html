@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>پیام‌رسان غیرمتمرکز XMTP</title>
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-Variable-font-face.css" rel="stylesheet" type="text/css" />
+    <style>
+        body {
+            /* Default font for Persian text, with Comfortaa as a fallback for Latin characters */
+            font-family: 'Vazirmatn', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f2f5;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Aligns content to the top */
+            min-height: 100vh; /* Minimum height of the viewport */
+            box-sizing: border-box; /* Includes padding in element's total width and height */
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 15px; /* Space between main sections */
+        }
+        h1 {
+            text-align: center;
+            color: #007bff;
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-family: 'Vazirmatn', sans-serif; /* Ensure H1 uses Vazirmatn */
+        }
+        .section-header {
+            font-weight: bold;
+            color: #007bff;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+            margin-top: 15px;
+            font-family: 'Vazirmatn', sans-serif; /* Ensure section headers use Vazirmatn */
+        }
+        .connect-wallet-btn {
+            background-color: #28a745; /* This is green, not red */
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: fit-content; /* Button width adjusts to content */
+            margin-left: auto; /* Centers the button */
+            margin-right: auto; /* Centers the button */
+            display: block; /* Allows margin auto to work */
+            font-family: 'Vazirmatn', sans-serif; /* Ensure button text uses Vazirmatn */
+        }
+        .connect-wallet-btn:hover { background-color: #218838; }
+        #status {
+            text-align: center;
+            color: #6c757d;
+            font-size: 0.9em;
+            /* Changed to Vazirmatn first, then Comfortaa for numbers/Latin */
+            font-family: 'Vazirmatn', 'Comfortaa', sans-serif;
+        }
+        .chat-area {
+            border: 1px solid #ddd;
+            min-height: 300px; /* Minimum height for chat area */
+            max-height: 400px; /* Maximum height for scrolling */
+            overflow-y: auto;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #e9ecef;
+            display: flex;
+            flex-direction: column;
+            gap: 8px; /* Space between messages */
+        }
+        .message {
+            padding: 8px 12px;
+            border-radius: 18px;
+            max-width: 80%; /* Messages don't take full width */
+            word-wrap: break-word; /* Wraps long words */
+            line-height: 1.4;
+            font-size: 0.95em;
+            font-family: 'Vazirmatn', 'Comfortaa', sans-serif; /* Apply both for messages to handle mixed content */
+        }
+        .message.self {
+            background-color: #d1e7dd;
+            align-self: flex-end; /* Self messages align to the right */
+            border-bottom-right-radius: 4px; /* Less rounded bottom-right corner */
+        }
+        .message.other {
+            background-color: #f8d7da;
+            align-self: flex-start; /* Other messages align to the left */
+            border-bottom-left-radius: 4px; /* Less rounded bottom-left corner */
+        }
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .message-input, #recipientAddressInput {
+            flex-grow: 1; /* Takes up remaining space */
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+            /* Changed to Vazirmatn first, then Comfortaa for Latin input/placeholders */
+            font-family: 'Vazirmatn', 'Comfortaa', sans-serif;
+        }
+        .send-btn, #setRecipientBtn, #sendFileBtn {
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            white-space: nowrap; /* Prevents button text from wrapping */
+            font-family: 'Vazirmatn', sans-serif; /* Ensure button text uses Vazirmatn */
+        }
+        .send-btn:hover { background-color: #0056b3; }
+
+        .file-input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
+        #fileInput {
+            flex-grow: 1;
+            /* Changed to Vazirmatn first, then Comfortaa for file input */
+            font-family: 'Vazirmatn', 'Comfortaa', sans-serif;
+        }
+        #sendFileBtn {
+            background-color: #6c757d;
+        }
+        #sendFileBtn:hover {
+            background-color: #5a6268;
+        }
+        .recipient-input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        #setRecipientBtn {
+            background-color: #17a2b8;
+        }
+        #setRecipientBtn:hover {
+            background-color: #138496;
+        }
+        .current-recipient {
+            font-weight: bold;
+            color: #495057;
+            margin-bottom: 10px;
+            text-align: center;
+            font-family: 'Vazirmatn', 'Comfortaa', sans-serif; /* Mixed font for recipient address display */
+        }
+        #fileStatus {
+            font-size: 0.85em;
+            color: #dc3545;
+            font-family: 'Vazirmatn', 'Comfortaa', sans-serif; /* Mixed font for file status messages */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>پیام‌رسان غیرمتمرکز XMTP</h1>
+        
+        <button id="connectWalletBtn" class="connect-wallet-btn">۱. اتصال کیف پول</button>
+        <div id="status">در انتظار اتصال کیف پول...</div>
+
+        <div class="section-header">۲. انتخاب گیرنده</div>
+        <div class="recipient-input-group">
+            <input type="text" id="recipientAddressInput" placeholder="آدرس کیف پول گیرنده (مثلاً 0x...)">
+            <button id="setRecipientBtn">تنظیم گیرنده</button>
+        </div>
+        <div class="current-recipient" id="currentRecipient">گیرنده: (انتخاب نشده)</div>
+
+        <div class="section-header">۳. چت</div>
+        <div class="chat-area" id="chatArea">
+            <div class="message other">برای شروع، کیف پول خود را متصل کرده و یک آدرس گیرنده تنظیم کنید.</div>
+        </div>
+        <div class="input-group">
+            <input type="text" id="messageInput" class="message-input" placeholder="پیام خود را بنویسید...">
+            <button id="sendBtn" class="send-btn">ارسال متن</button>
+        </div>
+
+        <div class="section-header">۴. اشتراک‌گذاری فایل (آزمایشی)</div>
+        <div class="file-input-group">
+            <input type="file" id="fileInput">
+            <button id="sendFileBtn">ارسال فایل (بزودی)</button>
+        </div>
+        <div id="fileStatus" style="font-size: 0.85em; color: #dc3545;"></div>
+
+    </div>
+
+    <script src="https://cdn.ethers.io/lib/ethers-5.7.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@xmtp/xmtp-js/dist/browser/index.js"></script>
+
+    <script>
+        // حالا بیایید موتور جاوااسکریپت (مغز متفکر ماشین) را بنویسیم
+        const connectWalletBtn = document.getElementById('connectWalletBtn');
+        const statusDiv = document.getElementById('status');
+        const chatArea = document.getElementById('chatArea');
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const recipientAddressInput = document.getElementById('recipientAddressInput');
+        const setRecipientBtn = document.getElementById('setRecipientBtn');
+        const currentRecipientDiv = document.getElementById('currentRecipient');
+        const fileInput = document.getElementById('fileInput');
+        const sendFileBtn = document.getElementById('sendFileBtn');
+        const fileStatusDiv = document.getElementById('fileStatus');
+
+        let signer; // برای امضای تراکنش‌ها و پیام‌ها از طریق MetaMask
+        let xmtpClient; // XMTP Client شما
+        let activeConversation; // مکالمه فعال فعلی
+        let currentRecipientAddress = null; // آدرس گیرنده فعلی
+
+        // --- ۱. ماژول اتصال به کیف پول (سیستم سوخت‌رسانی سفینه) ---
+        connectWalletBtn.addEventListener('click', async () => {
+            try {
+                statusDiv.textContent = 'در حال اتصال به کیف پول... لطفاً MetaMask را تأیید کنید.';
+                if (typeof window.ethereum !== 'undefined') {
+                    // درخواست اتصال به MetaMask
+                    await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    
+                    // ایجاد یک Provider از MetaMask
+                    const provider = new ethers.providers.Web3Provider(window.ethereum);
+                    signer = provider.getSigner(); // دریافت Signer برای امضاها
+                    
+                    const address = await signer.getAddress();
+                    statusDiv.textContent = `کیف پول متصل شد: ${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
+                    connectWalletBtn.style.display = 'none'; // دکمه اتصال را پنهان کنید
+                    
+                    initXmtp(signer); // پس از اتصال کیف پول، XMTP را راه‌اندازی کنید
+                } else {
+                    statusDiv.textContent = 'خطا: لطفاً MetaMask یا یک کیف پول سازگار با Ethereum نصب کنید.';
+                }
+            } catch (error) {
+                console.error("خطا در اتصال کیف پول:", error);
+                statusDiv.textContent = `خطا در اتصال کیف پول: ${error.message || error}`;
+            }
+        });
+
+        // --- ۲. ماژول XMTP (سیستم ارتباطی ماهواره‌ای) ---
+        async function initXmtp(signer) {
+            try {
+                statusDiv.textContent += ' در حال راه‌اندازی XMTP Client...';
+                // ایجاد XMTP Client
+                // 'dev' محیط توسعه XMTP است که برای تست مناسب است و رایگان است.
+                // اگر خواستید از شبکه اصلی استفاده کنید، env را به 'production' تغییر دهید.
+                xmtpClient = await window.xmtp.Client.create(signer, { env: 'dev' }); 
+                statusDiv.textContent = `XMTP Client راه‌اندازی شد. آدرس شما: ${xmtpClient.address.substring(0, 6)}...${xmtpClient.address.substring(xmtpClient.address.length - 4)}`;
+                
+                // گوش دادن به مکالمات جدید در پس‌زمینه
+                listenForNewConversations();
+
+            } catch (error) {
+                console.error("خطا در راه‌اندازی XMTP:", error);
+                statusDiv.textContent = `خطا در راه‌اندازی XMTP. شاید آدرس شما در شبکه XMTP فعال نیست؟ ${error.message || error}`;
+                // اگر کاربر در شبکه XMTP فعال نیست، می‌توانید از xmtpClient.publishUserContact() استفاده کنید.
+                // در این مثال ساده برای شروع، این مرحله را به صورت خودکار انجام نمی‌دهیم.
+            }
+        }
+
+        // --- ۳. ماژول انتخاب گیرنده (هدف‌گیری سفینه) ---
+        setRecipientBtn.addEventListener('click', async () => {
+            const address = recipientAddressInput.value.trim();
+            if (address.length === 42 && address.startsWith('0x')) { // بررسی ساده برای فرمت آدرس
+                currentRecipientAddress = address;
+                currentRecipientDiv.textContent = `گیرنده فعلی: ${currentRecipientAddress.substring(0, 6)}...${currentRecipientAddress.substring(address.length - 4)}`;
+                statusDiv.textContent = 'در حال بررسی فعال‌سازی XMTP گیرنده و شروع مکالمه...';
+                await startOrLoadConversation(currentRecipientAddress);
+            } else {
+                statusDiv.textContent = 'لطفاً یک آدرس کیف پول EVM معتبر وارد کنید.';
+            }
+        });
+
+        async function startOrLoadConversation(peerAddress) {
+            if (!xmtpClient) {
+                statusDiv.textContent = 'لطفاً ابتدا کیف پول را متصل و XMTP را راه‌اندازی کنید.';
+                return;
+            }
+            try {
+                // بررسی کنید که آیا گیرنده در شبکه XMTP فعال است
+                const canMessage = await xmtpClient.canMessage(peerAddress);
+                if (!canMessage) {
+                    statusDiv.textContent = `گیرنده (${peerAddress.substring(0, 6)}...) در شبکه XMTP فعال نیست. نمی‌توان پیام فرستاد.`;
+                    activeConversation = null;
+                    return;
+                }
+
+                // سعی کنید مکالمه موجود را پیدا کنید یا جدید ایجاد کنید
+                activeConversation = await xmtpClient.conversations.newConversation(peerAddress);
+                statusDiv.textContent = `مکالمه با ${peerAddress.substring(0, 6)}... شروع/ادامه یافت.`;
+                
+                // بارگذاری پیام‌های قبلی و شروع گوش دادن به پیام‌های جدید
+                await loadMessages(activeConversation);
+                listenForMessages(activeConversation);
+
+            } catch (error) {
+                console.error("خطا در شروع/بارگذاری مکالمه:", error);
+                statusDiv.textContent = `خطا در مکالمه با ${peerAddress}: ${error.message || error}`;
+                activeConversation = null;
+            }
+        }
+
+        // --- ۴. ماژول چت (پخش پیام سفینه) ---
+        async function loadMessages(conv) {
+            chatArea.innerHTML = ''; // پاک کردن چت قبلی
+            const messages = await conv.messages();
+            messages.forEach(msg => displayMessage(msg));
+            chatArea.scrollTop = chatArea.scrollHeight; // اسکرول به پایین
+        }
+
+        async function listenForMessages(conv) {
+            // مطمئن شوید که فقط یک بار برای هر مکالمه گوش می‌دهیم
+            if (conv.stream) { // اگر قبلا stream شده
+                conv.stream.return(); // استریم قبلی را ببندید
+            }
+            const messageStream = await conv.streamMessages();
+            conv.stream = messageStream; // ذخیره استریم برای بستن آن بعداً
+            for await (const message of messageStream) {
+                displayMessage(message);
+                chatArea.scrollTop = chatArea.scrollHeight; // اسکرول به پایین
+            }
+        }
+
+        async function listenForNewConversations() {
+            if (!xmtpClient) return;
+            for await (const newConversation of await xmtpClient.conversations.stream()) {
+                // اگر مکالمه جدیدی دریافت شد، می‌توانید به کاربر اطلاع دهید یا آن را به لیست مکالمات اضافه کنید.
+                console.log("مکالمه جدید دریافت شد:", newConversation.peerAddress);
+                // برای این مثال ساده، اگر مکالمه جدیدی با گیرنده فعلی باشد، آن را شروع می‌کنیم.
+                if (newConversation.peerAddress === currentRecipientAddress) {
+                    await startOrLoadConversation(newConversation.peerAddress);
+                } else {
+                    statusDiv.textContent = `مکالمه جدید از ${newConversation.peerAddress.substring(0,6)}... دریافت شد.`;
+                }
+            }
+        }
+
+        // --- ۵. ماژول ارسال پیام متنی (پرتابگر پیام متنی سفینه) ---
+        sendBtn.addEventListener('click', async () => {
+            const text = messageInput.value.trim();
+            if (text && activeConversation) {
+                try {
+                    await activeConversation.send(text);
+                    messageInput.value = ''; // پاک کردن ورودی
+                    // پیام ارسال شده توسط خودمان به صورت خودکار توسط stream دریافت می‌شود
+                } catch (error) {
+                    console.error("خطا در ارسال پیام متنی:", error);
+                    statusDiv.textContent = `خطا در ارسال پیام متنی: ${error.message || error}`;
+                }
+            } else if (!activeConversation) {
+                statusDiv.textContent = 'لطفاً گیرنده را تنظیم کنید و مطمئن شوید XMTP فعال است.';
+            }
+        });
+
+        // --- ۶. ماژول ارسال فایل (پرتابگر فایل سفینه) ---
+        sendFileBtn.addEventListener('click', async () => {
+            if (!activeConversation) {
+                fileStatusDiv.textContent = 'ابتدا کیف پول را متصل و گیرنده را تنظیم کنید.';
+                return;
+            }
+            if (!fileInput.files.length) {
+                fileStatusDiv.textContent = 'لطفاً فایلی را برای ارسال انتخاب کنید.';
+                return;
+            }
+
+            const file = fileInput.files[0];
+            fileStatusDiv.textContent = `در حال آماده‌سازی فایل "${file.name}" برای ارسال...`;
+
+            try {
+                // XMTP SDK می‌تواند فایل را به صورت داخلی رمزنگاری و آماده ارسال کند
+                // این مثال از ContentTypeRemoteAttachment XMTP استفاده می‌کند که فایل را به صورت خودکار
+                // در جایی (که در XMTP مشخص شده) آپلود کرده و لینک را ارسال می‌کند.
+                // در پشت صحنه، XMTP از IPFS یا مشابه آن برای ذخیره‌سازی فایل‌های بزرگ استفاده می‌کند.
+                // شما نیازی به مدیریت مستقیم آپلود IPFS در این لایه ندارید، مگر اینکه بخواهید
+                // یک سرویس Pinning خاص خود را به XMTP معرفی کنید.
+
+                const encryptedAttachment = await activeConversation.send(file, { contentType: xmtp.ContentTypes.Attachment });
+                // توجه: ContentTypeAttachment مستقیماً فایل را به عنوان یک Buffer/Blob می‌گیرد.
+                // برای ارسال فایل‌های بزرگ و آپلود به IPFS، XMTP خودش یک پروتکل برای پیوست‌های ریموت دارد.
+                // برای این مثال ساده، ما از نوع محتوای پیش‌فرض XMTP برای فایل استفاده می‌کنیم.
+                
+                fileStatusDiv.textContent = `فایل "${file.name}" با موفقیت ارسال شد.`;
+                fileInput.value = ''; // پاک کردن ورودی فایل
+            } catch (error) {
+                console.error("خطا در ارسال فایل:", error);
+                fileStatusDiv.textContent = `خطا در ارسال فایل: ${error.message || error}`;
+                // اگر خطا مربوط به حجم یا تنظیمات XMTP بود، بررسی کنید.
+            }
+        });
+
+
+        // --- ۷. ماژول نمایش پیام‌ها (صفحه نمایشگر سفینه) ---
+        function displayMessage(message) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message');
+            
+            // نمایش پیام‌های خودی در سمت راست و پیام‌های دیگران در سمت چپ
+            messageDiv.classList.add(message.senderAddress === xmtpClient.address ? 'self' : 'other');
+
+            let contentToDisplay = message.content;
+            // اگر پیام از نوع پیوست بود
+            if (message.contentType.id === xmtp.ContentTypes.Attachment.id) {
+                contentToDisplay = `[پیوست: ${message.content.filename || 'فایل نامعلوم'}]`;
+                // اگر نیاز به دانلود داشت، اینجا لینک دانلود را اضافه کنید
+                // در XMTP Inbox، این فایل از IPFS بازیابی و به کاربر ارائه می‌شود.
+                // این بخش نیاز به منطق پیچیده‌تری برای بازیابی و نمایش فایل دارد.
+            } else if (message.contentType.id === xmtp.ContentTypes.RemoteAttachment.id) {
+                // این نوع برای فایل های بزرگ و از طریق IPFS استفاده می‌شود.
+                // message.content در اینجا شامل metadata و URL/CID فایل در IPFS است.
+                contentToDisplay = `[پیوست از راه دور: ${message.content.filename || 'فایل'}]`;
+                // برای دانلود، باید از URL/CID به IPFS گیت‌وی مراجعه کنید.
+            }
+
+
+            messageDiv.textContent = `${message.senderAddress.substring(0, 6)}...: ${contentToDisplay}`;
+            chatArea.appendChild(messageDiv);
+        }
+
+        // --- شروع کار ---
+        // وقتی صفحه بارگذاری شد، status اولیه را نمایش دهید.
+        statusDiv.textContent = 'برای شروع، دکمه "اتصال کیف پول" را فشار دهید.';
+    </script>
+</body>
+</html>
+
