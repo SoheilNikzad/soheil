@@ -15,7 +15,6 @@ const qrCodeModal = document.getElementById('qrCodeModal');
 const qrCodeContainer = document.getElementById('qrCodeContainer');
 const closeModalBtn = document.querySelector('.modal .close-button');
 
-
 // --- Global State ---
 let ethersProvider = null;
 let ethersSigner = null;
