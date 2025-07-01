@@ -38,9 +38,9 @@ connectWalletBtn.addEventListener('click', async () => {
 async function initXmtp(signer) {
     try {
         statusDiv.textContent += ' در حال راه‌اندازی XMTP Client...';
-        xmtpClient = await window.xmtp.Client.create(signer, { env: 'dev' });
+        // 🔧 اصلاح این خط
+        xmtpClient = await window.Client.create(signer, { env: 'dev' });
 
-        // ✅ فعال‌سازی آدرس کاربر در XMTP (امضای اولیه)
         await xmtpClient.publishUserContact();
 
         statusDiv.textContent = `XMTP Client راه‌اندازی شد. آدرس شما: ${xmtpClient.address.substring(0, 6)}...${xmtpClient.address.substring(xmtpClient.address.length - 4)}`;
@@ -142,7 +142,7 @@ sendFileBtn.addEventListener('click', async () => {
     fileStatusDiv.textContent = `در حال آماده‌سازی فایل "${file.name}"...`;
 
     try {
-        await activeConversation.send(file, { contentType: xmtp.ContentTypes.Attachment });
+        await activeConversation.send(file, { contentType: window.Client.ContentTypes.Attachment });
         fileStatusDiv.textContent = `فایل "${file.name}" با موفقیت ارسال شد.`;
         fileInput.value = '';
     } catch (error) {
@@ -157,11 +157,14 @@ function displayMessage(message) {
     messageDiv.classList.add(message.senderAddress === xmtpClient.address ? 'self' : 'other');
 
     let contentToDisplay = message.content;
-    if (message.contentType?.id === xmtp.ContentTypes.Attachment.id) {
+    const ContentTypes = window.Client.ContentTypes;
+
+    if (message.contentType?.id === ContentTypes.Attachment.id) {
         contentToDisplay = `[پیوست: ${message.content.filename || 'فایل'}]`;
-    } else if (message.contentType?.id === xmtp.ContentTypes.RemoteAttachment.id) {
+    } else if (message.contentType?.id === ContentTypes.RemoteAttachment.id) {
         contentToDisplay = `[پیوست از راه دور: ${message.content.filename || 'فایل'}]`;
     }
+
     messageDiv.textContent = `${message.senderAddress.substring(0, 6)}...: ${contentToDisplay}`;
     chatArea.appendChild(messageDiv);
 }
