@@ -3,90 +3,78 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>RAAKH Messenger (E2E)</title>
+  <title>Web3 Messenger</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet"/>
   <style>
     body {
       background: #0d0d0d;
-      color: #fff;
+      color: white;
       font-family: 'Inter', sans-serif;
       display: flex;
-      align-items: center;
       justify-content: center;
-      min-height: 100vh;
+      align-items: center;
+      height: 100vh;
       margin: 0;
     }
 
-    .container {
-      background: #1a1a1a;
+    .box {
+      background: #151515;
       padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 0 20px rgba(191, 90, 242, 0.4);
+      border-radius: 20px;
+      box-shadow: 0 0 30px rgba(191, 90, 242, 0.4);
       width: 90%;
-      max-width: 500px;
+      max-width: 480px;
     }
 
     h1 {
-      color: #bf5af2;
       text-align: center;
+      color: #bf5af2;
       margin-bottom: 20px;
     }
 
-    input, textarea {
+    input, textarea, button {
       width: 100%;
-      background: #2c2c2e;
-      border: 1px solid #3a3a3c;
-      color: #fff;
-      border-radius: 8px;
-      padding: 10px;
-      margin-bottom: 10px;
-      font-size: 16px;
+      padding: 14px;
+      border-radius: 12px;
+      margin-top: 12px;
+      border: none;
+      outline: none;
+      font-size: 15px;
+      background: #262626;
+      color: white;
+      font-family: 'Inter', sans-serif;
     }
 
     button {
-      background: #bf5af2;
-      border: none;
-      color: #fff;
-      padding: 12px;
-      font-size: 16px;
-      border-radius: 8px;
-      width: 100%;
+      background-color: #bf5af2;
+      color: white;
       cursor: pointer;
-      transition: background 0.3s ease;
+      transition: 0.3s;
     }
 
     button:hover {
-      background: #d066fa;
-    }
-
-    .hidden {
-      display: none;
+      background-color: #d77efc;
     }
 
     #status {
-      margin-top: 20px;
-      font-size: 14px;
       text-align: center;
-      color: #a1a1a1;
+      margin-top: 20px;
+      font-size: 13px;
+      color: #a0a0a0;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>🟣 RAAKH Messenger</h1>
-
+  <div class="box">
+    <h1>🟣 Web3 Messenger</h1>
     <button id="connectBtn">Connect Wallet</button>
-
-    <div id="chatBox" class="hidden">
-      <textarea id="message" placeholder="Write your message..."></textarea>
-      <input id="receiverPub" placeholder="Receiver's Public Key (hex)" />
-      <button id="sendBtn">Encrypt Message</button>
-    </div>
-
+    <input id="recipient" placeholder="Recipient Address" />
+    <textarea id="message" placeholder="Your message..."></textarea>
+    <button id="sendBtn">Encrypt & Send</button>
     <div id="status"></div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
   <script src="main.js"></script>
 </body>
 </html>
