@@ -162,7 +162,6 @@ function displayMessage(message) {
     } else if (message.contentType?.id === xmtp.ContentTypes.RemoteAttachment.id) {
         contentToDisplay = `[پیوست از راه دور: ${message.content.filename || 'فایل'}]`;
     }
-
     messageDiv.textContent = `${message.senderAddress.substring(0, 6)}...: ${contentToDisplay}`;
     chatArea.appendChild(messageDiv);
 }
