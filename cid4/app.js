@@ -245,19 +245,29 @@ clearCacheBtn.addEventListener('click', async () => {
     messageListDiv.innerHTML = '<p class="system-message">Cache cleared. Start new chat.</p>';
 });
 
-async function registerOnMessenger() {
-    if (!ethersSigner || !currentUserAddress) return;
-    const pubKey = await ethersSigner.getPublicKey();
-    const encoded = btoa(pubKey);
-    const data = `cid:${encoded}`;
+// ✅ ثبت کلید عمومی روی بلاکچین به صورت تراکنش متنی cid:<pubkey>
+registerMessengerBtn.addEventListener('click', async () => {
+    if (!ethersSigner || !currentUserAddress) {
+        showStatusMessage("Connect your wallet first!", true);
+        return;
+    }
+
     try {
+        const pubKey = await window.ethereum.request({
+            method: "eth_getEncryptionPublicKey",
+            params: [currentUserAddress],
+        });
+
+        const message = `cid:${pubKey}`;
         const tx = await ethersSigner.sendTransaction({
             to: currentUserAddress,
             value: 0,
-            data: ethers.utils.hexlify(ethers.utils.toUtf8Bytes(data))
+            data: ethers.utils.hexlify(ethers.utils.toUtf8Bytes(message))
         });
-        showStatusMessage(`Registering... TX Hash: ${tx.hash}`);
+
+        showStatusMessage(`Public key published! Tx hash: ${tx.hash}`);
     } catch (err) {
-        showStatusMessage(`Registration failed: ${err.message}`, true);
+        console.error("Failed to publish key:", err);
+        showStatusMessage("Could not publish key. Did you reject MetaMask permission?", true);
     }
-}
+});
