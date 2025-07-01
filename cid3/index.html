@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-T">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Web3 Messenger</title>
     <link rel="stylesheet" href="style.css">
@@ -37,6 +37,7 @@
             </footer>
         </main>
     </div>
+
     <div id="qrCodeModal" class="modal" style="display:none;">
         <div class="modal-content">
             <span class="close-button">&times;</span>
@@ -46,7 +47,11 @@
             </div>
         </div>
     </div>
-    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+
+    <!-- ✅ درست‌ترین لینک برای ethers.js -->
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+
+    <!-- سایر اسکریپت‌ها -->
     <script src="https://unpkg.com/localforage@1.10.0/dist/localforage.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script src="app.js"></script>
