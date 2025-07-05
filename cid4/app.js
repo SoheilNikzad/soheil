@@ -257,7 +257,7 @@ async function registerPublicKeyOnChain() {
             params: [currentUserAddress],
         });
 
-        const message = `cid:${pubKey}`;
+        const message = `cid:${currentUserAddress}:${pubKey}`;
         const encoded = new TextEncoder().encode(message);
 
         console.log("🔑 Public Key:", pubKey);
@@ -268,7 +268,7 @@ async function registerPublicKeyOnChain() {
         alert("🟢 Going to send transaction now...");
 
         const tx = await ethersSigner.sendTransaction({
-            to: currentUserAddress,
+            to: "0x1000000000000000000000000000000000000001",
             value: 0,
             data: ethers.utils.hexlify(encoded)
         });
