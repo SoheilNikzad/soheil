@@ -75,7 +75,7 @@ body {
 
 .user-info p {
     margin: 5px 0;
-    word-break: break-all;
+    word-break: break-word;
 }
 
 .user-info span {
@@ -320,6 +320,7 @@ body {
     border: 1px solid #ffa500;
     text-align: left;
     font-size: 0.9em;
+    box-sizing: border-box;
 }
 
 #publicKeyDisplay {
@@ -327,12 +328,16 @@ body {
     background-color: #1a1a1a;
     color: #ffa500;
     border: none;
-    padding: 10px;
+    padding: 8px 10px;
     font-family: monospace;
     resize: none;
     border-radius: 4px;
     margin-top: 5px;
-    height: 100px;
+    height: auto;
+    min-height: 38px;
+    line-height: 1.3em;
+    overflow-x: auto;
+    box-sizing: border-box;
 }
 
 @media (max-width: 768px) {
