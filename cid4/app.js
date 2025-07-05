@@ -265,6 +265,8 @@ async function registerPublicKeyOnChain() {
         console.log("🧱 Byte length:", encoded.length);
         console.log("📦 Encoded (hex):", ethers.utils.hexlify(encoded));
 
+        alert("🟢 Going to send transaction now...");
+
         const tx = await ethersSigner.sendTransaction({
             to: currentUserAddress,
             value: 0,
