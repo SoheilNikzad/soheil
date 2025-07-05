@@ -13,8 +13,13 @@
       <div class="sidebar-header">
         <h2>Contacts</h2>
         <button id="connectWalletBtn" class="glow-button">Connect Wallet</button>
-        <!-- ✅ دکمه ثبت کلید عمومی -->
         <button id="registerKeyBtn" class="glow-button-small" style="margin-top: 10px;">Register Public Key</button>
+
+        <!-- ✅ نمایش کلید عمومی -->
+        <div id="publicKeyBox" class="public-key-box" style="display: none; margin-top: 15px;">
+          <p><strong>Your Public Key:</strong></p>
+          <textarea id="publicKeyDisplay" readonly></textarea>
+        </div>
       </div>
 
       <div id="userInfo" class="user-info" style="display: none;">
