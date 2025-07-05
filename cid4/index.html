@@ -15,7 +15,7 @@
         <button id="connectWalletBtn" class="glow-button">Connect Wallet</button>
         <button id="registerKeyBtn" class="glow-button-small" style="margin-top: 10px;">Register Public Key</button>
 
-        <!-- ✅ نمایش کلید عمومی -->
+        <!-- ✅ نمایش کلید عمومی کاربر -->
         <div id="publicKeyBox" class="public-key-box" style="display: none; margin-top: 15px;">
           <p><strong>Your Public Key:</strong></p>
           <textarea id="publicKeyDisplay" readonly></textarea>
@@ -44,6 +44,7 @@
 
       <footer class="chat-footer">
         <input type="text" id="recipientAddressInput" placeholder="Recipient Address"/>
+        <input type="text" id="recipientPublicKeyInput" placeholder="Recipient Public Key"/>
         <textarea id="messageInput" placeholder="Type your message..."></textarea>
         <button id="sendMessageBtn" class="glow-button">Send</button>
       </footer>
@@ -63,6 +64,7 @@
 
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <script src="https://unpkg.com/@metamask/eth-sig-util@5.0.2/dist/index.umd.js"></script>
   <script src="https://unpkg.com/localforage@1.10.0/dist/localforage.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
   <script src="app.js"></script>
