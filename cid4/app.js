@@ -94,28 +94,42 @@ async function deriveLocalEncryptionKey() {
     }
 }
 
-// ✅ نمایش public key خود کاربر
-async function displayPublicKey() {
-    if (!currentUserAddress) {
-        showStatusMessage("Connect your wallet first!", true);
-        return;
-    }
+async function encryptDataWC(data) {
+    if (!webCryptoEncryptionKey) throw new Error("No encryption key.");
+    const str = JSON.stringify(data);
+    const encoded = new TextEncoder().encode(str);
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, webCryptoEncryptionKey, encoded);
+    const result = new Uint8Array(iv.length + encrypted.byteLength);
+    result.set(iv);
+    result.set(new Uint8Array(encrypted), iv.length);
+    return btoa(String.fromCharCode(...result));
+}
 
+async function decryptDataWC(base64) {
+    if (!webCryptoEncryptionKey) throw new Error("No encryption key.");
+    const data = new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0)));
+    const iv = data.slice(0, 12);
+    const enc = data.slice(12);
     try {
-        const pubKey = await window.ethereum.request({
-            method: "eth_getEncryptionPublicKey",
-            params: [currentUserAddress],
-        });
-
-        publicKeyDisplay.value = pubKey;
-        publicKeyBox.style.display = 'block';
+        const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, webCryptoEncryptionKey, enc);
+        return JSON.parse(new TextDecoder().decode(decrypted));
     } catch (err) {
-        console.error("Failed to retrieve public key:", err);
-        showStatusMessage("MetaMask permission denied or failed to get public key.", true);
+        console.warn("Decryption failed:", err);
+        return null;
     }
 }
 
-// ✅ ارسال پیام رمزنگاری‌شده به صورت تراکنش واقعی روی شبکه
+function updateUserInfoUI() {
+    if (currentUserAddress && currentNetwork) {
+        userInfoDiv.style.display = 'block';
+        userAddressSpan.textContent = currentUserAddress;
+        networkNameSpan.textContent = currentNetwork.name;
+        chainIdSpan.textContent = currentNetwork.chainId;
+    }
+}
+
+// ✅ رمزنگاری نامتقارن و ارسال تراکنش آن‌چین
 sendMessageBtn.addEventListener('click', async () => {
     const recipient = recipientAddressInput.value.trim();
     const recipientPubKey = recipientPublicKeyInput.value.trim();
@@ -156,15 +170,89 @@ sendMessageBtn.addEventListener('click', async () => {
     }
 });
 
-// ✅ تابع‌های قبلی برای cache پیام‌ها و مخاطبین (در حال حاضر غیرفعال ولی باقی می‌مونن)
-async function encryptDataWC(data) { /* ... */ }
-async function decryptDataWC(base64) { /* ... */ }
-async function saveMessageToLocalCache(address, message) { /* ... */ }
-async function addOrUpdateContact(addr, msg, time) { /* ... */ }
-async function loadContactsFromCache() { /* ... */ }
-function renderContactList(contacts) { /* ... */ }
-async function loadMessagesForChat(address) { /* ... */ }
-function displayMessage(msg) { /* ... */ }
+async function saveMessageToLocalCache(address, message) {
+    if (!webCryptoEncryptionKey) return;
+
+    const key = `messages_${address.toLowerCase()}`;
+    const existing = await localforage.getItem(key);
+    let messages = [];
+
+    if (existing) {
+        const decrypted = await decryptDataWC(existing);
+        if (decrypted) messages = decrypted;
+    }
+
+    messages.push(message);
+    const encrypted = await encryptDataWC(messages);
+    await localforage.setItem(key, encrypted);
+}
+
+async function addOrUpdateContact(addr, msg, time) {
+    if (!webCryptoEncryptionKey) return;
+
+    const key = `contacts_${currentUserAddress.toLowerCase()}`;
+    const existing = await localforage.getItem(key);
+    let list = [];
+
+    if (existing) {
+        const decrypted = await decryptDataWC(existing);
+        if (decrypted) list = decrypted;
+    }
+
+    const idx = list.findIndex(c => c.address === addr);
+    if (idx > -1) {
+        list[idx].lastMessage = msg;
+        list[idx].lastTimestamp = time;
+    } else {
+        list.push({ address: addr, lastMessage: msg, lastTimestamp: time });
+    }
+
+    list.sort((a, b) => new Date(b.lastTimestamp) - new Date(a.lastTimestamp));
+    const encrypted = await encryptDataWC(list);
+    await localforage.setItem(key, encrypted);
+    renderContactList(list);
+}
+
+async function loadContactsFromCache() {
+    const key = `contacts_${currentUserAddress.toLowerCase()}`;
+    const encrypted = await localforage.getItem(key);
+    if (encrypted) {
+        const decrypted = await decryptDataWC(encrypted);
+        if (decrypted) renderContactList(decrypted);
+    }
+}
+
+function renderContactList(contacts) {
+    contactListDiv.innerHTML = '';
+    for (const c of contacts) {
+        const div = document.createElement('div');
+        div.className = 'contact-item';
+        div.dataset.address = c.address;
+        div.innerHTML = `<p><strong>${c.address.slice(0, 6)}...${c.address.slice(-4)}</strong></p><p>${c.lastMessage}</p>`;
+        div.onclick = () => loadMessagesForChat(c.address);
+        contactListDiv.appendChild(div);
+    }
+}
+
+async function loadMessagesForChat(address) {
+    currentChatAddress = address;
+    const key = `messages_${address.toLowerCase()}`;
+    const encrypted = await localforage.getItem(key);
+    messageListDiv.innerHTML = '';
+    if (encrypted) {
+        const decrypted = await decryptDataWC(encrypted);
+        if (decrypted) {
+            decrypted.forEach(displayMessage);
+        }
+    }
+}
+
+function displayMessage(msg) {
+    const div = document.createElement('div');
+    div.className = 'message ' + (msg.sender === currentUserAddress ? 'sent' : 'received');
+    div.innerHTML = `<p>${msg.content}</p><span class="timestamp">${new Date(msg.timestamp).toLocaleTimeString()}</span>`;
+    messageListDiv.appendChild(div);
+}
 
 clearCacheBtn.addEventListener('click', async () => {
     if (!currentUserAddress) return;
@@ -182,3 +270,24 @@ clearCacheBtn.addEventListener('click', async () => {
     contactListDiv.innerHTML = '';
     messageListDiv.innerHTML = '<p class="system-message">Cache cleared. Start new chat.</p>';
 });
+
+// ✅ گرفتن کلید عمومی و نمایش داخل صفحه
+async function displayPublicKey() {
+    if (!currentUserAddress) {
+        showStatusMessage("Connect your wallet first!", true);
+        return;
+    }
+
+    try {
+        const pubKey = await window.ethereum.request({
+            method: "eth_getEncryptionPublicKey",
+            params: [currentUserAddress],
+        });
+
+        publicKeyDisplay.value = pubKey;
+        publicKeyBox.style.display = 'block';
+    } catch (err) {
+        console.error("Failed to retrieve public key:", err);
+        showStatusMessage("MetaMask permission denied or failed to get public key.", true);
+    }
+}
