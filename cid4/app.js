@@ -1,5 +1,6 @@
 // --- DOM Elements ---
 const connectWalletBtn = document.getElementById('connectWalletBtn');
+const registerKeyBtn = document.getElementById('registerKeyBtn');
 const userInfoDiv = document.getElementById('userInfo');
 const userAddressSpan = document.getElementById('userAddress');
 const networkNameSpan = document.getElementById('networkName');
@@ -14,7 +15,8 @@ const clearCacheBtn = document.getElementById('clearCacheBtn');
 const qrCodeModal = document.getElementById('qrCodeModal');
 const qrCodeContainer = document.getElementById('qrCodeContainer');
 const closeModalBtn = document.querySelector('.modal .close-button');
-const registerMessengerBtn = document.getElementById('registerMessengerBtn');
+const publicKeyBox = document.getElementById('publicKeyBox');
+const publicKeyDisplay = document.getElementById('publicKeyDisplay');
 
 let ethersProvider = null;
 let ethersSigner = null;
@@ -36,7 +38,7 @@ function showStatusMessage(message, isError = false) {
 }
 
 connectWalletBtn.addEventListener('click', connectWallet);
-registerMessengerBtn.addEventListener('click', registerOnMessenger);
+registerKeyBtn.addEventListener('click', displayPublicKey);
 
 async function connectWallet() {
     if (typeof window.ethereum === 'undefined') {
@@ -245,9 +247,9 @@ clearCacheBtn.addEventListener('click', async () => {
     messageListDiv.innerHTML = '<p class="system-message">Cache cleared. Start new chat.</p>';
 });
 
-// ✅ ثبت کلید عمومی روی بلاکچین به صورت تراکنش متنی cid:<pubkey>
-registerMessengerBtn.addEventListener('click', async () => {
-    if (!ethersSigner || !currentUserAddress) {
+// ✅ گرفتن کلید عمومی و نمایش داخل صفحه
+async function displayPublicKey() {
+    if (!currentUserAddress) {
         showStatusMessage("Connect your wallet first!", true);
         return;
     }
@@ -258,16 +260,10 @@ registerMessengerBtn.addEventListener('click', async () => {
             params: [currentUserAddress],
         });
 
-        const message = `cid:${pubKey}`;
-        const tx = await ethersSigner.sendTransaction({
-            to: currentUserAddress,
-            value: 0,
-            data: ethers.utils.hexlify(ethers.utils.toUtf8Bytes(message))
-        });
-
-        showStatusMessage(`Public key published! Tx hash: ${tx.hash}`);
+        publicKeyDisplay.value = pubKey;
+        publicKeyBox.style.display = 'block';
     } catch (err) {
-        console.error("Failed to publish key:", err);
-        showStatusMessage("Could not publish key. Did you reject MetaMask permission?", true);
+        console.error("Failed to retrieve public key:", err);
+        showStatusMessage("MetaMask permission denied or failed to get public key.", true);
     }
-});
+}
