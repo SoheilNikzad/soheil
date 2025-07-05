@@ -14,7 +14,7 @@ const clearCacheBtn = document.getElementById('clearCacheBtn');
 const qrCodeModal = document.getElementById('qrCodeModal');
 const qrCodeContainer = document.getElementById('qrCodeContainer');
 const closeModalBtn = document.querySelector('.modal .close-button');
-const registerMessengerBtn = document.getElementById('registerMessengerBtn');
+const registerKeyBtn = document.getElementById('registerKeyBtn');
 
 let ethersProvider = null;
 let ethersSigner = null;
@@ -36,7 +36,7 @@ function showStatusMessage(message, isError = false) {
 }
 
 connectWalletBtn.addEventListener('click', connectWallet);
-registerMessengerBtn.addEventListener('click', registerOnMessenger);
+registerKeyBtn.addEventListener('click', registerPublicKeyOnChain);
 
 async function connectWallet() {
     if (typeof window.ethereum === 'undefined') {
@@ -245,8 +245,7 @@ clearCacheBtn.addEventListener('click', async () => {
     messageListDiv.innerHTML = '<p class="system-message">Cache cleared. Start new chat.</p>';
 });
 
-// ✅ ثبت کلید عمومی روی بلاکچین به صورت تراکنش متنی cid:<pubkey>
-registerMessengerBtn.addEventListener('click', async () => {
+async function registerPublicKeyOnChain() {
     if (!ethersSigner || !currentUserAddress) {
         showStatusMessage("Connect your wallet first!", true);
         return;
@@ -270,4 +269,4 @@ registerMessengerBtn.addEventListener('click', async () => {
         console.error("Failed to publish key:", err);
         showStatusMessage("Could not publish key. Did you reject MetaMask permission?", true);
     }
-});
+}
