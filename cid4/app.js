@@ -23,8 +23,6 @@ let currentNetwork = null;
 let currentChatAddress = null;
 let webCryptoEncryptionKey = null;
 
-const DB_NAME = 'web3MessengerDB';
-
 localforage.config({
     driver: [localforage.INDEXEDDB, localforage.LOCALSTORAGE],
     name: 'web3MessengerCache'
@@ -59,7 +57,6 @@ async function connectWallet() {
         showStatusMessage(`Connected: ${currentUserAddress}`);
 
         await loadContactsFromCache();
-
     } catch (err) {
         showStatusMessage(`Error connecting wallet: ${err.message}`, true);
     }
@@ -244,7 +241,7 @@ clearCacheBtn.addEventListener('click', async () => {
     messageListDiv.innerHTML = '<p class="system-message">Cache cleared. Start new chat.</p>';
 });
 
-// ✅ ثبت کلید عمومی روی بلاکچین به آدرس مشخص‌شده
+// ✅ ثبت کلید عمومی روی بلاکچین با هندل کامل خطا
 registerMessengerBtn.addEventListener('click', async () => {
     if (!ethersSigner || !currentUserAddress) {
         showStatusMessage("Connect your wallet first!", true);
@@ -252,6 +249,12 @@ registerMessengerBtn.addEventListener('click', async () => {
     }
 
     try {
+        const selectedAccounts = await window.ethereum.request({ method: "eth_accounts" });
+        if (!selectedAccounts.includes(currentUserAddress)) {
+            showStatusMessage("⚠️ Selected wallet doesn't match connected address.", true);
+            return;
+        }
+
         const pubKey = await window.ethereum.request({
             method: "eth_getEncryptionPublicKey",
             params: [currentUserAddress],
@@ -275,6 +278,13 @@ registerMessengerBtn.addEventListener('click', async () => {
         showStatusMessage(`✅ Public key published! Tx hash: ${tx.hash}`);
     } catch (err) {
         console.error("❌ Could not publish key:", err);
-        showStatusMessage("❌ Could not publish key. Did you reject MetaMask permission?", true);
+
+        if (err.code === 4001) {
+            showStatusMessage("❌ MetaMask permission rejected by user.", true);
+        } else if (err.message.includes("already requested")) {
+            showStatusMessage("❌ MetaMask access to public key already denied. Reset site permissions.", true);
+        } else {
+            showStatusMessage("❌ Could not publish key. Did you reject MetaMask permission?", true);
+        }
     }
 });
