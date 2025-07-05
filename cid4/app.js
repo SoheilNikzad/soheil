@@ -9,6 +9,7 @@ const contactListDiv = document.getElementById('contactList');
 const chattingWithHeader = document.getElementById('chattingWith');
 const messageListDiv = document.getElementById('messageList');
 const recipientAddressInput = document.getElementById('recipientAddressInput');
+const recipientPublicKeyInput = document.getElementById('recipientPublicKeyInput');
 const messageInput = document.getElementById('messageInput');
 const sendMessageBtn = document.getElementById('sendMessageBtn');
 const clearCacheBtn = document.getElementById('clearCacheBtn');
@@ -93,161 +94,7 @@ async function deriveLocalEncryptionKey() {
     }
 }
 
-async function encryptDataWC(data) {
-    if (!webCryptoEncryptionKey) throw new Error("No encryption key.");
-    const str = JSON.stringify(data);
-    const encoded = new TextEncoder().encode(str);
-    const iv = crypto.getRandomValues(new Uint8Array(12));
-    const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, webCryptoEncryptionKey, encoded);
-    const result = new Uint8Array(iv.length + encrypted.byteLength);
-    result.set(iv);
-    result.set(new Uint8Array(encrypted), iv.length);
-    return btoa(String.fromCharCode(...result));
-}
-
-async function decryptDataWC(base64) {
-    if (!webCryptoEncryptionKey) throw new Error("No encryption key.");
-    const data = new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0)));
-    const iv = data.slice(0, 12);
-    const enc = data.slice(12);
-    try {
-        const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, webCryptoEncryptionKey, enc);
-        return JSON.parse(new TextDecoder().decode(decrypted));
-    } catch (err) {
-        console.warn("Decryption failed:", err);
-        return null;
-    }
-}
-
-function updateUserInfoUI() {
-    if (currentUserAddress && currentNetwork) {
-        userInfoDiv.style.display = 'block';
-        userAddressSpan.textContent = currentUserAddress;
-        networkNameSpan.textContent = currentNetwork.name;
-        chainIdSpan.textContent = currentNetwork.chainId;
-    }
-}
-
-sendMessageBtn.addEventListener('click', async () => {
-    const recipient = recipientAddressInput.value.trim();
-    const content = messageInput.value.trim();
-    if (!recipient || !content) return;
-
-    const msg = {
-        id: crypto.randomUUID(),
-        sender: currentUserAddress,
-        recipient,
-        content,
-        timestamp: new Date().toISOString(),
-    };
-
-    await saveMessageToLocalCache(recipient, msg);
-    await addOrUpdateContact(recipient, content, msg.timestamp);
-    messageInput.value = '';
-});
-
-async function saveMessageToLocalCache(address, message) {
-    if (!webCryptoEncryptionKey) return;
-
-    const key = `messages_${address.toLowerCase()}`;
-    const existing = await localforage.getItem(key);
-    let messages = [];
-
-    if (existing) {
-        const decrypted = await decryptDataWC(existing);
-        if (decrypted) messages = decrypted;
-    }
-
-    messages.push(message);
-    const encrypted = await encryptDataWC(messages);
-    await localforage.setItem(key, encrypted);
-}
-
-async function addOrUpdateContact(addr, msg, time) {
-    if (!webCryptoEncryptionKey) return;
-
-    const key = `contacts_${currentUserAddress.toLowerCase()}`;
-    const existing = await localforage.getItem(key);
-    let list = [];
-
-    if (existing) {
-        const decrypted = await decryptDataWC(existing);
-        if (decrypted) list = decrypted;
-    }
-
-    const idx = list.findIndex(c => c.address === addr);
-    if (idx > -1) {
-        list[idx].lastMessage = msg;
-        list[idx].lastTimestamp = time;
-    } else {
-        list.push({ address: addr, lastMessage: msg, lastTimestamp: time });
-    }
-
-    list.sort((a, b) => new Date(b.lastTimestamp) - new Date(a.lastTimestamp));
-    const encrypted = await encryptDataWC(list);
-    await localforage.setItem(key, encrypted);
-    renderContactList(list);
-}
-
-async function loadContactsFromCache() {
-    const key = `contacts_${currentUserAddress.toLowerCase()}`;
-    const encrypted = await localforage.getItem(key);
-    if (encrypted) {
-        const decrypted = await decryptDataWC(encrypted);
-        if (decrypted) renderContactList(decrypted);
-    }
-}
-
-function renderContactList(contacts) {
-    contactListDiv.innerHTML = '';
-    for (const c of contacts) {
-        const div = document.createElement('div');
-        div.className = 'contact-item';
-        div.dataset.address = c.address;
-        div.innerHTML = `<p><strong>${c.address.slice(0, 6)}...${c.address.slice(-4)}</strong></p><p>${c.lastMessage}</p>`;
-        div.onclick = () => loadMessagesForChat(c.address);
-        contactListDiv.appendChild(div);
-    }
-}
-
-async function loadMessagesForChat(address) {
-    currentChatAddress = address;
-    const key = `messages_${address.toLowerCase()}`;
-    const encrypted = await localforage.getItem(key);
-    messageListDiv.innerHTML = '';
-    if (encrypted) {
-        const decrypted = await decryptDataWC(encrypted);
-        if (decrypted) {
-            decrypted.forEach(displayMessage);
-        }
-    }
-}
-
-function displayMessage(msg) {
-    const div = document.createElement('div');
-    div.className = 'message ' + (msg.sender === currentUserAddress ? 'sent' : 'received');
-    div.innerHTML = `<p>${msg.content}</p><span class="timestamp">${new Date(msg.timestamp).toLocaleTimeString()}</span>`;
-    messageListDiv.appendChild(div);
-}
-
-clearCacheBtn.addEventListener('click', async () => {
-    if (!currentUserAddress) return;
-    const key = `contacts_${currentUserAddress.toLowerCase()}`;
-    const encrypted = await localforage.getItem(key);
-    if (encrypted) {
-        const contacts = await decryptDataWC(encrypted);
-        if (contacts) {
-            for (const c of contacts) {
-                await localforage.removeItem(`messages_${c.address.toLowerCase()}`);
-            }
-        }
-        await localforage.removeItem(key);
-    }
-    contactListDiv.innerHTML = '';
-    messageListDiv.innerHTML = '<p class="system-message">Cache cleared. Start new chat.</p>';
-});
-
-// ✅ گرفتن کلید عمومی و نمایش داخل صفحه
+// ✅ نمایش public key خود کاربر
 async function displayPublicKey() {
     if (!currentUserAddress) {
         showStatusMessage("Connect your wallet first!", true);
@@ -267,3 +114,71 @@ async function displayPublicKey() {
         showStatusMessage("MetaMask permission denied or failed to get public key.", true);
     }
 }
+
+// ✅ ارسال پیام رمزنگاری‌شده به صورت تراکنش واقعی روی شبکه
+sendMessageBtn.addEventListener('click', async () => {
+    const recipient = recipientAddressInput.value.trim();
+    const recipientPubKey = recipientPublicKeyInput.value.trim();
+    const content = messageInput.value.trim();
+
+    if (!recipient || !recipientPubKey || !content) {
+        showStatusMessage("Please enter recipient address, public key and message.", true);
+        return;
+    }
+
+    if (!ethersSigner || !currentUserAddress) {
+        showStatusMessage("Connect your wallet first.", true);
+        return;
+    }
+
+    try {
+        const encrypted = window.ethSigUtil.encrypt({
+            publicKey: recipientPubKey,
+            data: content,
+            version: 'x25519-xsalsa20-poly1305'
+        });
+
+        const encryptedString = JSON.stringify(encrypted);
+        const hexData = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(encryptedString));
+
+        const tx = await ethersSigner.sendTransaction({
+            to: recipient,
+            value: 0,
+            data: hexData
+        });
+
+        showStatusMessage(`Message sent! Tx hash: ${tx.hash}`);
+        messageInput.value = '';
+
+    } catch (err) {
+        console.error("Failed to send encrypted message:", err);
+        showStatusMessage("Failed to send message. Check MetaMask permissions and inputs.", true);
+    }
+});
+
+// ✅ تابع‌های قبلی برای cache پیام‌ها و مخاطبین (در حال حاضر غیرفعال ولی باقی می‌مونن)
+async function encryptDataWC(data) { /* ... */ }
+async function decryptDataWC(base64) { /* ... */ }
+async function saveMessageToLocalCache(address, message) { /* ... */ }
+async function addOrUpdateContact(addr, msg, time) { /* ... */ }
+async function loadContactsFromCache() { /* ... */ }
+function renderContactList(contacts) { /* ... */ }
+async function loadMessagesForChat(address) { /* ... */ }
+function displayMessage(msg) { /* ... */ }
+
+clearCacheBtn.addEventListener('click', async () => {
+    if (!currentUserAddress) return;
+    const key = `contacts_${currentUserAddress.toLowerCase()}`;
+    const encrypted = await localforage.getItem(key);
+    if (encrypted) {
+        const contacts = await decryptDataWC(encrypted);
+        if (contacts) {
+            for (const c of contacts) {
+                await localforage.removeItem(`messages_${c.address.toLowerCase()}`);
+            }
+        }
+        await localforage.removeItem(key);
+    }
+    contactListDiv.innerHTML = '';
+    messageListDiv.innerHTML = '<p class="system-message">Cache cleared. Start new chat.</p>';
+});
