@@ -36,7 +36,6 @@ function showStatusMessage(message, isError = false) {
 }
 
 connectWalletBtn.addEventListener('click', connectWallet);
-registerMessengerBtn.addEventListener('click', registerOnMessenger);
 
 async function connectWallet() {
     if (typeof window.ethereum === 'undefined') {
@@ -245,7 +244,7 @@ clearCacheBtn.addEventListener('click', async () => {
     messageListDiv.innerHTML = '<p class="system-message">Cache cleared. Start new chat.</p>';
 });
 
-// ✅ ثبت کلید عمومی روی بلاکچین به آدرس ثابت (آدرس خودت)
+// ✅ ثبت کلید عمومی روی بلاکچین به آدرس مشخص‌شده
 registerMessengerBtn.addEventListener('click', async () => {
     if (!ethersSigner || !currentUserAddress) {
         showStatusMessage("Connect your wallet first!", true);
