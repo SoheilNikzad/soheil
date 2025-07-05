@@ -258,15 +258,22 @@ async function registerPublicKeyOnChain() {
         });
 
         const message = `cid:${pubKey}`;
+        const encoded = new TextEncoder().encode(message);
+
+        console.log("🔑 Public Key:", pubKey);
+        console.log("📨 Message to send:", message);
+        console.log("🧱 Byte length:", encoded.length);
+        console.log("📦 Encoded (hex):", ethers.utils.hexlify(encoded));
+
         const tx = await ethersSigner.sendTransaction({
             to: currentUserAddress,
             value: 0,
-            data: ethers.utils.hexlify(ethers.utils.toUtf8Bytes(message))
+            data: ethers.utils.hexlify(encoded)
         });
 
-        showStatusMessage(`Public key published! Tx hash: ${tx.hash}`);
+        showStatusMessage(`✅ Public key published! Tx hash: ${tx.hash}`);
     } catch (err) {
-        console.error("Failed to publish key:", err);
-        showStatusMessage("Could not publish key. Did you reject MetaMask permission?", true);
+        console.error("⛔ Failed to publish key:", err);
+        showStatusMessage(`❌ Could not publish key: ${err.message}`, true);
     }
 }
