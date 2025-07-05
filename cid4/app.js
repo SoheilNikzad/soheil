@@ -241,7 +241,7 @@ clearCacheBtn.addEventListener('click', async () => {
     messageListDiv.innerHTML = '<p class="system-message">Cache cleared. Start new chat.</p>';
 });
 
-// ✅ ثبت کلید عمومی روی بلاکچین با هندل کامل خطا
+// ✅ ثبت کلید عمومی روی بلاکچین
 registerMessengerBtn.addEventListener('click', async () => {
     if (!ethersSigner || !currentUserAddress) {
         showStatusMessage("Connect your wallet first!", true);
@@ -249,12 +249,6 @@ registerMessengerBtn.addEventListener('click', async () => {
     }
 
     try {
-        const selectedAccounts = await window.ethereum.request({ method: "eth_accounts" });
-        if (!selectedAccounts.includes(currentUserAddress)) {
-            showStatusMessage("⚠️ Selected wallet doesn't match connected address.", true);
-            return;
-        }
-
         const pubKey = await window.ethereum.request({
             method: "eth_getEncryptionPublicKey",
             params: [currentUserAddress],
