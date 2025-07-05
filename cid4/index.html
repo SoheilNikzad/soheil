@@ -14,17 +14,17 @@
         <h2>Contacts</h2>
         <button id="connectWalletBtn" class="glow-button">Connect Wallet</button>
         <button id="registerKeyBtn" class="glow-button-small" style="margin-top: 10px;">Register Public Key</button>
-
-        <!-- ✅ نمایش public key خود کاربر -->
-        <div id="publicKeyBox" class="user-info" style="display: none;">
-          <p><strong>Your Public Key:</strong></p>
-          <textarea id="publicKeyDisplay" readonly></textarea>
-        </div>
       </div>
 
       <div id="userInfo" class="user-info" style="display: none;">
         <p><strong>Address:</strong> <span id="userAddress"></span></p>
         <p><strong>Network:</strong> <span id="networkName"></span> (<span id="chainId"></span>)</p>
+      </div>
+
+      <!-- نمایش کلید عمومی -->
+      <div id="publicKeyBox" class="user-info" style="display: none;">
+        <p><strong>Your Public Key:</strong></p>
+        <textarea id="publicKeyDisplay" readonly style="width: 100%; height: 100px;"></textarea>
       </div>
 
       <div id="contactList" class="contact-list">
@@ -44,7 +44,6 @@
 
       <footer class="chat-footer">
         <input type="text" id="recipientAddressInput" placeholder="Recipient Address"/>
-        <input type="text" id="recipientPublicKeyInput" placeholder="Recipient Public Key"/>
         <textarea id="messageInput" placeholder="Type your message..."></textarea>
         <button id="sendMessageBtn" class="glow-button">Send</button>
       </footer>
@@ -56,21 +55,17 @@
     <div class="modal-content">
       <span class="close-button">&times;</span>
       <p>Scan QR Code to connect mobile wallet (placeholder)</p>
-      <div id="qrCodeContainer">
-        <!-- QR Code will be displayed here -->
-      </div>
+      <div id="qrCodeContainer"></div>
     </div>
   </div>
 
-  <!-- Scripts: ترتیب مهمه -->
+  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <script src="https://unpkg.com/localforage@1.10.0/dist/localforage.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-
-  <!-- 👇 نسخه لوکال eth-sig-util -->
-  <script src="eth-sig-util-v4.umd.js"></script>
-
-  <!-- اپ اصلی -->
+  <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tweetnacl-util@0.15.1/nacl-util.min.js"></script>
+  <script src="eth-sig-util-browser.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
