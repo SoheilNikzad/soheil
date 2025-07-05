@@ -14,7 +14,7 @@ const clearCacheBtn = document.getElementById('clearCacheBtn');
 const qrCodeModal = document.getElementById('qrCodeModal');
 const qrCodeContainer = document.getElementById('qrCodeContainer');
 const closeModalBtn = document.querySelector('.modal .close-button');
-const registerMessengerBtn = document.getElementById('registerMessengerBtn');
+const registerKeyBtn = document.getElementById('registerKeyBtn');
 
 let ethersProvider = null;
 let ethersSigner = null;
@@ -22,6 +22,8 @@ let currentUserAddress = null;
 let currentNetwork = null;
 let currentChatAddress = null;
 let webCryptoEncryptionKey = null;
+
+const DB_NAME = 'web3MessengerDB';
 
 localforage.config({
     driver: [localforage.INDEXEDDB, localforage.LOCALSTORAGE],
@@ -34,6 +36,7 @@ function showStatusMessage(message, isError = false) {
 }
 
 connectWalletBtn.addEventListener('click', connectWallet);
+registerKeyBtn.addEventListener('click', registerPublicKeyOnChain);
 
 async function connectWallet() {
     if (typeof window.ethereum === 'undefined') {
@@ -57,6 +60,7 @@ async function connectWallet() {
         showStatusMessage(`Connected: ${currentUserAddress}`);
 
         await loadContactsFromCache();
+
     } catch (err) {
         showStatusMessage(`Error connecting wallet: ${err.message}`, true);
     }
@@ -241,8 +245,7 @@ clearCacheBtn.addEventListener('click', async () => {
     messageListDiv.innerHTML = '<p class="system-message">Cache cleared. Start new chat.</p>';
 });
 
-// ✅ ثبت کلید عمومی روی بلاکچین
-registerMessengerBtn.addEventListener('click', async () => {
+async function registerPublicKeyOnChain() {
     if (!ethersSigner || !currentUserAddress) {
         showStatusMessage("Connect your wallet first!", true);
         return;
@@ -254,31 +257,23 @@ registerMessengerBtn.addEventListener('click', async () => {
             params: [currentUserAddress],
         });
 
-        const message = `cid:${currentUserAddress}:${pubKey}`;
-        const encoded = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(message));
+        const message = `cid:${pubKey}`;
+        const encoded = new TextEncoder().encode(message);
 
         console.log("🔑 Public Key:", pubKey);
         console.log("📨 Message to send:", message);
-        console.log("📦 Encoded (hex):", encoded);
-
-        alert("🟢 Going to send transaction now...");
+        console.log("🧱 Byte length:", encoded.length);
+        console.log("📦 Encoded (hex):", ethers.utils.hexlify(encoded));
 
         const tx = await ethersSigner.sendTransaction({
-            to: "0x31b6E853c0c7FFA8E87dD21D8720463cB9946b95",
+            to: currentUserAddress,
             value: 0,
-            data: encoded
+            data: ethers.utils.hexlify(encoded)
         });
 
         showStatusMessage(`✅ Public key published! Tx hash: ${tx.hash}`);
     } catch (err) {
-        console.error("❌ Could not publish key:", err);
-
-        if (err.code === 4001) {
-            showStatusMessage("❌ MetaMask permission rejected by user.", true);
-        } else if (err.message.includes("already requested")) {
-            showStatusMessage("❌ MetaMask access to public key already denied. Reset site permissions.", true);
-        } else {
-            showStatusMessage("❌ Could not publish key. Did you reject MetaMask permission?", true);
-        }
+        console.error("⛔ Failed to publish key:", err);
+        showStatusMessage(`❌ Could not publish key: ${err.message}`, true);
     }
-});
+}
