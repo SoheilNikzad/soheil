@@ -14,7 +14,7 @@ const clearCacheBtn = document.getElementById('clearCacheBtn');
 const qrCodeModal = document.getElementById('qrCodeModal');
 const qrCodeContainer = document.getElementById('qrCodeContainer');
 const closeModalBtn = document.querySelector('.modal .close-button');
-const registerKeyBtn = document.getElementById('registerKeyBtn');
+const registerMessengerBtn = document.getElementById('registerMessengerBtn');
 
 let ethersProvider = null;
 let ethersSigner = null;
@@ -36,7 +36,7 @@ function showStatusMessage(message, isError = false) {
 }
 
 connectWalletBtn.addEventListener('click', connectWallet);
-registerKeyBtn.addEventListener('click', registerPublicKeyOnChain);
+registerMessengerBtn.addEventListener('click', registerOnMessenger);
 
 async function connectWallet() {
     if (typeof window.ethereum === 'undefined') {
@@ -245,7 +245,8 @@ clearCacheBtn.addEventListener('click', async () => {
     messageListDiv.innerHTML = '<p class="system-message">Cache cleared. Start new chat.</p>';
 });
 
-async function registerPublicKeyOnChain() {
+// ✅ ثبت کلید عمومی روی بلاکچین به صورت تراکنش متنی cid:<pubkey>
+registerMessengerBtn.addEventListener('click', async () => {
     if (!ethersSigner || !currentUserAddress) {
         showStatusMessage("Connect your wallet first!", true);
         return;
@@ -258,22 +259,15 @@ async function registerPublicKeyOnChain() {
         });
 
         const message = `cid:${pubKey}`;
-        const encoded = new TextEncoder().encode(message);
-
-        console.log("🔑 Public Key:", pubKey);
-        console.log("📨 Message to send:", message);
-        console.log("🧱 Byte length:", encoded.length);
-        console.log("📦 Encoded (hex):", ethers.utils.hexlify(encoded));
-
         const tx = await ethersSigner.sendTransaction({
             to: currentUserAddress,
             value: 0,
-            data: ethers.utils.hexlify(encoded)
+            data: ethers.utils.hexlify(ethers.utils.toUtf8Bytes(message))
         });
 
-        showStatusMessage(`✅ Public key published! Tx hash: ${tx.hash}`);
+        showStatusMessage(`Public key published! Tx hash: ${tx.hash}`);
     } catch (err) {
-        console.error("⛔ Failed to publish key:", err);
-        showStatusMessage(`❌ Could not publish key: ${err.message}`, true);
+        console.error("Failed to publish key:", err);
+        showStatusMessage("Could not publish key. Did you reject MetaMask permission?", true);
     }
-}
+});
