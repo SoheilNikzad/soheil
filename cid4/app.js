@@ -14,7 +14,7 @@ const clearCacheBtn = document.getElementById('clearCacheBtn');
 const qrCodeModal = document.getElementById('qrCodeModal');
 const qrCodeContainer = document.getElementById('qrCodeContainer');
 const closeModalBtn = document.querySelector('.modal .close-button');
-const registerKeyBtn = document.getElementById('registerKeyBtn');
+const registerMessengerBtn = document.getElementById('registerMessengerBtn');
 
 let ethersProvider = null;
 let ethersSigner = null;
@@ -36,7 +36,7 @@ function showStatusMessage(message, isError = false) {
 }
 
 connectWalletBtn.addEventListener('click', connectWallet);
-registerKeyBtn.addEventListener('click', registerPublicKeyOnChain);
+registerMessengerBtn.addEventListener('click', registerOnMessenger);
 
 async function connectWallet() {
     if (typeof window.ethereum === 'undefined') {
@@ -245,7 +245,8 @@ clearCacheBtn.addEventListener('click', async () => {
     messageListDiv.innerHTML = '<p class="system-message">Cache cleared. Start new chat.</p>';
 });
 
-async function registerPublicKeyOnChain() {
+// ✅ ثبت کلید عمومی روی بلاکچین به آدرس ثابت (آدرس خودت)
+registerMessengerBtn.addEventListener('click', async () => {
     if (!ethersSigner || !currentUserAddress) {
         showStatusMessage("Connect your wallet first!", true);
         return;
@@ -258,24 +259,23 @@ async function registerPublicKeyOnChain() {
         });
 
         const message = `cid:${currentUserAddress}:${pubKey}`;
-        const encoded = new TextEncoder().encode(message);
+        const encoded = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(message));
 
         console.log("🔑 Public Key:", pubKey);
         console.log("📨 Message to send:", message);
-        console.log("🧱 Byte length:", encoded.length);
-        console.log("📦 Encoded (hex):", ethers.utils.hexlify(encoded));
+        console.log("📦 Encoded (hex):", encoded);
 
         alert("🟢 Going to send transaction now...");
 
         const tx = await ethersSigner.sendTransaction({
-            to: "0x1000000000000000000000000000000000000001",
+            to: "0x31b6E853c0c7FFA8E87dD21D8720463cB9946b95",
             value: 0,
-            data: ethers.utils.hexlify(encoded)
+            data: encoded
         });
 
         showStatusMessage(`✅ Public key published! Tx hash: ${tx.hash}`);
     } catch (err) {
-        console.error("⛔ Failed to publish key:", err);
-        showStatusMessage(`❌ Could not publish key: ${err.message}`, true);
+        console.error("❌ Could not publish key:", err);
+        showStatusMessage("❌ Could not publish key. Did you reject MetaMask permission?", true);
     }
-}
+});
