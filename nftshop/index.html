@@ -1,45 +1,132 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>NFT Shop</title>
-  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300&display=swap" rel="stylesheet">
-  <style>
-    /* نگه داشتن همه‌ی استایل‌ها بدون تغییر */
-    :root { /* ... */ }
-    body { /* ... */ }
-    .container { /* ... */ }
-    /* ... و بقیه بدون تغییر ... */
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>NFT Token Shop</title>
+
+<!-- Comfortaa font from Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Comfortaa&display=swap" rel="stylesheet" />
+
+<style>
+  /* Reset and base */
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    background: #f9f7f2; /* very light off-white */
+    font-family: 'Comfortaa', cursive;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    color: #000000;
+  }
+  h1 {
+    font-weight: 400; /* Comfortaa is already friendly rounded */
+    font-size: 2.8rem;
+    margin-bottom: 0.3rem;
+  }
+  p.subtitle {
+    color: #4a4a4a;
+    font-weight: 400;
+    font-size: 1.1rem;
+    margin-bottom: 2.2rem;
+  }
+  form {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 12px 28px rgb(255 111 0 / 0.15); /* orange shadow */
+    max-width: 400px;
+    width: 100%;
+    padding: 2.8rem 3rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.6rem;
+  }
+  label {
+    font-weight: 700;
+    font-size: 1rem;
+    color: #000000;
+  }
+  input[type="text"],
+  input[type="file"],
+  textarea {
+    font-family: 'Comfortaa', cursive;
+    font-weight: 400;
+    font-size: 1rem;
+    padding: 0.65rem 1rem;
+    border: 2px solid #ddd;
+    border-radius: 12px;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    resize: vertical;
+  }
+  input[type="text"]:focus,
+  textarea:focus {
+    outline: none;
+    border-color: #FF6F00;
+    box-shadow: 0 0 8px #FF6F00aa;
+  }
+  textarea {
+    min-height: 100px;
+  }
+  button {
+    background-color: #FF6F00;
+    color: white;
+    border: none;
+    padding: 1.1rem 0;
+    font-weight: 700;
+    font-size: 1.3rem;
+    border-radius: 9999px;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.25s ease;
+  }
+  button:hover:not(:disabled) {
+    background-color: #cc5900;
+  }
+  button:disabled {
+    background-color: #f2b66e;
+    cursor: not-allowed;
+  }
+  .status {
+    font-weight: 700;
+    font-size: 1rem;
+    color: #FF6F00;
+    text-align: center;
+    min-height: 1.3rem;
+    margin-top: 0.6rem;
+  }
+  @media (max-width: 480px) {
+    form {
+      padding: 2rem 1.5rem;
+    }
+  }
+</style>
 </head>
 <body>
-  <div class="container">
-    <h1>NFT Shop</h1>
-    <button id="connectBtn"> Connect Wallet</button>
-    <p id="status">Waiting for connection...</p>
-    <input type="text" id="yourWallet" readonly />
 
-    <label for="name">NFT Name:</label>
-    <input type="text" id="name" placeholder="e.g. My NFT" />
+  <h1>Mint Your NFT</h1>
+  <p class="subtitle">Create your unique collectible with image and metadata.</p>
 
-    <label for="symbol">NFT Symbol:</label>
-    <input type="text" id="symbol" placeholder="e.g. MNFT" />
+  <form id="mintForm">
+    <label for="name">NFT Name</label>
+    <input id="name" type="text" placeholder="Enter your NFT's name" required />
 
-    <label for="description">Description:</label>
-    <textarea id="description" placeholder="describe your NFT"></textarea>
+    <label for="description">Description</label>
+    <textarea id="description" placeholder="Describe your NFT" required></textarea>
 
-    <label for="image">Image or GIF:</label>
-    <input type="file" id="image" accept="image/*" />
+    <label for="image">Upload Image (PNG, JPG, GIF)</label>
+    <input id="image" type="file" accept="image/png, image/jpeg, image/gif" required />
 
-    <p class="note">Note: metadata and media will be on IPFS (implement upload separately).</p>
+    <button type="submit">Mint NFT</button>
 
-    <button id="createNft">Sign to Mint NFT</button>
+    <div class="status" id="status"></div>
+  </form>
 
-    <pre id="output"></pre>
-
-    <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
-    <script defer src="main.js"></script>
-  </div>
+  <script src="main.js"></script>
 </body>
 </html>
