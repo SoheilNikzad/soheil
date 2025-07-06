@@ -26,9 +26,7 @@
         <p><strong>Network:</strong> <span id="networkName"></span> (<span id="chainId"></span>)</p>
       </div>
 
-      <div id="contactList" class="contact-list">
-        <!-- Contacts will be listed here -->
-      </div>
+      <div id="contactList" class="contact-list"></div>
     </aside>
 
     <main class="chat-area">
@@ -37,9 +35,7 @@
         <button id="clearCacheBtn" class="glow-button-small" style="display: none;">Clear Cache</button>
       </header>
 
-      <div id="messageList" class="message-list">
-        <!-- Messages will appear here -->
-      </div>
+      <div id="messageList" class="message-list"></div>
 
       <footer class="chat-footer">
         <input type="text" id="recipientAddressInput" placeholder="Recipient Address"/>
@@ -53,6 +49,7 @@
     </main>
   </div>
 
+  <!-- QR Modal -->
   <div id="qrCodeModal" class="modal" style="display:none;">
     <div class="modal-content">
       <span class="close-button">&times;</span>
@@ -61,13 +58,9 @@
     </div>
   </div>
 
-  <!-- Libraries -->
+  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-  <script src="https://unpkg.com/localforage@1.10.0/dist/localforage.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl.min.js"></script>
-
-  <!-- App Logic -->
-  <script src="app.js"></script>
+  <script src="app.js" defer></script>
 </body>
 </html>
