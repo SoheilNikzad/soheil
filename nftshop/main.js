@@ -1,6 +1,3 @@
-import { ethers } from "./ethers-5.6.esm.min.js";
-import { Web3Storage } from "https://cdn.jsdelivr.net/npm/web3.storage/dist/bundle.esm.min.js";
-
 const abi = [
 	{
 		"inputs": [
