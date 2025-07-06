@@ -14,12 +14,6 @@
         <h2>Contacts</h2>
         <button id="connectWalletBtn" class="glow-button">Connect Wallet</button>
         <button id="registerKeyBtn" class="glow-button-small">Register Public Key</button>
-        <button id="loadInboxBtn" class="glow-button-small" style="margin-top: 10px;">Load Inbox</button>
-
-        <div id="publicKeyBox" class="user-info" style="display: none;">
-          <p><strong>Your Public Key:</strong></p>
-          <textarea id="publicKeyDisplay" readonly></textarea>
-        </div>
       </div>
 
       <div id="userInfo" class="user-info" style="display: none;">
@@ -38,10 +32,15 @@
 
       <div id="messageList" class="message-list"></div>
 
-      <!-- 🔽 Inbox Section -->
-      <section id="inboxSection" class="message-list" style="display: none;">
-        <h3 style="color: #ffa500;">Inbox</h3>
-        <div id="inboxContainer"></div>
+      <!-- 🧪 Manual Decryption Section -->
+      <section id="manualDecryptSection" class="message-list">
+        <h3 style="color: #ffa500;">Manual Message Decryption</h3>
+
+        <textarea id="rawInputData" placeholder="Paste raw hex data from transaction (e.g. 0x7b226e6f6e636522...)" rows="3"></textarea>
+        <input type="text" id="manualSenderPubKey" placeholder="Sender's Public Key (base64)">
+        <input type="text" id="manualReceiverPrivKey" placeholder="Your Private Key (hex)">
+        <button id="manualDecryptBtn" class="glow-button-small">Decrypt</button>
+        <pre id="manualDecryptedOutput" style="white-space: pre-wrap; color: lime; margin-top: 10px;"></pre>
       </section>
 
       <footer class="chat-footer">
