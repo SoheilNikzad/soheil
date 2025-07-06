@@ -172,6 +172,14 @@ loadInboxBtn?.addEventListener('click', async () => {
     const res = await fetch(url);
     const data = await res.json();
 
+    console.log("📡 Polygonscan API Raw Response:", data); // 🐞 برای بررسی خروجی
+
+    if (!Array.isArray(data.result)) {
+      console.error("❗ Unexpected API response:", data);
+      inboxContainer.innerHTML = '<p>❌ Unexpected API response. Check console for details.</p>';
+      return;
+    }
+
     const messages = data.result.filter(tx => tx.input && tx.input !== "0x");
 
     if (messages.length === 0) {
@@ -231,6 +239,7 @@ loadInboxBtn?.addEventListener('click', async () => {
     });
 
   } catch (err) {
+    console.error("❌ Inbox loading failed:", err);
     alert("Failed to load inbox: " + err.message);
   }
 });
