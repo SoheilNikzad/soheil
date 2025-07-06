@@ -1,232 +1,140 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html> 
+<html lang="en" dir="ltr">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>NFT Shop - Mint Your NFT</title>
-
-<!-- Comfortaa font -->
-<link href="https://fonts.googleapis.com/css2?family=Comfortaa&display=swap" rel="stylesheet" />
-
-<style>
-  body {
-    margin: 0;
-    background: #faf9f7;
-    font-family: 'Comfortaa', cursive;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    color: #000;
-  }
-
-  .container {
-    background: #fff;
-    max-width: 420px;
-    width: 100%;
-    padding: 48px 40px 52px;
-    border-radius: 20px;
-    box-shadow: 0 12px 24px rgba(255, 111, 0, 0.14);
-    display: flex;
-    flex-direction: column;
-  }
-
-  /* Title + NFT icon */
-  .header {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin-bottom: 12px;
-  }
-
-  .header svg {
-    width: 40px;
-    height: 40px;
-    fill: #FF6F00;
-    flex-shrink: 0;
-  }
-
-  h1 {
-    font-weight: 400;
-    font-size: 28px;
-    line-height: 1.2;
-    margin: 0;
-  }
-
-  .subtitle {
-    font-weight: 400;
-    font-size: 16px;
-    line-height: 1.4;
-    margin: 0 0 36px 0;
-    color: #5c5c5c;
-  }
-
-  form {
-    display: flex;
-    flex-direction: column;
-    gap: 28px;
-  }
-
-  label {
-    font-weight: 700;
-    font-size: 16px;
-    color: #000;
-    display: block;
-    margin-bottom: 8px;
-  }
-
-  input[type="text"],
-  input[type="file"],
-  textarea {
-    border: 2px solid #ddd;
-    border-radius: 14px;
-    padding: 14px 20px;
-    font-family: 'Comfortaa', cursive;
-    font-size: 16px;
-    font-weight: 400;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    resize: vertical;
-    width: 100%;
-  }
-
-  input[type="text"]:focus,
-  input[type="file"]:focus,
-  textarea:focus {
-    border-color: #FF6F00;
-    box-shadow: 0 0 8px #FF6F00aa;
-    outline: none;
-  }
-
-  textarea {
-    min-height: 110px;
-  }
-
-  /* Upload preview for symbol */
-  .upload-preview {
-    margin-top: 12px;
-    width: 96px;
-    height: 96px;
-    border-radius: 14px;
-    border: 2px solid #ddd;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden;
-    background: #f9f9f9;
-  }
-  .upload-preview img {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-  }
-
-  button {
-    margin-top: 12px;
-    background-color: #FF6F00;
-    border: none;
-    border-radius: 9999px;
-    padding: 18px 0;
-    font-weight: 700;
-    font-size: 18px;
-    color: #fff;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    user-select: none;
-  }
-
-  button:hover:not(:disabled) {
-    background-color: #cc5900;
-  }
-
-  button:disabled {
-    background-color: #f2b66e;
-    cursor: not-allowed;
-  }
-
-  .status {
-    font-weight: 700;
-    font-size: 16px;
-    color: #FF6F00;
-    margin-top: 8px;
-    min-height: 22px;
-    text-align: center;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NFT Collection Creator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --color-bg: #0d111c;
+      --color-panel: #1c2230;
+      --color-border: #2e374a;
+      --color-primary: #f7931a;
+      --color-text: #ffffffcc;
+    }
+    body {
+      font-family: 'Comfortaa', sans-serif;
+      background: var(--color-bg);
+      color: var(--color-text);
+      margin: 0;
+      padding: 2rem;
+      display: flex;
+      justify-content: center;
+    }
+    .container {
+      background: var(--color-panel);
+      padding: 2rem;
+      border-radius: 20px;
+      width: 100%;
+      max-width: 600px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    }
+    h1 {
+      text-align: center;
+      font-size: 1.5rem;
+      margin-bottom: 2rem;
+      color: white;
+    }
+    label {
+      display: block;
+      margin: 1rem 0 0.25rem;
+      font-weight: 500;
+    }
+    input, textarea, button {
+      background: #0f172a;
+      border: 1px solid var(--color-border);
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+      color: white;
+      width: 100%;
+      box-sizing: border-box;
+      font-family: 'Comfortaa', sans-serif;
+    }
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+    button {
+      margin-top: 1.2rem;
+      border: none;
+      border-radius: 12px;
+      background: var(--color-primary);
+      color: #ffffff;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    #output, #mintOutput {
+      margin-top: 1.5rem;
+      background: #0f172a;
+      padding: 1rem;
+      border-radius: 10px;
+      font-family: monospace;
+      font-size: 0.9rem;
+      white-space: pre-wrap;
+    }
+    .section {
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--color-border);
+    }
+  </style>
 </head>
 <body>
+  <div class="container">
+    <h1>NFT Collection Creator</h1>
 
-<div class="container" role="main" aria-label="NFT Minting Form">
-  <header class="header">
-    <!-- Original NFT diamond symbol -->
-    <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
-      <path d="M32 2L2 32l30 30 30-30L32 2zM32 10.35l16.89 16.89L32 44.13 15.11 27.24 32 10.35zM12.43 34.57l7.88 8.72 6.91-10.27-14.79 1.55zM41.78 43.38l7.89-8.72-14.79-1.55 6.9 10.27z"/>
-    </svg>
-    <h1>Mint Your NFT</h1>
-  </header>
+    <button id="connectBtn">Connect Wallet</button>
+    <p id="status">Waiting for connection...</p>
+    <input type="text" id="yourWallet" readonly placeholder="Your wallet address" />
 
-  <p class="subtitle">Create your unique collectible with your own NFT symbol and metadata.</p>
+    <label for="name">Collection Name:</label>
+    <input type="text" id="name" placeholder="e.g. My Awesome Collection" />
 
-  <form id="mintForm" novalidate>
-    <!-- NFT Symbol Upload -->
-    <div>
-      <label for="symbol">Upload NFT Symbol (SVG/PNG/JPG/GIF)</label>
-      <input id="symbol" name="symbol" type="file" accept=".svg,image/png,image/jpeg,image/gif" />
-      <div class="upload-preview" id="symbolPreview" aria-live="polite"></div>
+    <label for="symbol">Collection Symbol:</label>
+    <input type="text" id="symbol" placeholder="e.g. MAC" />
+
+    <label for="description">Description (Optional):</label>
+    <textarea id="description" placeholder="Tell us about your collection"></textarea>
+
+    <label for="imageUrl">Collection Image URL (Optional):</label>
+    <input type="text" id="imageUrl" placeholder="https://example.com/image.png" />
+
+    <p class="note">Note: Collection name and symbol can’t be changed after creation.</p>
+
+    <button id="createToken">Create NFT Collection</button>
+
+    <pre id="output"></pre>
+
+    <div class="section" id="mintingSection" style="display:none;">
+      <h2>Mint NFT</h2>
+
+      <label for="nftName">NFT Name:</label>
+      <input type="text" id="nftName" placeholder="NFT name" />
+
+      <label for="nftDescription">NFT Description:</label>
+      <textarea id="nftDescription" placeholder="NFT description (optional)"></textarea>
+
+      <label for="nftImageUrl">NFT Image URL:</label>
+      <input type="text" id="nftImageUrl" placeholder="https://example.com/nft-image.png" />
+
+      <button id="generateMetadataBtn">Generate Metadata JSON</button>
+
+      <label for="metadataJsonOutput">Metadata JSON:</label>
+      <textarea id="metadataJsonOutput" readonly></textarea>
+
+      <label for="nftMetadataIpfsUrl">Metadata IPFS URL (e.g. ipfs://...):</label>
+      <input type="text" id="nftMetadataIpfsUrl" placeholder="Enter metadata IPFS URL to mint" />
+
+      <button id="mintNftBtn">Mint NFT</button>
+
+      <pre id="mintOutput"></pre>
     </div>
 
-    <!-- NFT Name -->
-    <div>
-      <label for="name">NFT Name</label>
-      <input id="name" name="name" type="text" placeholder="Enter your NFT's name" required />
-    </div>
+  </div>
 
-    <!-- Description -->
-    <div>
-      <label for="description">Description</label>
-      <textarea id="description" name="description" placeholder="Describe your NFT" required></textarea>
-    </div>
-
-    <!-- Image Upload -->
-    <div>
-      <label for="image">Upload NFT Image (PNG, JPG, GIF)</label>
-      <input id="image" name="image" type="file" accept="image/png, image/jpeg, image/gif" required />
-    </div>
-
-    <button type="submit">Mint NFT</button>
-
-    <div class="status" id="status" aria-live="polite" role="status"></div>
-  </form>
-</div>
-
-<script>
-  // Show preview of uploaded symbol
-  const symbolInput = document.getElementById('symbol');
-  const previewContainer = document.getElementById('symbolPreview');
-
-  symbolInput.addEventListener('change', () => {
-    previewContainer.innerHTML = ''; // clear preview
-    const file = symbolInput.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const src = e.target.result;
-      // Create image element for preview
-      if (file.type === 'image/svg+xml') {
-        // For SVG, embed directly
-        previewContainer.innerHTML = src;
-      } else {
-        const img = document.createElement('img');
-        img.src = src;
-        img.alt = "NFT Symbol Preview";
-        previewContainer.appendChild(img);
-      }
-    };
-    reader.readAsDataURL(file);
-  });
-
-  // You can add your minting logic here to handle the form submit event...
-</script>
-
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
+  <script defer src="main.js"></script>
 </body>
 </html>
