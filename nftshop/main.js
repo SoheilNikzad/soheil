@@ -43,7 +43,7 @@ async function connectWallet() {
     signer = await provider.getSigner();
 
     yourWalletInput.value = deployerAddress;
-    statusDiv.innerText = ✅ Wallet connected: ${deployerAddress.slice(0, 6)}...${deployerAddress.slice(-4)};
+    statusDiv.innerText = ✅ Wallet connected:
     connected = true;
   } catch (err) {
     statusDiv.innerText = '❌ Wallet connection was cancelled or failed.';
