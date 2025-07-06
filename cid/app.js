@@ -71,7 +71,7 @@ registerKeyBtn?.addEventListener('click', async () => {
   }
 });
 
-// ✉️ Send Encrypted Message (on-chain tx)
+// ✉️ Send Message (on-chain)
 sendMessageBtn?.addEventListener('click', async () => {
   const recipient = recipientAddressInput?.value.trim();
   const recipientPubKey = recipientPublicKeyInput?.value.trim();
@@ -87,8 +87,10 @@ sendMessageBtn?.addEventListener('click', async () => {
     const privateKey = Uint8Array.from(privateKeyHex.match(/.{1,2}/g).map(h => parseInt(h, 16)));
     const senderKeyPair = nacl.box.keyPair.fromSecretKey(privateKey);
     const nonce = nacl.randomBytes(24);
+    const msgParams = naclUtil.decodeUTF8(content);
+
     const encryptedMessage = nacl.box(
-      naclUtil.decodeUTF8(content),
+      msgParams,
       nonce,
       naclUtil.decodeBase64(recipientPubKey),
       senderKeyPair.secretKey
@@ -96,7 +98,7 @@ sendMessageBtn?.addEventListener('click', async () => {
 
     const payload = {
       nonce: naclUtil.encodeBase64(nonce),
-      ciphertext: naclUtil.encodeBase64(encryptedMessage)
+      ciphertext: naclUtil.encodeBase64(encryptedMessage),
     };
 
     const hexData = ethers.utils.hexlify(
@@ -132,8 +134,10 @@ encryptOnlyBtn?.addEventListener('click', () => {
     const privateKey = Uint8Array.from(privateKeyHex.match(/.{1,2}/g).map(h => parseInt(h, 16)));
     const senderKeyPair = nacl.box.keyPair.fromSecretKey(privateKey);
     const nonce = nacl.randomBytes(24);
+    const msgParams = naclUtil.decodeUTF8(content);
+
     const encryptedMessage = nacl.box(
-      naclUtil.decodeUTF8(content),
+      msgParams,
       nonce,
       naclUtil.decodeBase64(recipientPubKey),
       senderKeyPair.secretKey
@@ -141,7 +145,7 @@ encryptOnlyBtn?.addEventListener('click', () => {
 
     const payload = {
       nonce: naclUtil.encodeBase64(nonce),
-      ciphertext: naclUtil.encodeBase64(encryptedMessage)
+      ciphertext: naclUtil.encodeBase64(encryptedMessage),
     };
 
     encryptedOutputBox.textContent = JSON.stringify(payload, null, 2);
