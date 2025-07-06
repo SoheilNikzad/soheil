@@ -1,30 +1,156 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>NFT Launcher</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NFT Collection Creator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --color-bg: #0d111c;
+      --color-panel: #1c2230;
+      --color-border: #2e374a;
+      --color-primary: #f7931a; /* Bitcoin Orange */
+      --color-muted: #94a3b8;
+      --color-text: #ffffffcc;
+    }
+
+    body {
+      font-family: 'Comfortaa', sans-serif;
+      background: var(--color-bg);
+      color: var(--color-text);
+      margin: 0;
+      padding: 2rem;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      background: var(--color-panel);
+      padding: 2rem;
+      border-radius: 20px;
+      width: 100%;
+      max-width: 600px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+      font-family: 'Comfortaa', sans-serif;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 1.5rem;
+      margin-bottom: 2rem;
+      color: white;
+    }
+
+    label {
+      display: block;
+      margin: 1rem 0 0.25rem;
+      font-weight: 500;
+    }
+
+    input, textarea, select, button { /* Removed .fake-upload from this rule */
+      background: #0f172a;
+      border: 1px solid var(--color-border);
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+      color: white;
+      width: 100%;
+      box-sizing: border-box;
+      font-family: 'Comfortaa', sans-serif;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    /* Removed .fake-upload styles as the element is removed */
+
+    /* Removed .toggle styles as the elements are removed */
+
+    .note {
+      color: #facc15;
+      font-size: 0.85rem;
+      margin-top: 1rem;
+    }
+
+    button {
+      margin-top: 1.2rem;
+      border: none;
+      border-radius: 12px;
+      background: var(--color-primary);
+      color: #ffffff;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    #output {
+      margin-top: 1.5rem;
+      background: #0f172a;
+      padding: 1rem;
+      border-radius: 10px;
+      font-family: monospace;
+      font-size: 0.9rem;
+      white-space: pre-wrap;
+    }
+  </style>
 </head>
 <body>
-  <h1>NFT Launcher (EVM Compatible)</h1>
+  <div class="container">
+    <h1>NFT Collection Creator</h1>
 
-  <button id="connectWallet">Connect Wallet</button><br><br>
+    <button id="connectBtn"> Connect Wallet</button>
+    <p id="status">Waiting for connection...</p>
+    <input type="text" id="yourWallet" readonly />
 
-  <textarea id="abi" placeholder="Paste ABI here..." rows="10" cols="80"></textarea><br><br>
-  <textarea id="bytecode" placeholder="Paste Bytecode here..." rows="10" cols="80"></textarea><br><br>
+    <label for="name">Collection Name:</label>
+    <input type="text" id="name" placeholder="e.g. My Awesome Collection" />
 
-  <button id="deployContract">Deploy NFT Contract</button><br><br>
+    <label for="symbol">Collection Symbol:</label>
+    <input type="text" id="symbol" placeholder="e.g. MAC" />
 
-  <div id="mintSection" style="display:none;">
-    <h3>Mint NFT</h3>
-    <input id="mintTo" placeholder="Recipient address" size="42"/><br><br>
-    <input id="tokenURI" placeholder="Token URI (e.g., metadata URL)" size="42"/><br><br>
-    <button id="mintNFT">Mint NFT</button>
+    <label for="description">Description (Optional):</label>
+    <textarea id="description" placeholder="Tell us about your collection"></textarea> <!-- Enabled this field -->
+
+    <label for="imageUrl">Collection Image URL (Optional):</label>
+    <input type="text" id="imageUrl" placeholder="https://example.com/image.png" />
+
+    <p class="note">Note: Collection name and symbol can’t be changed after creation.</p>
+
+    <button id="createToken">Create NFT Collection</button>
+
+    <pre id="output"></pre>
+
+    <!-- Minting Section - Initially Hidden -->
+    <div id="mintingSection" style="display: none; margin-top: 2rem; border-top: 1px solid var(--color-border); padding-top: 1rem;">
+      <h2>Mint New NFT</h2>
+      <p>For Collection: <strong id="collectionContractAddress"></strong></p>
+      <p>Next Token ID to Mint: <strong id="nextTokenIdDisplay">Loading...</strong></p>
+
+      <label for="nftName">NFT Name:</label>
+      <input type="text" id="nftName" placeholder="e.g. Awesome NFT #1" />
+
+      <label for="nftDescription">NFT Description:</label>
+      <textarea id="nftDescription" placeholder="Describe your unique NFT"></textarea>
+
+      <label for="nftImageUrl">NFT Image URL:</label>
+      <input type="text" id="nftImageUrl" placeholder="https://example.com/your-nft-image.png" />
+
+      <button id="generateMetadataBtn" style="margin-top: 1rem;">1. Generate Metadata JSON</button>
+      <label for="metadataJsonOutput">Copy the JSON below and upload it to IPFS (e.g., using Pinata.cloud):</label>
+      <textarea id="metadataJsonOutput" rows="5" readonly placeholder="Metadata JSON will appear here..."></textarea>
+
+      <label for="nftMetadataIpfsUrl">IPFS URL of Metadata JSON:</label>
+      <input type="text" id="nftMetadataIpfsUrl" placeholder="ipfs://YourMetadataCID_or_full_https_gateway_URL" />
+
+      <button id="mintNftBtn" style="margin-top: 1rem;">2. Mint This NFT</button>
+      <pre id="mintOutput"></pre>
+    </div>
+    <!-- End Minting Section -->
+
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
+    <script defer src="main.js"></script>
   </div>
-
-  <p id="status"></p>
-
-  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-  <script src="main.js"></script>
 </body>
 </html>
