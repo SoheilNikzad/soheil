@@ -759,7 +759,7 @@ if (mintNftBtn) {
     }
 
 
-    mintOutputDiv.textContent = 🚀 Minting NFT... Please wait.;
+    mintOutputDiv.textContent = `🚀 Minting NFT... Please wait.`;
 
     try {
       const toAddress = deployerAddress; // Mint to the deployer/connected wallet
