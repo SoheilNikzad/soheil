@@ -13,7 +13,7 @@
       <div class="sidebar-header">
         <h2>Contacts</h2>
         <button id="connectWalletBtn" class="glow-button">Connect Wallet</button>
-        <button id="registerKeyBtn" class="glow-button-small" style="margin-top: 10px;">Register Public Key</button>
+        <button id="registerKeyBtn" class="glow-button-small">Register Public Key</button>
 
         <div id="publicKeyBox" class="user-info" style="display: none;">
           <p><strong>Your Public Key:</strong></p>
@@ -25,15 +25,20 @@
         <p><strong>Address:</strong> <span id="userAddress"></span></p>
         <p><strong>Network:</strong> <span id="networkName"></span> (<span id="chainId"></span>)</p>
       </div>
+
+      <div id="contactList" class="contact-list">
+        <!-- Contacts will be listed here -->
+      </div>
     </aside>
 
     <main class="chat-area">
       <header class="chat-header">
-        <h3 id="chattingWith">Your Encrypted Messages</h3>
+        <h3 id="chattingWith">Select a chat</h3>
+        <button id="clearCacheBtn" class="glow-button-small" style="display: none;">Clear Cache</button>
       </header>
 
-      <div id="receivedMessages" class="message-list">
-        <!-- جدول پیام‌های رمزنگاری‌شده اینجا ساخته میشه -->
+      <div id="messageList" class="message-list">
+        <!-- Messages will appear here -->
       </div>
 
       <footer class="chat-footer">
@@ -45,10 +50,31 @@
         <button id="encryptOnlyBtn" class="glow-button-small">Encrypt Message</button>
         <pre id="encryptedOutputBox" style="white-space: pre-wrap; color: lime; margin-top: 10px;"></pre>
       </footer>
+
+      <!-- 📥 Section: Decryption Zone -->
+      <section id="decryptionZone" style="padding: 20px; border-top: 1px solid #3a3a3a;">
+        <h3 style="color: #ffa500; font-family: 'Comfortaa'; margin-bottom: 15px;">Encrypted Messages</h3>
+
+        <div class="encrypted-message-box">
+          <label for="ciphertextInput">Ciphertext (base64)</label>
+          <textarea id="ciphertextInput" placeholder="Paste the encrypted message here..."></textarea>
+
+          <label for="nonceInput">Nonce (base64)</label>
+          <input type="text" id="nonceInput" placeholder="Paste the nonce here..."/>
+
+          <label for="senderPublicKeyInput">Sender's Public Key (base64)</label>
+          <input type="text" id="senderPublicKeyInput" placeholder="Paste sender's public key..."/>
+
+          <label for="yourPrivateKeyInput">Your Private Key (hex)</label>
+          <input type="text" id="yourPrivateKeyInput" placeholder="Paste your private key..."/>
+
+          <button id="decryptMessageBtn" class="glow-button-small" style="margin-top: 10px;">Decrypt</button>
+          <pre id="decryptedOutputBox" style="white-space: pre-wrap; color: lightgreen; margin-top: 10px;"></pre>
+        </div>
+      </section>
     </main>
   </div>
 
-  <!-- Modal QR -->
   <div id="qrCodeModal" class="modal" style="display:none;">
     <div class="modal-content">
       <span class="close-button">&times;</span>
