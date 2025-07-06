@@ -26,7 +26,8 @@ document.getElementById("sendBtn").onclick = async () => {
     return;
   }
 
-  const hexMessage = "0x" + Buffer.from(message, "utf8").toString("hex");
+  // 👇 استفاده از متد سازگار با مرورگر
+  const hexMessage = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(message));
 
   try {
     const tx = await signer.sendTransaction({
