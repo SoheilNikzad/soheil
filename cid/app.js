@@ -23,6 +23,13 @@ const encryptOnlyBtn = get('encryptOnlyBtn');
 const encryptedOutputBox = get('encryptedOutputBox');
 const publicKeyBox = get('publicKeyBox');
 const publicKeyDisplay = get('publicKeyDisplay');
+const decryptInputBox = get('decryptInputBox');
+const decryptOutputBox = get('decryptOutputBox');
+const decryptPrivateKeyInput = get('decryptPrivateKeyInput');
+const decryptSenderPubKeyInput = get('decryptSenderPubKeyInput');
+const decryptNonceInput = get('decryptNonceInput');
+const decryptCiphertextInput = get('decryptCiphertextInput');
+const decryptBtn = get('decryptBtn');
 
 let ethersProvider = null;
 let ethersSigner = null;
@@ -151,5 +158,36 @@ encryptOnlyBtn?.addEventListener('click', () => {
   } catch (err) {
     console.error(err);
     alert("Encryption failed: " + err.message);
+  }
+});
+
+// 🔓 Decrypt Message
+decryptBtn?.addEventListener('click', () => {
+  const privKeyHex = decryptPrivateKeyInput?.value.trim();
+  const senderPubKey = decryptSenderPubKeyInput?.value.trim();
+  const nonceBase64 = decryptNonceInput?.value.trim();
+  const ciphertextBase64 = decryptCiphertextInput?.value.trim();
+
+  if (!privKeyHex || !senderPubKey || !nonceBase64 || !ciphertextBase64) {
+    alert("Fill in all decryption fields.");
+    return;
+  }
+
+  try {
+    const secretKey = Uint8Array.from(privKeyHex.match(/.{1,2}/g).map(h => parseInt(h, 16)));
+    const nonce = naclUtil.decodeBase64(nonceBase64);
+    const ciphertext = naclUtil.decodeBase64(ciphertextBase64);
+    const senderPublicKey = naclUtil.decodeBase64(senderPubKey);
+    const keyPair = nacl.box.keyPair.fromSecretKey(secretKey);
+
+    const decrypted = nacl.box.open(ciphertext, nonce, senderPublicKey, keyPair.secretKey);
+
+    if (!decrypted) throw new Error("Failed to decrypt message.");
+
+    const message = naclUtil.encodeUTF8(decrypted);
+    decryptOutputBox.textContent = message;
+  } catch (err) {
+    console.error(err);
+    alert("Decryption failed: " + err.message);
   }
 });
