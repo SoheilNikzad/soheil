@@ -6,27 +6,6 @@ const naclUtil = {
   decodeBase64: str => Uint8Array.from(atob(str), c => c.charCodeAt(0)),
 };
 
-// --------------------- 🔐 ethSigUtil.encrypt ---------------------
-const ethSigUtil = {
-  encrypt: function ({ publicKey, data, version }) {
-    const ephemKeyPair = nacl.box.keyPair();
-    const msgParams = naclUtil.decodeUTF8(data);
-    const nonce = nacl.randomBytes(24);
-    const encryptedMessage = nacl.box(
-      msgParams,
-      nonce,
-      naclUtil.decodeBase64(publicKey),
-      ephemKeyPair.secretKey
-    );
-    return {
-      version: version,
-      ephemPublicKey: naclUtil.encodeBase64(ephemKeyPair.publicKey),
-      nonce: naclUtil.encodeBase64(nonce),
-      ciphertext: naclUtil.encodeBase64(encryptedMessage)
-    };
-  }
-};
-
 // --------------------- 🧠 Web3 Messenger ---------------------
 const get = id => document.getElementById(id);
 
@@ -92,7 +71,7 @@ registerKeyBtn?.addEventListener('click', async () => {
   }
 });
 
-// ✉️ Send Message (transaction)
+// ✉️ Send Encrypted Message (on-chain tx)
 sendMessageBtn?.addEventListener('click', async () => {
   const recipient = recipientAddressInput?.value.trim();
   const recipientPubKey = recipientPublicKeyInput?.value.trim();
@@ -107,20 +86,21 @@ sendMessageBtn?.addEventListener('click', async () => {
   try {
     const privateKey = Uint8Array.from(privateKeyHex.match(/.{1,2}/g).map(h => parseInt(h, 16)));
     const senderKeyPair = nacl.box.keyPair.fromSecretKey(privateKey);
-    const msgParams = naclUtil.decodeUTF8(content);
     const nonce = nacl.randomBytes(24);
-
     const encryptedMessage = nacl.box(
-      msgParams,
+      naclUtil.decodeUTF8(content),
       nonce,
       naclUtil.decodeBase64(recipientPubKey),
       senderKeyPair.secretKey
     );
 
-    const ciphertextBase64 = naclUtil.encodeBase64(encryptedMessage);
+    const payload = {
+      nonce: naclUtil.encodeBase64(nonce),
+      ciphertext: naclUtil.encodeBase64(encryptedMessage)
+    };
 
     const hexData = ethers.utils.hexlify(
-      ethers.utils.toUtf8Bytes(ciphertextBase64)
+      ethers.utils.toUtf8Bytes(JSON.stringify(payload))
     );
 
     const tx = await ethersSigner.sendTransaction({
@@ -151,19 +131,15 @@ encryptOnlyBtn?.addEventListener('click', () => {
   try {
     const privateKey = Uint8Array.from(privateKeyHex.match(/.{1,2}/g).map(h => parseInt(h, 16)));
     const senderKeyPair = nacl.box.keyPair.fromSecretKey(privateKey);
-    const msgParams = naclUtil.decodeUTF8(content);
     const nonce = nacl.randomBytes(24);
-
     const encryptedMessage = nacl.box(
-      msgParams,
+      naclUtil.decodeUTF8(content),
       nonce,
       naclUtil.decodeBase64(recipientPubKey),
       senderKeyPair.secretKey
     );
 
     const payload = {
-      version: 'x25519-xsalsa20-poly1305',
-      ephemPublicKey: naclUtil.encodeBase64(senderKeyPair.publicKey),
       nonce: naclUtil.encodeBase64(nonce),
       ciphertext: naclUtil.encodeBase64(encryptedMessage)
     };
