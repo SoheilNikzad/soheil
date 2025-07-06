@@ -15,7 +15,6 @@
         <button id="connectWalletBtn" class="glow-button">Connect Wallet</button>
         <button id="registerKeyBtn" class="glow-button-small" style="margin-top: 10px;">Register Public Key</button>
 
-        <!-- ✅ نمایش public key خود کاربر -->
         <div id="publicKeyBox" class="user-info" style="display: none;">
           <p><strong>Your Public Key:</strong></p>
           <textarea id="publicKeyDisplay" readonly></textarea>
@@ -45,31 +44,30 @@
       <footer class="chat-footer">
         <input type="text" id="recipientAddressInput" placeholder="Recipient Address"/>
         <input type="text" id="recipientPublicKeyInput" placeholder="Recipient Public Key"/>
-        <input type="text" id="senderPrivateKeyInput" placeholder="Your Private Key (for test)"/>
+        <input type="text" id="senderPrivateKeyInput" placeholder="Your Private Key (hex)"/>
         <textarea id="messageInput" placeholder="Type your message..."></textarea>
         <button id="sendMessageBtn" class="glow-button">Send</button>
+        <button id="encryptOnlyBtn" class="glow-button-small">Encrypt Message</button>
+        <pre id="encryptedOutputBox" style="white-space: pre-wrap; color: lime; margin-top: 10px;"></pre>
       </footer>
     </main>
   </div>
 
-  <!-- Modal for QR code -->
   <div id="qrCodeModal" class="modal" style="display:none;">
     <div class="modal-content">
       <span class="close-button">&times;</span>
       <p>Scan QR Code to connect mobile wallet (placeholder)</p>
-      <div id="qrCodeContainer">
-        <!-- QR Code will be displayed here -->
-      </div>
+      <div id="qrCodeContainer"></div>
     </div>
   </div>
 
-  <!-- اسکریپت‌ها -->
+  <!-- Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <script src="https://unpkg.com/localforage@1.10.0/dist/localforage.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl.min.js"></script>
 
-  <!-- اپ اصلی -->
+  <!-- App Logic -->
   <script src="app.js"></script>
 </body>
 </html>
