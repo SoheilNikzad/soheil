@@ -13,7 +13,8 @@
       <div class="sidebar-header">
         <h2>Contacts</h2>
         <button id="connectWalletBtn" class="glow-button">Connect Wallet</button>
-        <button id="registerKeyBtn" class="glow-button-small" style="margin-top: 10px;">Register Public Key</button>
+        <button id="registerKeyBtn" class="glow-button-small">Register Public Key</button>
+        <button id="loadInboxBtn" class="glow-button-small" style="margin-top: 10px;">Load Inbox</button>
 
         <div id="publicKeyBox" class="user-info" style="display: none;">
           <p><strong>Your Public Key:</strong></p>
@@ -36,6 +37,12 @@
       </header>
 
       <div id="messageList" class="message-list"></div>
+
+      <!-- 🔽 Inbox Section -->
+      <section id="inboxSection" class="message-list" style="display: none;">
+        <h3 style="color: #ffa500;">Inbox</h3>
+        <div id="inboxContainer"></div>
+      </section>
 
       <footer class="chat-footer">
         <input type="text" id="recipientAddressInput" placeholder="Recipient Address"/>
