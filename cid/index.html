@@ -4,88 +4,77 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Web3 Messenger</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet"/>
-  <style>
-    body {
-      background: #0d0d0d;
-      color: white;
-      font-family: 'Inter', sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-    }
-
-    .box {
-      background: #151515;
-      padding: 30px;
-      border-radius: 20px;
-      box-shadow: 0 0 30px rgba(191, 90, 242, 0.4);
-      width: 90%;
-      max-width: 480px;
-    }
-
-    h1 {
-      text-align: center;
-      color: #bf5af2;
-      margin-bottom: 20px;
-    }
-
-    input, textarea, button {
-      width: 100%;
-      padding: 14px;
-      border-radius: 12px;
-      margin-top: 12px;
-      border: none;
-      outline: none;
-      font-size: 15px;
-      background: #262626;
-      color: white;
-      font-family: 'Inter', sans-serif;
-    }
-
-    button {
-      background-color: #bf5af2;
-      color: white;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-
-    button:hover {
-      background-color: #d77efc;
-    }
-
-    #status {
-      text-align: center;
-      margin-top: 20px;
-      font-size: 13px;
-      color: #a0a0a0;
-    }
-
-    #inbox {
-      margin-top: 20px;
-      background: #1f1f1f;
-      padding: 15px;
-      border-radius: 12px;
-      font-size: 14px;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300..700&family=Inter:wght@100..900&display=swap" rel="stylesheet">
 </head>
 <body>
-  <div class="box">
-    <h1>🟣 Web3 Messenger</h1>
-    <button id="connectBtn">Connect Wallet</button>
-    <input id="recipient" placeholder="Recipient Address" />
-    <textarea id="message" placeholder="Your message..."></textarea>
-    <button id="sendBtn">Encrypt & Send</button>
-    <button id="fetchBtn">📩 Load Inbox</button>
-    <div id="status"></div>
-    <div id="inbox"></div>
+  <div class="container">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h2>Contacts</h2>
+        <button id="connectWalletBtn" class="glow-button">Connect Wallet</button>
+        <button id="registerKeyBtn" class="glow-button-small" style="margin-top: 10px;">Register Public Key</button>
+
+        <!-- ✅ نمایش public key خود کاربر -->
+        <div id="publicKeyBox" class="user-info" style="display: none;">
+          <p><strong>Your Public Key:</strong></p>
+          <textarea id="publicKeyDisplay" readonly></textarea>
+        </div>
+      </div>
+
+      <div id="userInfo" class="user-info" style="display: none;">
+        <p><strong>Address:</strong> <span id="userAddress"></span></p>
+        <p><strong>Network:</strong> <span id="networkName"></span> (<span id="chainId"></span>)</p>
+      </div>
+
+      <div id="contactList" class="contact-list">
+        <!-- Contacts will be listed here -->
+      </div>
+    </aside>
+
+    <main class="chat-area">
+      <header class="chat-header">
+        <h3 id="chattingWith">Select a chat</h3>
+        <button id="clearCacheBtn" class="glow-button-small" style="display: none;">Clear Cache</button>
+      </header>
+
+      <div id="messageList" class="message-list">
+        <!-- Messages will appear here -->
+      </div>
+
+      <footer class="chat-footer">
+        <input type="text" id="recipientAddressInput" placeholder="Recipient Address"/>
+        <input type="text" id="recipientPublicKeyInput" placeholder="Recipient Public Key"/>
+        <textarea id="messageInput" placeholder="Type your message..."></textarea>
+        <button id="sendMessageBtn" class="glow-button">Send</button>
+      </footer>
+    </main>
   </div>
 
-  <!-- لود درست ethers.js -->
+  <!-- Modal for QR code -->
+  <div id="qrCodeModal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <span class="close-button">&times;</span>
+      <p>Scan QR Code to connect mobile wallet (placeholder)</p>
+      <div id="qrCodeContainer">
+        <!-- QR Code will be displayed here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts: ترتیب بارگذاری مهم است -->
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-  <script src="main.js"></script>
+  <script src="https://unpkg.com/localforage@1.10.0/dist/localforage.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
+  <!-- ✅ nacl و nacl-util برای eth-sig-util -->
+  <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl.min.js"></script>
+  <script src="nacl-util.js"></script>
+
+  <!-- ✅ نسخه مرورگر eth-sig-util -->
+  <script src="eth-sig-util-browser.js"></script>
+
+  <!-- اپ اصلی -->
+  <script src="app.js"></script>
 </body>
 </html>
