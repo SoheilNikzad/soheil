@@ -23,7 +23,7 @@ const naclUtil = {
   }
 };
 
-// --------------------- 🔐 ethSigUtil (درون‌سازی‌شده) ---------------------
+// --------------------- 🔐 ethSigUtil.encrypt (درون‌سازی‌شده) ---------------------
 const ethSigUtil = {
   encrypt: function ({ publicKey, data, version }) {
     if (!window.nacl) throw new Error("nacl not loaded.");
@@ -46,49 +46,142 @@ const ethSigUtil = {
   }
 };
 
-// ✅ تغییر قسمت ارسال پیام برای استفاده از پرایوت‌کی دستی
-sendMessageBtn.addEventListener('click', async () => {
-  const recipient = recipientAddressInput.value.trim();
-  const recipientPubKey = recipientPublicKeyInput.value.trim();
-  const senderPrivKey = document.getElementById('senderPrivateKeyInput').value.trim();
-  const content = messageInput.value.trim();
+// --------------------- 🧠 Web3 Messenger Logic ---------------------
+const connectWalletBtn = document.getElementById('connectWalletBtn');
+const registerKeyBtn = document.getElementById('registerKeyBtn');
+const userInfoDiv = document.getElementById('userInfo');
+const userAddressSpan = document.getElementById('userAddress');
+const networkNameSpan = document.getElementById('networkName');
+const chainIdSpan = document.getElementById('chainId');
+const contactListDiv = document.getElementById('contactList');
+const chattingWithHeader = document.getElementById('chattingWith');
+const messageListDiv = document.getElementById('messageList');
+const recipientAddressInput = document.getElementById('recipientAddressInput');
+const recipientPublicKeyInput = document.getElementById('recipientPublicKeyInput');
+const messageInput = document.getElementById('messageInput');
+const sendMessageBtn = document.getElementById('sendMessageBtn');
+const clearCacheBtn = document.getElementById('clearCacheBtn');
+const qrCodeModal = document.getElementById('qrCodeModal');
+const qrCodeContainer = document.getElementById('qrCodeContainer');
+const closeModalBtn = document.querySelector('.modal .close-button');
+const publicKeyBox = document.getElementById('publicKeyBox');
+const publicKeyDisplay = document.getElementById('publicKeyDisplay');
 
-  if (!recipient || !recipientPubKey || !content || !senderPrivKey) {
-    showStatusMessage("Please enter all fields including your private key.", true);
-    return;
-  }
+let ethersProvider = null;
+let ethersSigner = null;
+let currentUserAddress = null;
+let currentNetwork = null;
+let currentChatAddress = null;
+let webCryptoEncryptionKey = null;
 
-  try {
-    // استفاده از nacl.box برای رمزنگاری با کلید خصوصی دستی
-    const msgBytes = naclUtil.decodeUTF8(content);
-    const nonce = nacl.randomBytes(24);
-    const recipientPub = naclUtil.decodeBase64(recipientPubKey);
-    const senderSecretKey = ethers.utils.arrayify(senderPrivKey);
-    const encrypted = nacl.box(msgBytes, nonce, recipientPub, senderSecretKey);
+const DB_NAME = 'web3MessengerDB';
 
-    const payload = {
-      version: 'x25519-xsalsa20-poly1305',
-      nonce: naclUtil.encodeBase64(nonce),
-      ephemPublicKey: '', // چون دستی رمزنگاری کردیم، نیازی به ephem key نیست
-      ciphertext: naclUtil.encodeBase64(encrypted)
-    };
-
-    const encryptedString = JSON.stringify(payload);
-    const hexData = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(encryptedString));
-
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
-    const signer = provider.getSigner();
-
-    const tx = await signer.sendTransaction({
-      to: recipient,
-      value: 0,
-      data: hexData
-    });
-
-    showStatusMessage(`Message sent! Tx hash: ${tx.hash}`);
-    messageInput.value = '';
-  } catch (err) {
-    console.error("Failed to send encrypted message:", err);
-    showStatusMessage("Encryption or transaction failed.", true);
-  }
+localforage.config({
+    driver: [localforage.INDEXEDDB, localforage.LOCALSTORAGE],
+    name: 'web3MessengerCache'
 });
+
+function showStatusMessage(message, isError = false) {
+    console.log(isError ? `ERROR: ${message}` : `STATUS: ${message}`);
+    if (isError) alert(message);
+}
+
+connectWalletBtn.addEventListener('click', connectWallet);
+registerKeyBtn.addEventListener('click', displayPublicKey);
+
+async function connectWallet() {
+    if (typeof window.ethereum === 'undefined') {
+        alert('Please install MetaMask');
+        return;
+    }
+
+    connectWalletBtn.disabled = true;
+    connectWalletBtn.textContent = 'Connecting...';
+
+    try {
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+        ethersProvider = new ethers.providers.Web3Provider(window.ethereum);
+        ethersSigner = ethersProvider.getSigner();
+        currentUserAddress = await ethersSigner.getAddress();
+        currentNetwork = await ethersProvider.getNetwork();
+
+        await deriveLocalEncryptionKey();
+        updateUserInfoUI();
+        clearCacheBtn.style.display = 'inline-block';
+        showStatusMessage(`Connected: ${currentUserAddress}`);
+
+        await loadContactsFromCache();
+
+    } catch (err) {
+        showStatusMessage(`Error connecting wallet: ${err.message}`, true);
+    }
+
+    connectWalletBtn.disabled = false;
+    connectWalletBtn.textContent = 'Connect Wallet';
+}
+
+sendMessageBtn.addEventListener('click', async () => {
+    const recipient = recipientAddressInput.value.trim();
+    const recipientPubKey = recipientPublicKeyInput.value.trim();
+    const content = messageInput.value.trim();
+    const senderPrivateKeyHex = document.getElementById('senderPrivateKeyInput')?.value.trim();
+
+    if (!recipient || !recipientPubKey || !content || !senderPrivateKeyHex) {
+        showStatusMessage("Please enter recipient address, public key, message, and your private key.", true);
+        return;
+    }
+
+    try {
+        const senderPrivateKeyBytes = new Uint8Array(senderPrivateKeyHex.match(/.{1,2}/g).map(b => parseInt(b, 16)));
+        const senderKeyPair = nacl.box.keyPair.fromSecretKey(senderPrivateKeyBytes);
+
+        const nonce = nacl.randomBytes(24);
+        const messageBytes = naclUtil.decodeUTF8(content);
+        const recipientPubKeyBytes = naclUtil.decodeBase64(recipientPubKey);
+
+        const encrypted = nacl.box(messageBytes, nonce, recipientPubKeyBytes, senderPrivateKeyBytes);
+
+        const payload = {
+            version: 'x25519-xsalsa20-poly1305',
+            nonce: naclUtil.encodeBase64(nonce),
+            fromPublicKey: naclUtil.encodeBase64(senderKeyPair.publicKey),
+            ciphertext: naclUtil.encodeBase64(encrypted)
+        };
+
+        const encryptedString = JSON.stringify(payload);
+        const hexData = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(encryptedString));
+
+        const tx = await ethersSigner.sendTransaction({
+            to: recipient,
+            value: 0,
+            data: hexData
+        });
+
+        showStatusMessage(`Message sent! Tx hash: ${tx.hash}`);
+        messageInput.value = '';
+
+    } catch (err) {
+        console.error("Failed to send encrypted message:", err);
+        showStatusMessage("Encryption failed. Check your private key and inputs.", true);
+    }
+});
+
+async function displayPublicKey() {
+    if (!currentUserAddress) {
+        showStatusMessage("Connect your wallet first!", true);
+        return;
+    }
+
+    try {
+        const pubKey = await window.ethereum.request({
+            method: "eth_getEncryptionPublicKey",
+            params: [currentUserAddress],
+        });
+
+        publicKeyDisplay.value = pubKey;
+        publicKeyBox.style.display = 'block';
+    } catch (err) {
+        console.error("Failed to retrieve public key:", err);
+        showStatusMessage("MetaMask permission denied or failed to get public key.", true);
+    }
+}
