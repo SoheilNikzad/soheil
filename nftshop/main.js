@@ -35,7 +35,6 @@ async function connectWallet() {
     statusDiv.innerText = '❌ MetaMask is not installed.';
     return;
   }
-j
   try {
     const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
     deployerAddress = accounts[0];
@@ -677,18 +676,18 @@ if (createTokenBtn) {
       return;
     }
 
-    outputDiv.textContent = 🚀 Deploying NFT Collection (${collectionSymbol})... Please wait.;
+    outputDiv.textContent = '🚀 Deploying NFT Collection (${collectionSymbol})... Please wait.';
 
     try {
       const factory = new ethers.ContractFactory(erc721ABI, erc721Bytecode, signer);
       const contract = await factory.deploy(collectionName, collectionSymbol);
 
-      outputDiv.textContent = ⏳ Waiting for transaction confirmation...\nTX Hash: ${contract.deploymentTransaction().hash};
+      outputDiv.textContent = '⏳ Waiting for transaction confirmation...\nTX Hash';
 
       const receipt = await contract.waitForDeployment();
       const contractAddress = await receipt.getAddress();
 
-      outputDiv.textContent = ✅ NFT Collection deployed successfully!\nContract Address: ${contractAddress}\nTX Hash: ${contract.deploymentTransaction().hash};
+      outputDiv.textContent = '✅ NFT Collection deployed successfully!\nContract Address: ${contractAddress}\nTX Hash';
 
       deployedCollectionContract = new ethers.Contract(contractAddress, erc721ABI, signer);
       if (mintingSection) {
@@ -700,7 +699,7 @@ if (createTokenBtn) {
       updateNextTokenIdDisplay();
 
     } catch (err) {
-      outputDiv.textContent = ❌ Error deploying collection: ${err.message || err};
+      outputDiv.textContent = '❌ Error deploying collection: ${err.message || err}';
       console.error(err);
     }
   });
