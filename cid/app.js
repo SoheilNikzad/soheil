@@ -11,7 +11,6 @@ const get = id => document.getElementById(id);
 
 const connectWalletBtn = get('connectWalletBtn');
 const registerKeyBtn = get('registerKeyBtn');
-const loadInboxBtn = get('loadInboxBtn');
 const userAddressSpan = get('userAddress');
 const networkNameSpan = get('networkName');
 const chainIdSpan = get('chainId');
@@ -24,8 +23,13 @@ const encryptOnlyBtn = get('encryptOnlyBtn');
 const encryptedOutputBox = get('encryptedOutputBox');
 const publicKeyBox = get('publicKeyBox');
 const publicKeyDisplay = get('publicKeyDisplay');
-const inboxSection = get('inboxSection');
-const inboxContainer = get('inboxContainer');
+
+// 📥 Manual decrypt inputs
+const rawInputData = get('rawInputData');
+const manualSenderPubKey = get('manualSenderPubKey');
+const manualReceiverPrivKey = get('manualReceiverPrivKey');
+const manualDecryptBtn = get('manualDecryptBtn');
+const manualDecryptedOutput = get('manualDecryptedOutput');
 
 let ethersProvider = null;
 let ethersSigner = null;
@@ -158,89 +162,41 @@ encryptOnlyBtn?.addEventListener('click', () => {
   }
 });
 
-// 📬 Load Inbox from PolygonScan API
-loadInboxBtn?.addEventListener('click', async () => {
-  if (!currentUserAddress) return alert("Connect your wallet first!");
+// 🧪 Manual Decryption from raw hex input
+manualDecryptBtn?.addEventListener('click', () => {
+  const rawHex = rawInputData?.value.trim();
+  const senderPubKey = manualSenderPubKey?.value.trim();
+  const receiverPrivHex = manualReceiverPrivKey?.value.trim();
 
-  inboxContainer.innerHTML = '';
-  inboxSection.style.display = 'block';
+  if (!rawHex || !senderPubKey || !receiverPrivHex) {
+    alert("Please fill in all fields.");
+    return;
+  }
 
   try {
-    const apiKey = "EPXHHSG4JEV3PVR3U4XNAQ61BDHI4I8V3U";
-    const url = `https://api.polygonscan.com/api?module=account&action=txlist&address=${currentUserAddress}&startblock=0&endblock=99999999&sort=desc&apikey=${apiKey}`;
+    // Remove 0x prefix and decode hex input to UTF-8
+    const cleanedHex = rawHex.startsWith('0x') ? rawHex.slice(2) : rawHex;
+    const utf8Data = ethers.utils.toUtf8String("0x" + cleanedHex);
 
-    const res = await fetch(url);
-    const data = await res.json();
+    const payload = JSON.parse(utf8Data);
+    const nonce = naclUtil.decodeBase64(payload.nonce);
+    const ciphertext = naclUtil.decodeBase64(payload.ciphertext);
+    const receiverPriv = Uint8Array.from(receiverPrivHex.match(/.{1,2}/g).map(h => parseInt(h, 16)));
+    const receiverKeyPair = nacl.box.keyPair.fromSecretKey(receiverPriv);
 
-    window.__inboxData = data;
-    console.log("📡 Polygonscan API Raw Response:", window.__inboxData); // 🐞 برای بررسی خروجی
+    const decrypted = nacl.box.open(
+      ciphertext,
+      nonce,
+      naclUtil.decodeBase64(senderPubKey),
+      receiverKeyPair.secretKey
+    );
 
-    if (!Array.isArray(data.result)) {
-      console.error("❗ Unexpected API response:", data);
-      inboxContainer.innerHTML = '<p>❌ Unexpected API response. Check console for details.</p>';
-      return;
-    }
+    if (!decrypted) throw new Error("Decryption failed");
 
-    const messages = data.result.filter(tx => tx.input && tx.input !== "0x");
-
-    if (messages.length === 0) {
-      inboxContainer.innerHTML = '<p>No encrypted messages found.</p>';
-      return;
-    }
-
-    messages.forEach((tx, index) => {
-      let decoded;
-      try {
-        decoded = JSON.parse(ethers.utils.toUtf8String(tx.input));
-      } catch (e) {
-        return;
-      }
-
-      const card = document.createElement('div');
-      card.className = 'user-info';
-      card.innerHTML = `
-        <p><strong>From:</strong> ${tx.from}</p>
-        <p><strong>Tx Hash:</strong> ${tx.hash}</p>
-        <textarea rows="1" readonly>Nonce: ${decoded.nonce}</textarea>
-        <textarea rows="2" readonly>Ciphertext: ${decoded.ciphertext}</textarea>
-        <input type="text" placeholder="Sender's Public Key" class="senderPubKeyInput" />
-        <input type="text" placeholder="Your Private Key (hex)" class="receiverPrivKeyInput" />
-        <button class="decryptBtn glow-button-small" data-index="${index}">Decrypt</button>
-        <pre class="decryptedOutput" style="white-space: pre-wrap; color: lime;"></pre>
-      `;
-      inboxContainer.appendChild(card);
-    });
-
-    // Add event listeners for all decrypt buttons
-    document.querySelectorAll('.decryptBtn').forEach((btn, index) => {
-      btn.addEventListener('click', () => {
-        const card = btn.parentElement;
-        const nonce = card.querySelector('textarea').value.replace('Nonce: ', '').trim();
-        const ciphertext = card.querySelectorAll('textarea')[1].value.replace('Ciphertext: ', '').trim();
-        const pubKey = card.querySelector('.senderPubKeyInput').value.trim();
-        const privKeyHex = card.querySelector('.receiverPrivKeyInput').value.trim();
-
-        try {
-          const privKey = Uint8Array.from(privKeyHex.match(/.{1,2}/g).map(h => parseInt(h, 16)));
-          const recipientKeyPair = nacl.box.keyPair.fromSecretKey(privKey);
-          const decrypted = nacl.box.open(
-            naclUtil.decodeBase64(ciphertext),
-            naclUtil.decodeBase64(nonce),
-            naclUtil.decodeBase64(pubKey),
-            recipientKeyPair.secretKey
-          );
-
-          if (!decrypted) throw new Error("Failed to decrypt.");
-          const message = naclUtil.encodeUTF8(decrypted);
-          card.querySelector('.decryptedOutput').textContent = message;
-        } catch (err) {
-          alert("Decryption failed: " + err.message);
-        }
-      });
-    });
-
+    const message = naclUtil.encodeUTF8(decrypted);
+    manualDecryptedOutput.textContent = message;
   } catch (err) {
-    console.error("❌ Inbox loading failed:", err);
-    alert("Failed to load inbox: " + err.message);
+    console.error(err);
+    alert("Decryption failed: " + err.message);
   }
 });
