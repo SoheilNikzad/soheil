@@ -129,7 +129,6 @@ encryptOnlyBtn?.addEventListener('click', () => {
     alert("Fill in public key, private key and message first.");
     return;
   }
-
   try {
     const privateKey = Uint8Array.from(privateKeyHex.match(/.{1,2}/g).map(h => parseInt(h, 16)));
     const senderKeyPair = nacl.box.keyPair.fromSecretKey(privateKey);
