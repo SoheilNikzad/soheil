@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Send Message TX</title>
+  <script src="https://cdn.jsdelivr.net/npm/ethers/dist/ethers.min.js"></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <h2>📡 Send Message on Polygon</h2>
+
+  <button id="connectBtn">🔌 Connect Wallet</button>
+  <p id="walletAddress">Not connected</p>
+
+  <hr>
+
+  <label for="to">Receiver Address:</label><br>
+  <input type="text" id="to" size="60"><br><br>
+
+  <label for="message">Message:</label><br>
+  <input type="text" id="message" size="60"><br><br>
+
+  <button id="sendBtn">🚀 Send Transaction</button>
+
+  <p id="status"></p>
+</body>
+</html>
