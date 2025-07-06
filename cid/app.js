@@ -172,7 +172,8 @@ loadInboxBtn?.addEventListener('click', async () => {
     const res = await fetch(url);
     const data = await res.json();
 
-    console.log("📡 Polygonscan API Raw Response:", data); // 🐞 برای بررسی خروجی
+    window.__inboxData = data;
+    console.log("📡 Polygonscan API Raw Response:", window.__inboxData); // 🐞 برای بررسی خروجی
 
     if (!Array.isArray(data.result)) {
       console.error("❗ Unexpected API response:", data);
