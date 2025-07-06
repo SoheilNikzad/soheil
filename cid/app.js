@@ -6,31 +6,21 @@ const naclUtil = {
   decodeBase64: str => Uint8Array.from(atob(str), c => c.charCodeAt(0)),
 };
 
-// 🔁 تبدیل hex string به Uint8Array
-function hexToUint8Array(hex) {
-  if (!/^[0-9a-fA-F]{64}$/.test(hex)) throw new Error("Invalid private key format");
-  const bytes = new Uint8Array(32);
-  for (let i = 0; i < 32; i++) {
-    bytes[i] = parseInt(hex.substr(i * 2, 2), 16);
-  }
-  return bytes;
-}
-
 // --------------------- 🔐 ethSigUtil.encrypt ---------------------
 const ethSigUtil = {
-  encrypt: function ({ publicKey, data, version, privateKey }) {
-    const senderKeyPair = nacl.box.keyPair.fromSecretKey(privateKey);
+  encrypt: function ({ publicKey, data, version }) {
+    const ephemKeyPair = nacl.box.keyPair();
     const msgParams = naclUtil.decodeUTF8(data);
     const nonce = nacl.randomBytes(24);
     const encryptedMessage = nacl.box(
       msgParams,
       nonce,
       naclUtil.decodeBase64(publicKey),
-      senderKeyPair.secretKey
+      ephemKeyPair.secretKey
     );
     return {
       version: version,
-      ephemPublicKey: naclUtil.encodeBase64(senderKeyPair.publicKey),
+      ephemPublicKey: naclUtil.encodeBase64(ephemKeyPair.publicKey),
       nonce: naclUtil.encodeBase64(nonce),
       ciphertext: naclUtil.encodeBase64(encryptedMessage)
     };
@@ -102,34 +92,7 @@ registerKeyBtn?.addEventListener('click', async () => {
   }
 });
 
-// ✉️ Encrypt Only (no sending)
-encryptOnlyBtn?.addEventListener('click', async () => {
-  const recipientPubKey = recipientPublicKeyInput?.value.trim();
-  const privateKeyHex = senderPrivateKeyInput?.value.trim();
-  const content = messageInput?.value.trim();
-
-  if (!recipientPubKey || !content || !privateKeyHex) {
-    alert("Please fill in public key, message, and your private key.");
-    return;
-  }
-
-  try {
-    const privateKey = hexToUint8Array(privateKeyHex);
-    const encrypted = ethSigUtil.encrypt({
-      publicKey: recipientPubKey,
-      data: content,
-      version: 'x25519-xsalsa20-poly1305',
-      privateKey
-    });
-
-    encryptedOutputBox.textContent = JSON.stringify(encrypted, null, 2);
-  } catch (err) {
-    console.error(err);
-    alert("Encryption failed: " + err.message);
-  }
-});
-
-// ✉️ Send Message
+// ✉️ Send Message (transaction)
 sendMessageBtn?.addEventListener('click', async () => {
   const recipient = recipientAddressInput?.value.trim();
   const recipientPubKey = recipientPublicKeyInput?.value.trim();
@@ -142,15 +105,23 @@ sendMessageBtn?.addEventListener('click', async () => {
   }
 
   try {
-    const privateKey = hexToUint8Array(privateKeyHex);
-    const encrypted = ethSigUtil.encrypt({
-      publicKey: recipientPubKey,
-      data: content,
-      version: 'x25519-xsalsa20-poly1305',
-      privateKey
-    });
+    const privateKey = Uint8Array.from(privateKeyHex.match(/.{1,2}/g).map(h => parseInt(h, 16)));
+    const senderKeyPair = nacl.box.keyPair.fromSecretKey(privateKey);
+    const msgParams = naclUtil.decodeUTF8(content);
+    const nonce = nacl.randomBytes(24);
 
-    const hexData = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(JSON.stringify(encrypted)));
+    const encryptedMessage = nacl.box(
+      msgParams,
+      nonce,
+      naclUtil.decodeBase64(recipientPubKey),
+      senderKeyPair.secretKey
+    );
+
+    const ciphertextBase64 = naclUtil.encodeBase64(encryptedMessage);
+
+    const hexData = ethers.utils.hexlify(
+      ethers.utils.toUtf8Bytes(ciphertextBase64)
+    );
 
     const tx = await ethersSigner.sendTransaction({
       to: recipient,
@@ -158,11 +129,48 @@ sendMessageBtn?.addEventListener('click', async () => {
       data: hexData
     });
 
-    alert("Message sent! Tx Hash: " + tx.hash);
+    alert("Message sent on-chain!\nTx Hash:\n" + tx.hash);
     messageInput.value = '';
-    encryptedOutputBox.textContent = '';
   } catch (err) {
     console.error(err);
     alert("Encryption or transaction failed: " + err.message);
+  }
+});
+
+// 🔒 Just Encrypt & Show
+encryptOnlyBtn?.addEventListener('click', () => {
+  const recipientPubKey = recipientPublicKeyInput?.value.trim();
+  const privateKeyHex = senderPrivateKeyInput?.value.trim();
+  const content = messageInput?.value.trim();
+
+  if (!recipientPubKey || !content || !privateKeyHex) {
+    alert("Fill in public key, private key and message first.");
+    return;
+  }
+
+  try {
+    const privateKey = Uint8Array.from(privateKeyHex.match(/.{1,2}/g).map(h => parseInt(h, 16)));
+    const senderKeyPair = nacl.box.keyPair.fromSecretKey(privateKey);
+    const msgParams = naclUtil.decodeUTF8(content);
+    const nonce = nacl.randomBytes(24);
+
+    const encryptedMessage = nacl.box(
+      msgParams,
+      nonce,
+      naclUtil.decodeBase64(recipientPubKey),
+      senderKeyPair.secretKey
+    );
+
+    const payload = {
+      version: 'x25519-xsalsa20-poly1305',
+      ephemPublicKey: naclUtil.encodeBase64(senderKeyPair.publicKey),
+      nonce: naclUtil.encodeBase64(nonce),
+      ciphertext: naclUtil.encodeBase64(encryptedMessage)
+    };
+
+    encryptedOutputBox.textContent = JSON.stringify(payload, null, 2);
+  } catch (err) {
+    console.error(err);
+    alert("Encryption failed: " + err.message);
   }
 });
