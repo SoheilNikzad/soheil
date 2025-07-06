@@ -4,17 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>NFT Collection Creator</title>
-  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300&display=swap" rel="stylesheet" />
   <style>
     :root {
       --color-bg: #0d111c;
       --color-panel: #1c2230;
       --color-border: #2e374a;
-      --color-primary: #f7931a; /* Bitcoin Orange */
-      --color-muted: #94a3b8;
+      --color-primary: #f7931a;
       --color-text: #ffffffcc;
     }
-
     body {
       font-family: 'Comfortaa', sans-serif;
       background: var(--color-bg);
@@ -24,7 +22,6 @@
       display: flex;
       justify-content: center;
     }
-
     .container {
       background: var(--color-panel);
       padding: 2rem;
@@ -32,23 +29,19 @@
       width: 100%;
       max-width: 600px;
       box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-      font-family: 'Comfortaa', sans-serif;
     }
-
     h1 {
       text-align: center;
       font-size: 1.5rem;
       margin-bottom: 2rem;
       color: white;
     }
-
     label {
       display: block;
       margin: 1rem 0 0.25rem;
       font-weight: 500;
     }
-
-    input, textarea, select, button { /* Removed .fake-upload from this rule */
+    input, textarea, button {
       background: #0f172a;
       border: 1px solid var(--color-border);
       border-radius: 10px;
@@ -59,22 +52,10 @@
       box-sizing: border-box;
       font-family: 'Comfortaa', sans-serif;
     }
-
     textarea {
       resize: vertical;
       min-height: 80px;
     }
-
-    /* Removed .fake-upload styles as the element is removed */
-
-    /* Removed .toggle styles as the elements are removed */
-
-    .note {
-      color: #facc15;
-      font-size: 0.85rem;
-      margin-top: 1rem;
-    }
-
     button {
       margin-top: 1.2rem;
       border: none;
@@ -84,8 +65,7 @@
       font-weight: bold;
       cursor: pointer;
     }
-
-    #output {
+    #output, #mintOutput {
       margin-top: 1.5rem;
       background: #0f172a;
       padding: 1rem;
@@ -94,15 +74,20 @@
       font-size: 0.9rem;
       white-space: pre-wrap;
     }
+    .section {
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--color-border);
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>NFT Collection Creator</h1>
 
-    <button id="connectBtn"> Connect Wallet</button>
+    <button id="connectBtn">Connect Wallet</button>
     <p id="status">Waiting for connection...</p>
-    <input type="text" id="yourWallet" readonly />
+    <input type="text" id="yourWallet" readonly placeholder="Your wallet address" />
 
     <label for="name">Collection Name:</label>
     <input type="text" id="name" placeholder="e.g. My Awesome Collection" />
@@ -111,7 +96,7 @@
     <input type="text" id="symbol" placeholder="e.g. MAC" />
 
     <label for="description">Description (Optional):</label>
-    <textarea id="description" placeholder="Tell us about your collection"></textarea> <!-- Enabled this field -->
+    <textarea id="description" placeholder="Tell us about your collection"></textarea>
 
     <label for="imageUrl">Collection Image URL (Optional):</label>
     <input type="text" id="imageUrl" placeholder="https://example.com/image.png" />
@@ -122,8 +107,34 @@
 
     <pre id="output"></pre>
 
-    <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
-    <script defer src="main.js"></script>
+    <div class="section" id="mintingSection" style="display:none;">
+      <h2>Mint NFT</h2>
+
+      <label for="nftName">NFT Name:</label>
+      <input type="text" id="nftName" placeholder="NFT name" />
+
+      <label for="nftDescription">NFT Description:</label>
+      <textarea id="nftDescription" placeholder="NFT description (optional)"></textarea>
+
+      <label for="nftImageUrl">NFT Image URL:</label>
+      <input type="text" id="nftImageUrl" placeholder="https://example.com/nft-image.png" />
+
+      <button id="generateMetadataBtn">Generate Metadata JSON</button>
+
+      <label for="metadataJsonOutput">Metadata JSON:</label>
+      <textarea id="metadataJsonOutput" readonly></textarea>
+
+      <label for="nftMetadataIpfsUrl">Metadata IPFS URL (e.g. ipfs://...):</label>
+      <input type="text" id="nftMetadataIpfsUrl" placeholder="Enter metadata IPFS URL to mint" />
+
+      <button id="mintNftBtn">Mint NFT</button>
+
+      <pre id="mintOutput"></pre>
+    </div>
+
   </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
+  <script defer src="main.js"></script>
 </body>
 </html>
