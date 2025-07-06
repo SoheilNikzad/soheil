@@ -362,7 +362,6 @@ body {
     .chat-footer {
         flex-direction: column;
     }
-
     .chat-footer textarea,
     .chat-footer input[type="text"] {
         margin-right: 0;
