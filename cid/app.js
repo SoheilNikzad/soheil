@@ -5,7 +5,6 @@ const naclUtil = {
   encodeBase64: arr => btoa(String.fromCharCode(...arr)),
   decodeBase64: str => Uint8Array.from(atob(str), c => c.charCodeAt(0)),
 };
-
 // --------------------- 🧠 Web3 Messenger ---------------------
 const get = id => document.getElementById(id);
 
