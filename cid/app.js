@@ -40,6 +40,8 @@ const recipientPublicKeyInput = get('recipientPublicKeyInput');
 const senderPrivateKeyInput = get('senderPrivateKeyInput');
 const messageInput = get('messageInput');
 const sendMessageBtn = get('sendMessageBtn');
+const encryptOnlyBtn = get('encryptOnlyBtn');
+const encryptedOutputBox = get('encryptedOutputBox');
 const publicKeyBox = get('publicKeyBox');
 const publicKeyDisplay = get('publicKeyDisplay');
 
@@ -90,7 +92,7 @@ registerKeyBtn?.addEventListener('click', async () => {
   }
 });
 
-// ✉️ Send Encrypted Message
+// ✉️ Send Encrypted Message (with transaction)
 sendMessageBtn?.addEventListener('click', async () => {
   const recipient = recipientAddressInput?.value.trim();
   const recipientPubKey = recipientPublicKeyInput?.value.trim();
@@ -135,5 +137,43 @@ sendMessageBtn?.addEventListener('click', async () => {
   } catch (err) {
     console.error(err);
     alert("Encryption or transaction failed: " + err.message);
+  }
+});
+
+// 🔐 Encrypt Only (no transaction)
+encryptOnlyBtn?.addEventListener('click', async () => {
+  const recipientPubKey = recipientPublicKeyInput?.value.trim();
+  const privateKeyHex = senderPrivateKeyInput?.value.trim();
+  const content = messageInput?.value.trim();
+
+  if (!recipientPubKey || !privateKeyHex || !content) {
+    alert("Please fill in recipient public key, your private key, and message.");
+    return;
+  }
+
+  try {
+    const privateKey = naclUtil.decodeBase64(privateKeyHex);
+    const senderKeyPair = nacl.box.keyPair.fromSecretKey(privateKey);
+    const msgParams = naclUtil.decodeUTF8(content);
+    const nonce = nacl.randomBytes(24);
+
+    const encryptedMessage = nacl.box(
+      msgParams,
+      nonce,
+      naclUtil.decodeBase64(recipientPubKey),
+      senderKeyPair.secretKey
+    );
+
+    const payload = {
+      version: 'x25519-xsalsa20-poly1305',
+      ephemPublicKey: naclUtil.encodeBase64(senderKeyPair.publicKey),
+      nonce: naclUtil.encodeBase64(nonce),
+      ciphertext: naclUtil.encodeBase64(encryptedMessage)
+    };
+
+    encryptedOutputBox.textContent = JSON.stringify(payload, null, 2);
+  } catch (err) {
+    console.error("Encryption failed:", err);
+    alert("Encryption failed: " + err.message);
   }
 });
