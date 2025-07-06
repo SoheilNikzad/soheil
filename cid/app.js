@@ -271,7 +271,6 @@ clearCacheBtn.addEventListener('click', async () => {
     messageListDiv.innerHTML = '<p class="system-message">Cache cleared. Start new chat.</p>';
 });
 
-// ✅ گرفتن کلید عمومی و نمایش داخل صفحه
 async function displayPublicKey() {
     if (!currentUserAddress) {
         showStatusMessage("Connect your wallet first!", true);
