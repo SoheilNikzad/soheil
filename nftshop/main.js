@@ -627,7 +627,7 @@ const erc721ABI = [
 				"name": "tokenId",
 				"type": "uint256"
 			}
-		],
+		
 		"name": "transferFrom",
 		"outputs": [],
 		"stateMutability": "nonpayable",
