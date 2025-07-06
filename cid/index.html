@@ -25,17 +25,16 @@
         <p><strong>Address:</strong> <span id="userAddress"></span></p>
         <p><strong>Network:</strong> <span id="networkName"></span> (<span id="chainId"></span>)</p>
       </div>
-
-      <div id="contactList" class="contact-list"></div>
     </aside>
 
     <main class="chat-area">
       <header class="chat-header">
-        <h3 id="chattingWith">Select a chat</h3>
-        <button id="clearCacheBtn" class="glow-button-small" style="display: none;">Clear Cache</button>
+        <h3 id="chattingWith">Your Encrypted Messages</h3>
       </header>
 
-      <div id="messageList" class="message-list"></div>
+      <div id="receivedMessages" class="message-list">
+        <!-- جدول پیام‌های رمزنگاری‌شده اینجا ساخته میشه -->
+      </div>
 
       <footer class="chat-footer">
         <input type="text" id="recipientAddressInput" placeholder="Recipient Address"/>
@@ -49,7 +48,7 @@
     </main>
   </div>
 
-  <!-- QR Modal -->
+  <!-- Modal QR -->
   <div id="qrCodeModal" class="modal" style="display:none;">
     <div class="modal-content">
       <span class="close-button">&times;</span>
@@ -58,9 +57,13 @@
     </div>
   </div>
 
-  <!-- Scripts -->
+  <!-- Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <script src="https://unpkg.com/localforage@1.10.0/dist/localforage.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl.min.js"></script>
-  <script src="app.js" defer></script>
+
+  <!-- App Logic -->
+  <script src="app.js"></script>
 </body>
 </html>
