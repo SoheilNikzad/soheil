@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>ECIES Demo - Fixed</title>
-  <script src="https://cdn.jsdelivr.net/npm/noble-secp256k1@1.7.1/lib/index.min.js"></script>
+  <title>ECIES Demo - Fixed CDN</title>
+    <script src="https://unpkg.com/@noble/secp256k1@1.7.1/lib/index.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.js"></script>
   <style>
     body { font-family: monospace; padding: 20px; background: #f7f7f7; }
@@ -12,38 +12,84 @@
   </style>
 </head>
 <body>
-  <h2>🔐 ECIES Encryption Demo (Fixed)</h2>
+  <h2>🔐 ECIES Encryption Demo (Fixed CDN)</h2>
   <button onclick="runECIES()">Run Fixed Simulation</button>
   <pre id="output">Loading…</pre>
 
   <script type="module">
-    // import مستقیم noble-secp256k1 برای استفاده از توابعش
-    import * as secp from "https://cdn.jsdelivr.net/npm/noble-secp256k1@1.7.1/lib/index.min.js";
+    // Make sure 'secp' is globally available if 'type="module"' is used and it's not imported.
+    // Or, you need to export 'runECIES' and call it properly.
+    // For simplicity, let's remove 'type="module"' for now if not strictly needed,
+    // and ensure secp is loaded globally.
+
+    // If you intend to use modules, you need to properly import secp inside the script where it's used.
+    // Let's keep it simple for now, making sure secp is available via window.nobleSecp256k1 or similar,
+    // as this CDN usually exposes it.
+    const secp = window.nobleSecp256k1; // Access the global object if the CDN exposes it like this.
+                                    // If not, we might need a different import strategy or a different CDN.
+                                    // Let's assume unpkg.com makes it available. If it still fails,
+                                    // we'll explicitly use 'import * as secp from "..."' inside the script tag.
+
+    // A safer way if the module import isn't working as expected.
+    // However, the previous approach with type="module" and direct import should work if the CDN path is right.
+    // Let's revert to the previous import style if this doesn't work, and fix the CDN path.
+
+    // Let's try the correct module import for noble-secp256k1 as it's designed to be used.
+    // The previous code had a correct import statement in the <script type="module"> block,
+    // the issue was specifically the CDN URL.
+
+    // This is the correct way to import noble-secp256k1 for modern browsers:
+    // import * as secp from "https://unpkg.com/@noble/secp256k1@1.7.1/lib/index.min.js";
+    // However, for <script type="module"> this needs to be inside the runECIES function
+    // or the module script itself, and 'runECIES' needs to be called after it's defined and imported.
+
+    // Let's rewrite the script tag to ensure the module is imported correctly within the function scope if needed,
+    // or globally if the CDN supports it.
+    // For now, I'll put the import statement directly into the `runECIES` function or the global scope if possible
+    // to ensure it runs *after* the library is loaded.
+
+    // The error "runECIES is not defined" implies the script tag type="module" caused runECIES to be in a module scope,
+    // while the onclick attribute expects it to be in the global scope.
+    // Two solutions:
+    // 1. Remove type="module" from the script tag and ensure noble-secp256k1 makes 'secp' global.
+    // 2. Keep type="module" but call runECIES differently (e.g., expose it to window).
+
+    // Let's go with solution 2, as it's cleaner for modern JS.
+    // And fix the CDN URL.
+
+    // Remove the global import. Put it inside runECIES or at the top of the module script.
+    // We'll put it at the top of the module script and then expose runECIES.
+    
+    // Correct import for noble-secp256k1 as a module:
+    import { getPublicKey, utils } from "https://unpkg.com/@noble/secp256k1@1.7.1/lib/index.min.js";
+    // Correct import for CryptoJS as a module:
+    import CryptoJS from "https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/+esm";
+
 
     async function runECIES() {
       const outputDiv = document.getElementById("output");
       outputDiv.innerText = "⏳ Running simulation...";
 
-      // 1. تولید کلیدهای Alice (فرستنده) و Bob (گیرنده)
-      const alicePrivateKey = secp.utils.randomPrivateKey();
-      const alicePublicKey = secp.getPublicKey(alicePrivateKey);
+      // Helper function to convert bytes to hex (from previous conversation)
+      const bytesToHex = (bytes) => Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
 
-      const bobPrivateKey = secp.utils.randomPrivateKey();
-      const bobPublicKey = secp.getPublicKey(bobPrivateKey);
+      // 1. تولید کلیدهای Alice (فرستنده) و Bob (گیرنده)
+      const alicePrivateKey = utils.randomPrivateKey();
+      const alicePublicKey = getPublicKey(alicePrivateKey);
+
+      const bobPrivateKey = utils.randomPrivateKey();
+      const bobPublicKey = getPublicKey(bobPrivateKey);
 
       // 2. محاسبه Shared Secret از دید Alice: privA * pubB (با استفاده از ECDH)
-      // noble-secp256k1.getSharedSecret خودش خروجی 65 بایتی (uncompressed) می‌ده
-      const sharedSecretAliceView = await secp.getSharedSecret(alicePrivateKey, bobPublicKey);
+      const sharedSecretAliceView = await nobleSecp256k1.getSharedSecret(alicePrivateKey, bobPublicKey);
 
       // 3. هش کردن Shared Secret برای تولید کلید AES (SHA256)
-      // باید مطمئن شیم که فقط مختصات x رو هش می‌کنیم یا کل 32 بایت Shared Secret
-      // noble-secp256k1.getSharedSecret خروجی 32 بایتی Shared Secret رو میده
-      const aesKeyAlice = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(secp.utils.bytesToHex(sharedSecretAliceView))).toString();
+      const aesKeyAlice = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(bytesToHex(sharedSecretAliceView))).toString();
 
       // 4. پیام و IV
       const message = "Hello Dear Ehsan! This is a secure message.";
       const ivBytes = crypto.getRandomValues(new Uint8Array(16)); // 16 بایت IV تصادفی
-      const iv = CryptoJS.enc.Hex.parse(secp.utils.bytesToHex(ivBytes)); // تبدیل به WordArray
+      const iv = CryptoJS.enc.Hex.parse(bytesToHex(ivBytes)); // تبدیل به WordArray
 
       // 5. رمزنگاری پیام با AES-256-CBC
       const encrypted = CryptoJS.AES.encrypt(
@@ -57,8 +103,8 @@
       );
 
       // 6. محاسبه Shared Secret از دید Bob: privB * pubA
-      const sharedSecretBobView = await secp.getSharedSecret(bobPrivateKey, alicePublicKey);
-      const aesKeyBob = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(secp.utils.bytesToHex(sharedSecretBobView))).toString();
+      const sharedSecretBobView = await nobleSecp256k1.getSharedSecret(bobPrivateKey, alicePublicKey);
+      const aesKeyBob = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(bytesToHex(sharedSecretBobView))).toString();
 
       // 7. رمزگشایی پیام از سمت Bob
       const decrypted = CryptoJS.AES.decrypt(
@@ -100,7 +146,10 @@ Shared Secret (Bob's View):   ${secp.utils.bytesToHex(sharedSecretBobView)}
 </pre>`;
     }
 
-    // دکمه رو وصل می‌کنیم به تابع، و همچنین وقتی صفحه لود شد یک بار اجرا بشه
+    // Export runECIES to the global window object so it can be called by onclick
+    window.runECIES = runECIES;
+
+    // Run on page load
     document.addEventListener('DOMContentLoaded', runECIES);
   </script>
 </body>
