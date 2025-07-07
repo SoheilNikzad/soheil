@@ -1,156 +1,68 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>ECIES Demo - Fixed CDN</title>
-    <script src="https://unpkg.com/@noble/secp256k1@1.7.1/lib/index.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.js"></script>
-  <style>
-    body { font-family: monospace; padding: 20px; background: #f7f7f7; }
-    pre { background: white; padding: 10px; border-radius: 6px; overflow-x: auto; }
-    button { padding: 10px; margin-top: 10px; }
-  </style>
+  <meta charset="UTF-8">
+  <title>ECIES Demo</title>
+  <script type="module">
+    import { getPublicKey, utils, CURVE } from "https://esm.sh/noble-secp256k1";
+    import CryptoJS from "https://esm.sh/crypto-js";
+
+    function hexToBytes(hex) {
+      return Uint8Array.from(hex.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+    }
+
+    function bytesToHex(bytes) {
+      return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    async function runECIES() {
+      // Receiver keys (static)
+      const receiverPrivateKey = utils.randomPrivateKey();
+      const receiverPublicKey = getPublicKey(receiverPrivateKey);
+
+      // Ephemeral sender keys
+      const senderPrivateKey = utils.randomPrivateKey();
+      const senderPublicKey = getPublicKey(senderPrivateKey);
+
+      // Shared secret = sender_priv × receiver_pub
+      const sharedSecret = CURVE.scalarMult(receiverPublicKey, senderPrivateKey);
+      const aesKey = CryptoJS.SHA256(bytesToHex(sharedSecret)).toString();
+
+      // Encrypt message
+      const message = "Hello from ECIES!";
+      const iv = CryptoJS.lib.WordArray.random(16);
+      const encrypted = CryptoJS.AES.encrypt(message, CryptoJS.enc.Hex.parse(aesKey), {
+        iv: iv,
+        mode: CryptoJS.mode.CBC,
+        padding: CryptoJS.pad.Pkcs7
+      });
+
+      // Decrypt with same shared secret from receiver's side
+      const sharedSecret2 = CURVE.scalarMult(senderPublicKey, receiverPrivateKey);
+      const aesKey2 = CryptoJS.SHA256(bytesToHex(sharedSecret2)).toString();
+      const decrypted = CryptoJS.AES.decrypt(encrypted.toString(), CryptoJS.enc.Hex.parse(aesKey2), {
+        iv: iv,
+        mode: CryptoJS.mode.CBC,
+        padding: CryptoJS.pad.Pkcs7
+      });
+
+      document.getElementById("output").innerText = `
+🔐 Message: ${message}
+📤 Encrypted: ${encrypted}
+🧊 IV: ${iv.toString(CryptoJS.enc.Hex)}
+
+🔓 Decrypted: ${decrypted.toString(CryptoJS.enc.Utf8)}
+
+📎 Receiver Public Key: ${bytesToHex(receiverPublicKey)}
+📎 Sender Ephemeral Public Key: ${bytesToHex(senderPublicKey)}
+      `;
+    }
+
+    window.onload = runECIES;
+  </script>
 </head>
 <body>
-  <h2>🔐 ECIES Encryption Demo (Fixed CDN)</h2>
-  <button onclick="runECIES()">Run Fixed Simulation</button>
-  <pre id="output">Loading…</pre>
-
-  <script type="module">
-    // Make sure 'secp' is globally available if 'type="module"' is used and it's not imported.
-    // Or, you need to export 'runECIES' and call it properly.
-    // For simplicity, let's remove 'type="module"' for now if not strictly needed,
-    // and ensure secp is loaded globally.
-
-    // If you intend to use modules, you need to properly import secp inside the script where it's used.
-    // Let's keep it simple for now, making sure secp is available via window.nobleSecp256k1 or similar,
-    // as this CDN usually exposes it.
-    const secp = window.nobleSecp256k1; // Access the global object if the CDN exposes it like this.
-                                    // If not, we might need a different import strategy or a different CDN.
-                                    // Let's assume unpkg.com makes it available. If it still fails,
-                                    // we'll explicitly use 'import * as secp from "..."' inside the script tag.
-
-    // A safer way if the module import isn't working as expected.
-    // However, the previous approach with type="module" and direct import should work if the CDN path is right.
-    // Let's revert to the previous import style if this doesn't work, and fix the CDN path.
-
-    // Let's try the correct module import for noble-secp256k1 as it's designed to be used.
-    // The previous code had a correct import statement in the <script type="module"> block,
-    // the issue was specifically the CDN URL.
-
-    // This is the correct way to import noble-secp256k1 for modern browsers:
-    // import * as secp from "https://unpkg.com/@noble/secp256k1@1.7.1/lib/index.min.js";
-    // However, for <script type="module"> this needs to be inside the runECIES function
-    // or the module script itself, and 'runECIES' needs to be called after it's defined and imported.
-
-    // Let's rewrite the script tag to ensure the module is imported correctly within the function scope if needed,
-    // or globally if the CDN supports it.
-    // For now, I'll put the import statement directly into the `runECIES` function or the global scope if possible
-    // to ensure it runs *after* the library is loaded.
-
-    // The error "runECIES is not defined" implies the script tag type="module" caused runECIES to be in a module scope,
-    // while the onclick attribute expects it to be in the global scope.
-    // Two solutions:
-    // 1. Remove type="module" from the script tag and ensure noble-secp256k1 makes 'secp' global.
-    // 2. Keep type="module" but call runECIES differently (e.g., expose it to window).
-
-    // Let's go with solution 2, as it's cleaner for modern JS.
-    // And fix the CDN URL.
-
-    // Remove the global import. Put it inside runECIES or at the top of the module script.
-    // We'll put it at the top of the module script and then expose runECIES.
-    
-    // Correct import for noble-secp256k1 as a module:
-    import { getPublicKey, utils } from "https://unpkg.com/@noble/secp256k1@1.7.1/lib/index.min.js";
-    // Correct import for CryptoJS as a module:
-    import CryptoJS from "https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/+esm";
-
-
-    async function runECIES() {
-      const outputDiv = document.getElementById("output");
-      outputDiv.innerText = "⏳ Running simulation...";
-
-      // Helper function to convert bytes to hex (from previous conversation)
-      const bytesToHex = (bytes) => Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
-
-      // 1. تولید کلیدهای Alice (فرستنده) و Bob (گیرنده)
-      const alicePrivateKey = utils.randomPrivateKey();
-      const alicePublicKey = getPublicKey(alicePrivateKey);
-
-      const bobPrivateKey = utils.randomPrivateKey();
-      const bobPublicKey = getPublicKey(bobPrivateKey);
-
-      // 2. محاسبه Shared Secret از دید Alice: privA * pubB (با استفاده از ECDH)
-      const sharedSecretAliceView = await nobleSecp256k1.getSharedSecret(alicePrivateKey, bobPublicKey);
-
-      // 3. هش کردن Shared Secret برای تولید کلید AES (SHA256)
-      const aesKeyAlice = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(bytesToHex(sharedSecretAliceView))).toString();
-
-      // 4. پیام و IV
-      const message = "Hello Dear Ehsan! This is a secure message.";
-      const ivBytes = crypto.getRandomValues(new Uint8Array(16)); // 16 بایت IV تصادفی
-      const iv = CryptoJS.enc.Hex.parse(bytesToHex(ivBytes)); // تبدیل به WordArray
-
-      // 5. رمزنگاری پیام با AES-256-CBC
-      const encrypted = CryptoJS.AES.encrypt(
-        message,
-        CryptoJS.enc.Hex.parse(aesKeyAlice), // کلید AES
-        {
-          iv: iv,
-          mode: CryptoJS.mode.CBC,
-          padding: CryptoJS.pad.Pkcs7,
-        }
-      );
-
-      // 6. محاسبه Shared Secret از دید Bob: privB * pubA
-      const sharedSecretBobView = await nobleSecp256k1.getSharedSecret(bobPrivateKey, alicePublicKey);
-      const aesKeyBob = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(bytesToHex(sharedSecretBobView))).toString();
-
-      // 7. رمزگشایی پیام از سمت Bob
-      const decrypted = CryptoJS.AES.decrypt(
-        encrypted.toString(), // encrypted.toString() برای گرفتن string کامل شامل cipher + salt + iv
-        CryptoJS.enc.Hex.parse(aesKeyBob),
-        {
-          iv: iv,
-          mode: CryptoJS.mode.CBC,
-          padding: CryptoJS.pad.Pkcs7,
-        }
-      );
-
-      outputDiv.innerHTML = `
-<pre>
-🔐 Alice Private Key: ${secp.utils.bytesToHex(alicePrivateKey)}
-🔓 Alice Public Key : ${secp.utils.bytesToHex(alicePublicKey)}
-
-🔑 Bob Private Key  : ${secp.utils.bytesToHex(bobPrivateKey)}
-🔓 Bob Public Key   : ${secp.utils.bytesToHex(bobPublicKey)}
-
----
-Shared Secret (Alice's View): ${secp.utils.bytesToHex(sharedSecretAliceView)}
-Shared Secret (Bob's View):   ${secp.utils.bytesToHex(sharedSecretBobView)}
-✅ Shared Secrets Match? ${secp.utils.bytesToHex(sharedSecretAliceView) === secp.utils.bytesToHex(sharedSecretBobView)}
-
----
-🔑 AES Key (from Alice's SS): ${aesKeyAlice}
-🔑 AES Key (from Bob's SS):   ${aesKeyBob}
-✅ AES Keys Match? ${aesKeyAlice === aesKeyBob}
-
----
-📨 Original Message: ${message}
-🧊 IV (Initialization Vector): ${secp.utils.bytesToHex(ivBytes)}
-🔐 Encrypted Message (Ciphertext): ${encrypted.ciphertext.toString(CryptoJS.enc.Hex)}
-
----
-📬 Decrypted Message (by Bob): ${decrypted.toString(CryptoJS.enc.Utf8)}
-✅ Decryption Successful? ${message === decrypted.toString(CryptoJS.enc.Utf8)}
-</pre>`;
-    }
-
-    // Export runECIES to the global window object so it can be called by onclick
-    window.runECIES = runECIES;
-
-    // Run on page load
-    document.addEventListener('DOMContentLoaded', runECIES);
-  </script>
+  <h2>🔐 ECIES Encryption Demo</h2>
+  <pre id="output">Loading…</pre>
 </body>
 </html>
