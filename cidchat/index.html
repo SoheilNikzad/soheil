@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>ECIES Demo</title>
+  <script type="module">
+    import { getPublicKey, utils, CURVE } from "https://esm.sh/noble-secp256k1";
+    import CryptoJS from "https://esm.sh/crypto-js";
+
+    function hexToBytes(hex) {
+      return Uint8Array.from(hex.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+    }
+
+    function bytesToHex(bytes) {
+      return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    async function runECIES() {
+      // Receiver keys (static)
+      const receiverPrivateKey = utils.randomPrivateKey();
+      const receiverPublicKey = getPublicKey(receiverPrivateKey);
+
+      // Ephemeral sender keys
+      const senderPrivateKey = utils.randomPrivateKey();
+      const senderPublicKey = getPublicKey(senderPrivateKey);
+
+      // Shared secret = sender_priv × receiver_pub
+      const sharedSecret = CURVE.scalarMult(receiverPublicKey, senderPrivateKey);
+      const aesKey = CryptoJS.SHA256(bytesToHex(sharedSecret)).toString();
+
+      // Encrypt message
+      const message = "Hello from ECIES!";
+      const iv = CryptoJS.lib.WordArray.random(16);
+      const encrypted = CryptoJS.AES.encrypt(message, CryptoJS.enc.Hex.parse(aesKey), {
+        iv: iv,
+        mode: CryptoJS.mode.CBC,
+        padding: CryptoJS.pad.Pkcs7
+      });
+
+      // Decrypt with same shared secret from receiver's side
+      const sharedSecret2 = CURVE.scalarMult(senderPublicKey, receiverPrivateKey);
+      const aesKey2 = CryptoJS.SHA256(bytesToHex(sharedSecret2)).toString();
+      const decrypted = CryptoJS.AES.decrypt(encrypted.toString(), CryptoJS.enc.Hex.parse(aesKey2), {
+        iv: iv,
+        mode: CryptoJS.mode.CBC,
+        padding: CryptoJS.pad.Pkcs7
+      });
+
+      document.getElementById("output").innerText = `
+🔐 Message: ${message}
+📤 Encrypted: ${encrypted}
+🧊 IV: ${iv.toString(CryptoJS.enc.Hex)}
+
+🔓 Decrypted: ${decrypted.toString(CryptoJS.enc.Utf8)}
+
+📎 Receiver Public Key: ${bytesToHex(receiverPublicKey)}
+📎 Sender Ephemeral Public Key: ${bytesToHex(senderPublicKey)}
+      `;
+    }
+
+    window.onload = runECIES;
+  </script>
+</head>
+<body>
+  <h2>🔐 ECIES Encryption Demo</h2>
+  <pre id="output">Loading…</pre>
+</body>
+</html>
