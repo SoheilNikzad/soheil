@@ -1,68 +1,107 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>ECIES Demo</title>
-  <script type="module">
-    import { getPublicKey, utils, CURVE } from "https://esm.sh/noble-secp256k1";
-    import CryptoJS from "https://esm.sh/crypto-js";
-
-    function hexToBytes(hex) {
-      return Uint8Array.from(hex.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
-    }
-
-    function bytesToHex(bytes) {
-      return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
-    }
-
-    async function runECIES() {
-      // Receiver keys (static)
-      const receiverPrivateKey = utils.randomPrivateKey();
-      const receiverPublicKey = getPublicKey(receiverPrivateKey);
-
-      // Ephemeral sender keys
-      const senderPrivateKey = utils.randomPrivateKey();
-      const senderPublicKey = getPublicKey(senderPrivateKey);
-
-      // Shared secret = sender_priv × receiver_pub
-      const sharedSecret = CURVE.scalarMult(receiverPublicKey, senderPrivateKey);
-      const aesKey = CryptoJS.SHA256(bytesToHex(sharedSecret)).toString();
-
-      // Encrypt message
-      const message = "Hello from ECIES!";
-      const iv = CryptoJS.lib.WordArray.random(16);
-      const encrypted = CryptoJS.AES.encrypt(message, CryptoJS.enc.Hex.parse(aesKey), {
-        iv: iv,
-        mode: CryptoJS.mode.CBC,
-        padding: CryptoJS.pad.Pkcs7
-      });
-
-      // Decrypt with same shared secret from receiver's side
-      const sharedSecret2 = CURVE.scalarMult(senderPublicKey, receiverPrivateKey);
-      const aesKey2 = CryptoJS.SHA256(bytesToHex(sharedSecret2)).toString();
-      const decrypted = CryptoJS.AES.decrypt(encrypted.toString(), CryptoJS.enc.Hex.parse(aesKey2), {
-        iv: iv,
-        mode: CryptoJS.mode.CBC,
-        padding: CryptoJS.pad.Pkcs7
-      });
-
-      document.getElementById("output").innerText = `
-🔐 Message: ${message}
-📤 Encrypted: ${encrypted}
-🧊 IV: ${iv.toString(CryptoJS.enc.Hex)}
-
-🔓 Decrypted: ${decrypted.toString(CryptoJS.enc.Utf8)}
-
-📎 Receiver Public Key: ${bytesToHex(receiverPublicKey)}
-📎 Sender Ephemeral Public Key: ${bytesToHex(senderPublicKey)}
-      `;
-    }
-
-    window.onload = runECIES;
-  </script>
+  <meta charset="UTF-8">
+  <title>ECIES Demo - Fixed</title>
+  <script src="https://cdn.jsdelivr.net/npm/noble-secp256k1@1.7.1/lib/index.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.js"></script>
+  <style>
+    body { font-family: monospace; padding: 20px; background: #f7f7f7; }
+    pre { background: white; padding: 10px; border-radius: 6px; overflow-x: auto; }
+    button { padding: 10px; margin-top: 10px; }
+  </style>
 </head>
 <body>
-  <h2>🔐 ECIES Encryption Demo</h2>
-  <pre id="output">Loading…</pre>
+  <h2>🔐 ECIES Encryption Demo (Fixed)</h2>
+  <button onclick="runECIES()">Run Fixed Simulation</button>
+  <pre id="output">Loading…</pre>
+
+  <script type="module">
+    // import مستقیم noble-secp256k1 برای استفاده از توابعش
+    import * as secp from "https://cdn.jsdelivr.net/npm/noble-secp256k1@1.7.1/lib/index.min.js";
+
+    async function runECIES() {
+      const outputDiv = document.getElementById("output");
+      outputDiv.innerText = "⏳ Running simulation...";
+
+      // 1. تولید کلیدهای Alice (فرستنده) و Bob (گیرنده)
+      const alicePrivateKey = secp.utils.randomPrivateKey();
+      const alicePublicKey = secp.getPublicKey(alicePrivateKey);
+
+      const bobPrivateKey = secp.utils.randomPrivateKey();
+      const bobPublicKey = secp.getPublicKey(bobPrivateKey);
+
+      // 2. محاسبه Shared Secret از دید Alice: privA * pubB (با استفاده از ECDH)
+      // noble-secp256k1.getSharedSecret خودش خروجی 65 بایتی (uncompressed) می‌ده
+      const sharedSecretAliceView = await secp.getSharedSecret(alicePrivateKey, bobPublicKey);
+
+      // 3. هش کردن Shared Secret برای تولید کلید AES (SHA256)
+      // باید مطمئن شیم که فقط مختصات x رو هش می‌کنیم یا کل 32 بایت Shared Secret
+      // noble-secp256k1.getSharedSecret خروجی 32 بایتی Shared Secret رو میده
+      const aesKeyAlice = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(secp.utils.bytesToHex(sharedSecretAliceView))).toString();
+
+      // 4. پیام و IV
+      const message = "Hello Dear Ehsan! This is a secure message.";
+      const ivBytes = crypto.getRandomValues(new Uint8Array(16)); // 16 بایت IV تصادفی
+      const iv = CryptoJS.enc.Hex.parse(secp.utils.bytesToHex(ivBytes)); // تبدیل به WordArray
+
+      // 5. رمزنگاری پیام با AES-256-CBC
+      const encrypted = CryptoJS.AES.encrypt(
+        message,
+        CryptoJS.enc.Hex.parse(aesKeyAlice), // کلید AES
+        {
+          iv: iv,
+          mode: CryptoJS.mode.CBC,
+          padding: CryptoJS.pad.Pkcs7,
+        }
+      );
+
+      // 6. محاسبه Shared Secret از دید Bob: privB * pubA
+      const sharedSecretBobView = await secp.getSharedSecret(bobPrivateKey, alicePublicKey);
+      const aesKeyBob = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(secp.utils.bytesToHex(sharedSecretBobView))).toString();
+
+      // 7. رمزگشایی پیام از سمت Bob
+      const decrypted = CryptoJS.AES.decrypt(
+        encrypted.toString(), // encrypted.toString() برای گرفتن string کامل شامل cipher + salt + iv
+        CryptoJS.enc.Hex.parse(aesKeyBob),
+        {
+          iv: iv,
+          mode: CryptoJS.mode.CBC,
+          padding: CryptoJS.pad.Pkcs7,
+        }
+      );
+
+      outputDiv.innerHTML = `
+<pre>
+🔐 Alice Private Key: ${secp.utils.bytesToHex(alicePrivateKey)}
+🔓 Alice Public Key : ${secp.utils.bytesToHex(alicePublicKey)}
+
+🔑 Bob Private Key  : ${secp.utils.bytesToHex(bobPrivateKey)}
+🔓 Bob Public Key   : ${secp.utils.bytesToHex(bobPublicKey)}
+
+---
+Shared Secret (Alice's View): ${secp.utils.bytesToHex(sharedSecretAliceView)}
+Shared Secret (Bob's View):   ${secp.utils.bytesToHex(sharedSecretBobView)}
+✅ Shared Secrets Match? ${secp.utils.bytesToHex(sharedSecretAliceView) === secp.utils.bytesToHex(sharedSecretBobView)}
+
+---
+🔑 AES Key (from Alice's SS): ${aesKeyAlice}
+🔑 AES Key (from Bob's SS):   ${aesKeyBob}
+✅ AES Keys Match? ${aesKeyAlice === aesKeyBob}
+
+---
+📨 Original Message: ${message}
+🧊 IV (Initialization Vector): ${secp.utils.bytesToHex(ivBytes)}
+🔐 Encrypted Message (Ciphertext): ${encrypted.ciphertext.toString(CryptoJS.enc.Hex)}
+
+---
+📬 Decrypted Message (by Bob): ${decrypted.toString(CryptoJS.enc.Utf8)}
+✅ Decryption Successful? ${message === decrypted.toString(CryptoJS.enc.Utf8)}
+</pre>`;
+    }
+
+    // دکمه رو وصل می‌کنیم به تابع، و همچنین وقتی صفحه لود شد یک بار اجرا بشه
+    document.addEventListener('DOMContentLoaded', runECIES);
+  </script>
 </body>
 </html>
