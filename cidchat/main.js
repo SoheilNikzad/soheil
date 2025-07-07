@@ -1,11 +1,11 @@
 // main.js
 
-// اینجا noble-secp256k1 و crypto-js رو مستقیم import می‌کنیم.
-// این روش برای محیط‌های مدرن‌تر که از ماژول‌های ES پشتیبانی می‌کنن مناسبه.
-// اگر با خطای CORS یا 404 مواجه شدی، بهت گفته بودم که باید فایل‌ها رو دستی دانلود کنی
-// و آدرس import رو به مسیر نسبی تغییر بدی (مثلاً "./noble-secp256k1.js").
-import { getPublicKey, utils, CURVE } from "https://unpkg.com/@noble/secp256k1@1.7.1/lib/index.min.js";
-import CryptoJS from "https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/+esm"; // +esm برای اطمینان از لود شدن به عنوان ماژول ES
+// اینجا به جای import از CDN، فرض می‌کنیم noble-secp256k1 و CryptoJS به صورت گلوبال لود شده‌اند.
+// noble-secp256k1 معمولاً خودش را به عنوان 'nobleSecp256k1' در global scope قرار می‌دهد.
+// CryptoJS معمولاً خودش را به عنوان 'CryptoJS' در global scope قرار می‌دهد.
+
+const secp = nobleSecp256k1; // استفاده از متغیر گلوبال 'nobleSecp256k1'
+const { getPublicKey, utils } = secp; // استخراج توابع مورد نیاز از آن
 
 // Helper function to convert bytes to hex
 const bytesToHex = (bytes) => Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
@@ -23,7 +23,7 @@ async function runECIES() {
 
   // 2. محاسبه Shared Secret از دید Alice: privA * pubB (با استفاده از ECDH)
   // noble-secp256k1.getSharedSecret خودش خروجی 32 بایتی Shared Secret رو میده
-  const sharedSecretAliceView = await getSharedSecret(alicePrivateKey, bobPublicKey);
+  const sharedSecretAliceView = await secp.getSharedSecret(alicePrivateKey, bobPublicKey);
 
   // 3. هش کردن Shared Secret برای تولید کلید AES (SHA256)
   const aesKeyAlice = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(bytesToHex(sharedSecretAliceView))).toString();
@@ -45,7 +45,7 @@ async function runECIES() {
   );
 
   // 6. محاسبه Shared Secret از دید Bob: privB * pubA
-  const sharedSecretBobView = await getSharedSecret(bobPrivateKey, alicePublicKey);
+  const sharedSecretBobView = await secp.getSharedSecret(bobPrivateKey, alicePublicKey);
   const aesKeyBob = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(bytesToHex(sharedSecretBobView))).toString();
 
   // 7. رمزگشایی پیام از سمت Bob
@@ -91,5 +91,5 @@ Shared Secret (Bob's View):   ${bytesToHex(sharedSecretBobView)}
 // برای اینکه تابع runECIES از طریق onclick قابل دسترسی باشه
 window.runECIES = runECIES;
 
-// Run on page load
+// برای اینکه تابع در زمان لود شدن صفحه هم اجرا بشه (اختیاری)
 document.addEventListener('DOMContentLoaded', runECIES);
