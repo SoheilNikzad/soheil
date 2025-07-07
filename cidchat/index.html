@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>ECIES Demo - Single JS</title>
+  <title>ECIES Demo - Fully Local & Global JS</title>
   <style>
     body { font-family: monospace; padding: 20px; background: #f7f7f7; }
     pre { background: white; padding: 10px; border-radius: 6px; overflow-x: auto; }
@@ -10,10 +10,13 @@
   </style>
 </head>
 <body>
-  <h2>🔐 ECIES Encryption Demo (Single JS File)</h2>
+  <h2>🔐 ECIES Encryption Demo (Fully Local & Global JS)</h2>
   <button onclick="runECIES()">Run Simulation</button>
   <pre id="output">Loading…</pre>
 
-    <script type="module" src="./main.js"></script>
+    <script src="./noble-secp256k1-global.js"></script>
+  <script src="./crypto-js-global.js"></script>
+
+    <script src="./main.js"></script> 
 </body>
 </html>
