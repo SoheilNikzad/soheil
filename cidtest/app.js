@@ -200,7 +200,7 @@ manualDecryptBtn?.addEventListener('click', () => {
   }
 });
 
-// 📬 Check Incoming Messages via Etherscan V2 API
+// 📬 Check Incoming Messages (with style)
 checkMessagesBtn?.addEventListener('click', async () => {
   if (!currentUserAddress) {
     alert("Connect your wallet first.");
@@ -239,10 +239,10 @@ checkMessagesBtn?.addEventListener('click', async () => {
 
     txs.forEach(tx => {
       section.innerHTML += `
-        <div style="margin-bottom:15px; padding:10px; background:#333; border-radius:5px;">
+        <div class="incoming-message-box">
           <p><strong>From:</strong> ${tx.from}</p>
           <p><strong>Tx Hash:</strong> <a href="https://polygonscan.com/tx/${tx.hash}" target="_blank">${tx.hash}</a></p>
-          <textarea readonly style="width:100%; background:#222; color:#ffa500; border:none; padding:8px; font-family:monospace;">${tx.input}</textarea>
+          <textarea readonly>${tx.input}</textarea>
         </div>
       `;
     });
