@@ -9,14 +9,15 @@
 </head>
 <body>
   <div class="container">
-
-    <!-- ✅ Sidebar: Chat List -->
     <aside class="sidebar">
       <div class="sidebar-header">
-        <h2>Chats</h2>
+        <h2>Contacts</h2>
         <button id="connectWalletBtn" class="glow-button">Connect Wallet</button>
         <button id="registerKeyBtn" class="glow-button-small">Register Public Key</button>
-        <button id="checkMessagesBtn" class="glow-button-small">Load Messages</button>
+        <!-- ✅ دکمه جدید نمایش پیام‌ها -->
+        <button id="checkMessagesBtn" class="glow-button-small">Check Messages</button>
+
+        <!-- ✅ Public Key Display Box -->
         <div id="publicKeyBox" class="user-info" style="display: none;">
           <p><strong>Your Public Key:</strong></p>
           <textarea id="publicKeyDisplay" readonly></textarea>
@@ -28,24 +29,28 @@
         <p><strong>Network:</strong> <span id="networkName"></span> (<span id="chainId"></span>)</p>
       </div>
 
-      <!-- ✅ Contact List -->
-      <div id="chatList" class="contact-list"></div>
+      <div id="contactList" class="contact-list"></div>
     </aside>
 
-    <!-- ✅ Chat Panel -->
     <main class="chat-area">
-      
-      <!-- 🔐 Decrypt Panel -->
-      <div class="decrypt-bar">
-        <input type="text" id="decryptSenderPubKey" placeholder="Sender Public Key (base64)">
-        <input type="text" id="decryptReceiverPrivKey" placeholder="Your Private Key (hex)">
-        <button id="decryptAllBtn" class="glow-button-small">Decrypt All</button>
-      </div>
+      <header class="chat-header">
+        <h3 id="chattingWith">Select a chat</h3>
+        <button id="clearCacheBtn" class="glow-button-small" style="display: none;">Clear Cache</button>
+      </header>
 
-      <!-- 📬 Message List -->
       <div id="messageList" class="message-list"></div>
 
-      <!-- 📝 Message Composer -->
+      <!-- 🧪 Manual Decryption Section -->
+      <section id="manualDecryptSection" class="message-list">
+        <h3 style="color: #ffa500;">Manual Message Decryption</h3>
+
+        <textarea id="rawInputData" placeholder="Paste raw hex data from transaction (e.g. 0x7b226e6f6e636522...)" rows="3"></textarea>
+        <input type="text" id="manualSenderPubKey" placeholder="Sender's Public Key (base64)">
+        <input type="text" id="manualReceiverPrivKey" placeholder="Your Private Key (hex)">
+        <button id="manualDecryptBtn" class="glow-button-small">Decrypt</button>
+        <pre id="manualDecryptedOutput" style="white-space: pre-wrap; color: lime; margin-top: 10px;"></pre>
+      </section>
+
       <footer class="chat-footer">
         <input type="text" id="recipientAddressInput" placeholder="Recipient Address"/>
         <input type="text" id="recipientPublicKeyInput" placeholder="Recipient Public Key"/>
@@ -56,7 +61,15 @@
         <pre id="encryptedOutputBox" style="white-space: pre-wrap; color: lime; margin-top: 10px;"></pre>
       </footer>
     </main>
+  </div>
 
+  <!-- QR Modal -->
+  <div id="qrCodeModal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <span class="close-button">&times;</span>
+      <p>Scan QR Code to connect mobile wallet (placeholder)</p>
+      <div id="qrCodeContainer"></div>
+    </div>
   </div>
 
   <!-- Scripts -->
