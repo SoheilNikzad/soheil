@@ -1,29 +1,80 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Send Message TX</title>
-  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Web3 Messenger</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300..700&family=Inter:wght@100..900&display=swap" rel="stylesheet">
 </head>
 <body>
-  <h2>📡 Send Message on Polygon</h2>
+  <div class="container">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h2>Contacts</h2>
+        <button id="connectWalletBtn" class="glow-button">Connect Wallet</button>
+        <button id="registerKeyBtn" class="glow-button-small">Register Public Key</button>
+        <!-- ✅ دکمه جدید نمایش پیام‌ها -->
+        <button id="checkMessagesBtn" class="glow-button-small">Check Messages</button>
 
-  <button id="connectBtn">🔌 Connect Wallet</button>
-  <p id="walletAddress">Not connected</p>
+        <!-- ✅ Public Key Display Box -->
+        <div id="publicKeyBox" class="user-info" style="display: none;">
+          <p><strong>Your Public Key:</strong></p>
+          <textarea id="publicKeyDisplay" readonly></textarea>
+        </div>
+      </div>
 
-  <hr>
+      <div id="userInfo" class="user-info" style="display: none;">
+        <p><strong>Address:</strong> <span id="userAddress"></span></p>
+        <p><strong>Network:</strong> <span id="networkName"></span> (<span id="chainId"></span>)</p>
+      </div>
 
-  <label for="to">Receiver Address:</label><br>
-  <input type="text" id="to" size="60"><br><br>
+      <div id="contactList" class="contact-list"></div>
+    </aside>
 
-  <label for="message">Message:</label><br>
-  <input type="text" id="message" size="60"><br><br>
+    <main class="chat-area">
+      <header class="chat-header">
+        <h3 id="chattingWith">Select a chat</h3>
+        <button id="clearCacheBtn" class="glow-button-small" style="display: none;">Clear Cache</button>
+      </header>
 
-  <button id="sendBtn">🚀 Send Transaction</button>
+      <div id="messageList" class="message-list"></div>
 
-  <p id="status"></p>
+      <!-- 🧪 Manual Decryption Section -->
+      <section id="manualDecryptSection" class="message-list">
+        <h3 style="color: #ffa500;">Manual Message Decryption</h3>
 
-  <!-- Load main app logic -->
-  <script src="app.js"></script>
+        <textarea id="rawInputData" placeholder="Paste raw hex data from transaction (e.g. 0x7b226e6f6e636522...)" rows="3"></textarea>
+        <input type="text" id="manualSenderPubKey" placeholder="Sender's Public Key (base64)">
+        <input type="text" id="manualReceiverPrivKey" placeholder="Your Private Key (hex)">
+        <button id="manualDecryptBtn" class="glow-button-small">Decrypt</button>
+        <pre id="manualDecryptedOutput" style="white-space: pre-wrap; color: lime; margin-top: 10px;"></pre>
+      </section>
+
+      <footer class="chat-footer">
+        <input type="text" id="recipientAddressInput" placeholder="Recipient Address"/>
+        <input type="text" id="recipientPublicKeyInput" placeholder="Recipient Public Key"/>
+        <input type="text" id="senderPrivateKeyInput" placeholder="Your Private Key (hex)"/>
+        <textarea id="messageInput" placeholder="Type your message..."></textarea>
+        <button id="sendMessageBtn" class="glow-button">Send</button>
+        <button id="encryptOnlyBtn" class="glow-button-small">Encrypt Message</button>
+        <pre id="encryptedOutputBox" style="white-space: pre-wrap; color: lime; margin-top: 10px;"></pre>
+      </footer>
+    </main>
+  </div>
+
+  <!-- QR Modal -->
+  <div id="qrCodeModal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <span class="close-button">&times;</span>
+      <p>Scan QR Code to connect mobile wallet (placeholder)</p>
+      <div id="qrCodeContainer"></div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl.min.js"></script>
+  <script src="app.js" defer></script>
 </body>
 </html>
