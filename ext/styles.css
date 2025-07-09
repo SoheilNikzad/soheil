@@ -1,0 +1,143 @@
+.gridcell {
+  display: flex;
+}
+
+.row {
+  display: flex;
+}
+
+.ext-elements {
+  position: absolute;
+  right: 30px;
+}
+
+/* .ext-add-btn {
+  height: 50px;
+  position: relative;
+  left: 284px;
+  bottom: 60px;
+}
+.tagElement {
+  margin: 5;
+  min-height: 20px;
+  max-width: 40%;
+  border: 1px;
+  border-style: solid;
+  background-color: rgb(152, 152, 172);
+  color: white;
+  position: relative;
+  cursor: pointer;
+} */
+
+.ext-add-btn {
+  height: 50px;
+  position: relative;
+  left: 200px;
+  bottom: 60px;
+}
+.tagElement {
+  margin: 5;
+  min-height: 20px;
+  max-width: 40%;
+  border: 1px;
+  border-style: solid;
+  background-color: rgb(152, 152, 172);
+  color: white;
+  position: relative;
+  cursor: pointer;
+  bottom: 100px;
+  left: 250px;
+}
+
+
+
+
+.modal-container {
+  align-items: center;
+  position: fixed;
+  top: 5%;
+  left: 30vw;
+  width: 40%;
+  height: 90%;
+  max-width: 800px;
+  max-height: 600px;
+  background-color: rgba(141, 154, 156, 0.5);
+  z-index: 9999;
+  border: 2px solid black;
+  border-radius: 8px;
+  backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  box-sizing: border-box;
+  overflow: auto;
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: black;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.modal-close-btn:hover {
+  background-color: #333;
+}
+
+.modal-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.modal-tag-element {
+  margin: 5px;
+  min-height: 20px;
+  max-width: 80%;
+  border: 1px solid;
+  border-radius: 4px;
+  background-color: wheat;
+  padding: 5px 10px;
+  box-sizing: border-box;
+}
+
+
+.modal-content {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+
+
+
+
+
+/* new field */
+
+#inputText {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+  width: 200px;
+  margin-bottom: 10px;
+}
+
+#createBtnAdd {
+  padding: 10px 20px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+}
