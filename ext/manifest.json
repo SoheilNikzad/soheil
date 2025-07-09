@@ -1,0 +1,38 @@
+{
+  "name": "Messenger Extension For Tags",
+  "version": "0.2.0",
+  "description": "Saving Tags in Messenger Chat",
+  "permissions": ["storage", "tabs"],
+  "host_permissions": ["https://www.messenger.com/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.messenger.com/*"],
+      "js": ["content.js"],
+      "css": ["styles.css"]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "assets/bookmark.png",
+        "assets/edit.png",
+        "assets/delete.png",
+        "assets/save.png"
+      ],
+      "matches": ["https://www.messenger.com/*"]
+    }
+  ],
+  "action": {
+    "default_icon": {
+      "16": "assets/ext-icon.png",
+      "24": "assets/ext-icon.png",
+      "32": "assets/ext-icon.png"
+    },
+    "default_title": "Messenger",
+    "default_popup": "index.html"
+  },
+  "manifest_version": 3
+}
