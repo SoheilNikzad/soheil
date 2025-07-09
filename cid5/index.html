@@ -1,29 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <title>Tag Manager</title>
-  <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Dapp Chat</title>
 </head>
+
 <body>
-  <div class="container">
-    <h2>Tag Manager</h2>
-    <input type="text" id="inputText" placeholder="Tag name">
-    <button id="createBtnAdd">Create Tag</button>
-    <div id="storedData"></div>
-  </div>
-
-  <!-- Modal -->
-  <div id="linkModal" class="modal">
-    <div class="modal-content">
-      <span class="close">&times;</span>
-      <h3>Links for: <span id="modalTagName"></span></h3>
-      <ul id="linkList"></ul>
-      <input type="text" id="newLinkInput" placeholder="Paste a link">
-      <button id="addLinkBtn">Add Link</button>
+    <div class="cabecalho">
+        <img src="https://www.svgrepo.com/show/471682/message-dots-square.svg" alt="">
+        <span>Dapp Chat</span>
+        <button id="connectWalletBtn">Conect wallet</button>
     </div>
-  </div>
+    <div class="caixa">
+        <div id="areaDeContatos" class="areaContatos">
+            <p id="title">Friends and Groups</p>
+        </div>
+        <div class="container">
+            <div class="header">
+                <h1 id="accountNickname">WebChat</h1>
+                <h1 id="friendAddress">address</h1>
+            </div>
+            <div id="chatBox" class="body">
+            </div>
+            <div class="footer" id="footer">
 
-  <script src="main.js"></script>
+                <input id="sendMsgInput" type="text" name="" placeholder="Type your message.">
+                <button id="sendMsgBtn">SEND</button>
+
+            </div>
+        </div>
+        <div class="campo">
+            <div class="caixa">
+                <div id="areaDeRequests" class="areaRequests">
+                    <p id="title">Requests</p>
+                </div>
+                <div class="add-friend">
+
+                    <input class="input" type="text" placeholder="Your name" id="create-account-inp">
+                    <button class="buttons" id="create-account-btn">Create Account</button>
+                    <input class="input" type="text" placeholder="Paste the Address" id="add-friend-inp">
+                    <button class="buttons" id="add-friend-btn">Send friend request</button>
+
+                </div>
+                <div class="create-group">
+
+                    <input class="input" type="text" placeholder="Group Name" id="name-group-inp">
+                    <button class="buttons" id="create-group-btn">Create Group</button>
+                    <input class="input" type="text" placeholder="Paste the Address" id="add-member-inp">
+                    <button class="buttons" id="add-member-btn">Add Member</button>
+
+                </div>
+            </div>
+        </div>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.2.7/web3.min.js"
+            integrity="sha512-yAmmVkOXqtDZRaueLdmLwMB67JtaRtjFzQGiAiJKvLiFlDvq4Tzm5R6uLcOMyvPRQlXpYHdYxc5IbiCwuquhUw=="
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="./script.js" ></script>
 </body>
+
 </html>
