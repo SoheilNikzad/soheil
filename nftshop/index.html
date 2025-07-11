@@ -1,154 +1,123 @@
-<!DOCTYPE html> 
-<html lang="en" dir="ltr">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>NFT Collection Creator</title>
-  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300&display=swap" rel="stylesheet" />
+  <meta charset="UTF-8">
+  <title>WEVM – NFT Creator & EVM Explorer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --color-bg: #0d111c;
-      --color-panel: #1c2230;
-      --color-border: #2e374a;
-      --color-primary: #f7931a;
-      --color-text: #ffffffcc;
+    * {
+      font-family: 'Comfortaa', cursive;
+      font-weight: 300;
     }
     body {
-      font-family: 'Comfortaa', sans-serif;
-      background: var(--color-bg);
-      color: var(--color-text);
       margin: 0;
-      padding: 2rem;
-      display: flex;
-      justify-content: center;
+      background: #f7f7f7;
     }
-    .container {
-      background: var(--color-panel);
-      padding: 2rem;
-      border-radius: 20px;
-      width: 100%;
-      max-width: 600px;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-    }
-    h1 {
+    header {
+      background: #f7931a;
+      color: white;
       text-align: center;
-      font-size: 1.5rem;
-      margin-bottom: 2rem;
-      color: white;
-    }
-    label {
-      display: block;
-      margin: 1rem 0 0.25rem;
-      font-weight: 500;
-    }
-    input, textarea, button {
-      background: #0f172a;
-      border: 1px solid var(--color-border);
-      border-radius: 10px;
-      padding: 0.75rem 1rem;
-      font-size: 1rem;
-      color: white;
-      width: 100%;
-      box-sizing: border-box;
-      font-family: 'Comfortaa', sans-serif;
-    }
-    textarea {
-      resize: vertical;
-      min-height: 80px;
-    }
-    button {
-      margin-top: 1.2rem;
-      border: none;
-      border-radius: 12px;
-      background: var(--color-primary);
-      color: #ffffff;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-    button:hover:not(:disabled) {
-      background-color: #d87f0a;
-    }
-    button:disabled {
-      background-color: #555;
-      cursor: not-allowed;
-    }
-    #output, #mintOutput {
-      margin-top: 1.5rem;
-      background: #0f172a;
       padding: 1rem;
-      border-radius: 10px;
-      font-family: monospace;
-      font-size: 0.9rem;
-      white-space: pre-wrap;
-      min-height: 60px;
-      overflow-wrap: break-word;
+      font-size: 1.8rem;
+    }
+    main {
+      padding: 1rem;
     }
     .section {
-      margin-top: 2rem;
-      padding-top: 1rem;
-      border-top: 1px solid var(--color-border);
+      background: white;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
-    .note {
-      font-size: 0.85rem;
-      color: #888;
+    select, input, button {
+      font-size: 1rem;
+      padding: 0.5rem;
+      margin-top: 0.5rem;
+      width: 100%;
+      /* box-sizing: border-box; */ /* Removed to match original */
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      background-color: #f7931a;
+      color: white;
+      border: none;
+      cursor: pointer;
+      /* margin-top: 1rem; */ /* Removed from general button to match original */
+    }
+    button:hover {
+      background-color: #e68000;
+    }
+    .data-display {
+      margin-top: 0.5rem;
+      font-size: 1rem;
+      color: #444;
+      /* word-wrap: break-word; */ /* Removed to match original */
+    }
+    .block-list {
+      background: #f1f1f1;
+      padding: 1rem;
+      max-height: 300px;
+      overflow-y: auto;
+      border-radius: 6px;
+    }
+    label { /* Added for better form readability */
+      display: block;
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+      color: #555;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>NFT Collection Creator</h1>
-
-    <button id="connectBtn">Connect Wallet</button>
-    <p id="status">Waiting for connection...</p>
-    <input type="text" id="yourWallet" readonly placeholder="Your wallet address" />
-
-    <label for="name">Collection Name:</label>
-    <input type="text" id="name" placeholder="e.g. My Awesome Collection" />
-
-    <label for="symbol">Collection Symbol:</label>
-    <input type="text" id="symbol" placeholder="e.g. MAC" />
-
-    <label for="description">Description (Optional):</label>
-    <textarea id="description" placeholder="Tell us about your collection"></textarea>
-
-    <label for="imageUrl">Collection Image URL (Optional):</label>
-    <input type="text" id="imageUrl" placeholder="https://example.com/image.png" />
-
-    <p class="note">Note: Collection name and symbol can’t be changed after creation.</p>
-
-    <button id="createToken" disabled>Create NFT Collection</button>
-
-    <pre id="output"></pre>
-
-    <div class="section" id="mintingSection" style="display:none;">
-      <h2>Mint NFT</h2>
-
-      <label for="nftName">NFT Name:</label>
-      <input type="text" id="nftName" placeholder="NFT name" />
-
-      <label for="nftDescription">NFT Description:</label>
-      <textarea id="nftDescription" placeholder="NFT description (optional)"></textarea>
-
-      <label for="nftImageUrl">NFT Image URL:</label>
-      <input type="text" id="nftImageUrl" placeholder="https://example.com/nft-image.png" />
-
-      <button id="generateMetadataBtn">Generate Metadata JSON</button>
-
-      <label for="metadataJsonOutput">Metadata JSON:</label>
-      <textarea id="metadataJsonOutput" readonly></textarea>
-
-      <label for="nftMetadataIpfsUrl">Metadata IPFS URL (e.g. ipfs://...):</label>
-      <input type="text" id="nftMetadataIpfsUrl" placeholder="Enter metadata IPFS URL to mint" />
-
-      <button id="mintNftBtn" disabled>Mint NFT</button>
-
-      <pre id="mintOutput"></pre>
+  <header>WEVM – NFT Creator & EVM Explorer</header>
+  <main>
+    <div class="section">
+      <h3>🌐 Select Network</h3>
+      <select id="networkSelect">
+        <option value="https://mainnet.infura.io/v3/YOUR_INFURA_KEY">Ethereum Mainnet</option>
+        <option value="https://polygon-rpc.com">Polygon</option>
+        <option value="https://bsc-dataseed.binance.org/">BNB Chain</option>
+        <option value="https://arb1.arbitrum.io/rpc">Arbitrum One</option>
+        <option value="https://mainnet.optimism.io">Optimism</option>
+        <option value="https://api.avax.network/ext/bc/C/rpc">Avalanche C-Chain</option>
+        <option value="https://mainnet.base.org">Base</option>
+        <option value="https://rpcapi.fantom.network">Fantom</option>
+        <option value="https://rpc.raakh.net" selected>RAAKH DevNet</option>
+      </select>
+      <div id="networkStatus" class="data-display"></div>
     </div>
 
-  </div>
+    <div class="section">
+      <h3>👛 Wallet Connection</h3>
+      <button id="connectWalletBtn">Connect Wallet</button>
+      <div id="walletAddress" class="data-display"></div>
+    </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
-  <script type="module" src="main.js"></script>
+    <div class="section">
+      <h3>🎨 NFT Creator</h3>
+      <label for="nftContractAddress">Deployed NFT Contract Address:</label>
+      <input type="text" id="nftContractAddress" placeholder="0x...">
+      
+      <label for="recipientAddress">Recipient Address:</label>
+      <input type="text" id="recipientAddress" placeholder="0x...">
+      
+      <label for="tokenURI">Token URI (Metadata JSON Link):</label>
+      <input type="text" id="tokenURI" placeholder="https://your-metadata-host.com/my-nft.json">
+      
+      <button id="mintNftBtn">Mint NFT</button>
+      <div id="mintingStatus" class="data-display"></div>
+    </div>
+
+    <div class="section">
+      <h3>📦 Latest Blocks + Transactions</h3>
+      <button id="loadBlocksBtn">Load Explorer</button>
+      <div id="blockExplorer" class="block-list"></div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <script src="nft_creator_main.js"></script> <!-- Adjusted to new JS file name -->
 </body>
 </html>
