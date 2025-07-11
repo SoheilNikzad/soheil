@@ -64,6 +64,14 @@
       color: #ffffff;
       font-weight: bold;
       cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover:not(:disabled) {
+      background-color: #d87f0a;
+    }
+    button:disabled {
+      background-color: #555;
+      cursor: not-allowed;
     }
     #output, #mintOutput {
       margin-top: 1.5rem;
@@ -73,11 +81,17 @@
       font-family: monospace;
       font-size: 0.9rem;
       white-space: pre-wrap;
+      min-height: 60px;
+      overflow-wrap: break-word;
     }
     .section {
       margin-top: 2rem;
       padding-top: 1rem;
       border-top: 1px solid var(--color-border);
+    }
+    .note {
+      font-size: 0.85rem;
+      color: #888;
     }
   </style>
 </head>
@@ -103,7 +117,7 @@
 
     <p class="note">Note: Collection name and symbol can’t be changed after creation.</p>
 
-    <button id="createToken">Create NFT Collection</button>
+    <button id="createToken" disabled>Create NFT Collection</button>
 
     <pre id="output"></pre>
 
@@ -127,7 +141,7 @@
       <label for="nftMetadataIpfsUrl">Metadata IPFS URL (e.g. ipfs://...):</label>
       <input type="text" id="nftMetadataIpfsUrl" placeholder="Enter metadata IPFS URL to mint" />
 
-      <button id="mintNftBtn">Mint NFT</button>
+      <button id="mintNftBtn" disabled>Mint NFT</button>
 
       <pre id="mintOutput"></pre>
     </div>
