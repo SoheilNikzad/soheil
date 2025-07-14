@@ -1,5 +1,3 @@
-/* style.css */
-
 :root {
   --main-blue: #229ED9;
   --light-gray: #f4f4f4;
@@ -20,6 +18,7 @@ body {
   height: 100vh;
 }
 
+/* ===== Sidebar ===== */
 .sidebar {
   width: 28%;
   background-color: #fff;
@@ -35,12 +34,86 @@ body {
   font-size: 1.2rem;
   text-align: center;
   font-weight: bold;
-  height: 64px;
+  height: auto;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
 }
 
+/* ولت باکس و دکمه‌ها */
+.wallet-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: stretch;
+  margin-top: 0.5rem;
+  width: 100%;
+  padding: 0 1rem;
+  box-sizing: border-box;
+}
+
+#connectWallet {
+  padding: 6px 12px;
+  background-color: #229ED9;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+#walletAddress {
+  font-size: 0.75rem;
+  color: #444;
+  word-break: break-all;
+}
+
+#getPubKey {
+  padding: 6px 12px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+#publicKeyBox {
+  background-color: #fff;
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  color: #333;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+/* Private Key Decrypt UI */
+#privateKeyInput {
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+#decryptBtn {
+  padding: 6px 12px;
+  background-color: #ff9800;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.decrypt-box {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* ===== Chat List ===== */
 .chat-list {
   overflow-y: auto;
   flex: 1;
@@ -82,6 +155,7 @@ body {
   color: var(--text-light);
 }
 
+/* ===== Chat Area ===== */
 .chat-area {
   flex: 1;
   display: flex;
@@ -136,6 +210,7 @@ body {
   align-self: flex-end;
 }
 
+/* ===== Input ===== */
 .chat-input {
   display: flex;
   padding: 1rem;
@@ -159,69 +234,4 @@ body {
   border: none;
   border-radius: 20px;
   cursor: pointer;
-}
-
-#connectWallet {
-  margin-left: 1rem;
-  padding: 6px 12px;
-  background-color: #229ED9;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.85rem;
-}
-
-#walletAddress {
-  margin-top: 0.5rem;
-  font-size: 0.75rem;
-  color: #444;
-}
-
-#getPubKey {
-  margin-top: 0.5rem;
-  padding: 6px 12px;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.85rem;
-}
-
-#publicKeyBox {
-  margin-top: 0.5rem;
-  background-color: #fff;
-  padding: 10px;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  color: #333;
-  max-width: 90%;
-  word-break: break-all;
-  white-space: pre-wrap;
-}
-.decrypt-box {
-  margin-top: 1rem;
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-#privateKeyInput {
-  flex: 1;
-  padding: 6px 12px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  min-width: 220px;
-}
-
-#decryptBtn {
-  padding: 6px 16px;
-  background-color: #ff9800;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.85rem;
 }
