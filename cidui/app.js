@@ -62,4 +62,30 @@ function shortenAddress(address) {
 }
 
 connectButton.addEventListener("click", connectWallet);
+const getPubKeyBtn = document.getElementById("getPubKey");
+const publicKeyBox = document.getElementById("publicKeyBox");
+
+getPubKeyBtn.addEventListener("click", async () => {
+  if (!window.ethereum || !ethereum.selectedAddress) {
+    alert("اول کیف پول رو وصل کن");
+    return;
+  }
+
+  try {
+    const publicKey = await window.ethereum.request({
+      method: 'eth_getEncryptionPublicKey',
+      params: [ethereum.selectedAddress],
+    });
+
+    publicKeyBox.textContent = publicKey;
+  } catch (err) {
+    if (err.code === 4001) {
+      alert("درخواست رد شد.");
+    } else {
+      console.error(err);
+      alert("خطا در دریافت کلید عمومی");
+    }
+  }
+});
+
 
