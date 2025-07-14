@@ -28,7 +28,7 @@ body {
 }
 
 .sidebar-header {
-  padding: 1rem;
+  padding: 0.5rem;
   background-color: #f2f2f2;
   color: #000;
   font-size: 1.2rem;
@@ -46,7 +46,7 @@ body {
   flex-direction: column;
   gap: 0.5rem;
   align-items: stretch;
-  margin-top: 0.5rem;
+  margin-top: 0.25rem;
   width: 100%;
   padding: 0 1rem;
   box-sizing: border-box;
@@ -88,7 +88,6 @@ body {
   white-space: pre-wrap;
 }
 
-/* Private Key Decrypt UI */
 #privateKeyInput {
   padding: 6px 12px;
   border: 1px solid #ccc;
