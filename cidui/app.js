@@ -39,3 +39,27 @@ button.addEventListener('click', () => {
     messages.scrollTop = messages.scrollHeight;
   }
 });
+const connectButton = document.getElementById("connectWallet");
+const walletAddress = document.getElementById("walletAddress");
+
+async function connectWallet() {
+  if (window.ethereum) {
+    try {
+      const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+      const address = accounts[0];
+      walletAddress.textContent = shortenAddress(address);
+      connectButton.style.display = "none"; // دکمه رو مخفی می‌کنیم بعد از اتصال
+    } catch (err) {
+      console.error("User rejected the connection");
+    }
+  } else {
+    alert("لطفاً MetaMask را نصب کنید!");
+  }
+}
+
+function shortenAddress(address) {
+  return address.slice(0, 6) + "..." + address.slice(-4);
+}
+
+connectButton.addEventListener("click", connectWallet);
+
