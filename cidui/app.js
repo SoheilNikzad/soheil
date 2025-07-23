@@ -168,15 +168,18 @@ showPubKeyBtn.addEventListener('click', async () => {
     }
     // Recover public key using eth-sig-util
     const ethSigUtil = window.ethSigUtil;
-    const msgBuffer = Buffer.from(`\x19Ethereum Signed Message:\n${msg.length}${msg}`);
-    const msgHash = ethSigUtil.TypedDataUtils.hashPersonalMessage(Buffer.from(msg));
-    const pubKey = ethSigUtil.recoverPublicKey(
-      msgHash,
-      ethSigUtil.fromRpcSig(signature)
-    );
-    const pubKeyHex = '0x' + pubKey.toString('hex');
-    cachedPublicKey = pubKeyHex;
-    showPublicKeyModal(pubKeyHex);
+    const msgHex = '0x' + Buffer.from(msg, 'utf8').toString('hex');
+    console.log('Signature:', signature);
+    console.log('Message (hex):', msgHex);
+    let pubKey;
+    try {
+      pubKey = ethSigUtil.recoverPersonalSignature({ data: msgHex, sig: signature });
+    } catch (e) {
+      showWalletAlert('Public key recovery failed.', 'error');
+      return;
+    }
+    cachedPublicKey = pubKey;
+    showPublicKeyModal(pubKey);
   } catch (err) {
     showWalletAlert('Signature rejected or failed.', 'error');
   }
