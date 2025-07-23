@@ -166,8 +166,17 @@ showPubKeyBtn.addEventListener('click', async () => {
         return;
       }
     }
-    cachedPublicKey = signature;
-    showPublicKeyModal(signature);
+    // Recover public key using eth-sig-util
+    const ethSigUtil = window.ethSigUtil;
+    const msgBuffer = Buffer.from(`\x19Ethereum Signed Message:\n${msg.length}${msg}`);
+    const msgHash = ethSigUtil.TypedDataUtils.hashPersonalMessage(Buffer.from(msg));
+    const pubKey = ethSigUtil.recoverPublicKey(
+      msgHash,
+      ethSigUtil.fromRpcSig(signature)
+    );
+    const pubKeyHex = '0x' + pubKey.toString('hex');
+    cachedPublicKey = pubKeyHex;
+    showPublicKeyModal(pubKeyHex);
   } catch (err) {
     showWalletAlert('Signature rejected or failed.', 'error');
   }
