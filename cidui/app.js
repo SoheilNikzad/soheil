@@ -169,8 +169,13 @@ showPubKeyBtn.addEventListener('click', async () => {
     // Recover public key using ethers.js
     const msgHash = ethers.utils.hashMessage(msg);
     const pubKey = ethers.utils.recoverPublicKey(msgHash, signature);
-    cachedPublicKey = pubKey;
-    showPublicKeyModal(pubKey);
+    // Convert hex public key to base64
+    const pubKeyHex = pubKey.startsWith('0x') ? pubKey.slice(2) : pubKey;
+    const pubKeyBase64 = btoa(
+      pubKeyHex.match(/.{1,2}/g).map(byte => String.fromCharCode(parseInt(byte, 16))).join('')
+    );
+    cachedPublicKey = pubKeyBase64;
+    showPublicKeyModal(pubKeyBase64);
   } catch (err) {
     showWalletAlert('Signature rejected or failed.', 'error');
   }
