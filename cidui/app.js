@@ -144,40 +144,16 @@ showPubKeyBtn.addEventListener('click', async () => {
     showPublicKeyModal(cachedPublicKey);
     return;
   }
-  // Ask user to sign a message
-  const msg = 'Show my public key';
+  // Request public encryption key from MetaMask
   try {
-    const from = account;
-    let params = [
-      ethers.utils.hexlify(ethers.utils.toUtf8Bytes(msg)),
-      from
-    ];
-    let method = 'personal_sign';
-    let signature;
-    try {
-      signature = await window.ethereum.request({ method, params });
-    } catch (err1) {
-      // Try reversed params for compatibility
-      params = [from, ethers.utils.hexlify(ethers.utils.toUtf8Bytes(msg))];
-      try {
-        signature = await window.ethereum.request({ method, params });
-      } catch (err2) {
-        showWalletAlert('Signature rejected or failed.', 'error');
-        return;
-      }
-    }
-    // Recover public key using ethers.js
-    const msgHash = ethers.utils.hashMessage(msg);
-    const pubKey = ethers.utils.recoverPublicKey(msgHash, signature);
-    // Convert hex public key to base64
-    const pubKeyHex = pubKey.startsWith('0x') ? pubKey.slice(2) : pubKey;
-    const pubKeyBase64 = btoa(
-      pubKeyHex.match(/.{1,2}/g).map(byte => String.fromCharCode(parseInt(byte, 16))).join('')
-    );
-    cachedPublicKey = pubKeyBase64;
-    showPublicKeyModal(pubKeyBase64);
+    const publicKey = await window.ethereum.request({
+      method: 'eth_getEncryptionPublicKey',
+      params: [account]
+    });
+    cachedPublicKey = publicKey;
+    showPublicKeyModal(publicKey);
   } catch (err) {
-    showWalletAlert('Signature rejected or failed.', 'error');
+    showWalletAlert('User denied or MetaMask does not support public key request.', 'error');
   }
 });
 
