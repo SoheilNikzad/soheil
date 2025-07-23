@@ -149,7 +149,7 @@ showPubKeyBtn.addEventListener('click', async () => {
   try {
     const from = account;
     let params = [
-      '0x' + Buffer.from(msg, 'utf8').toString('hex'),
+      ethers.utils.hexlify(ethers.utils.toUtf8Bytes(msg)),
       from
     ];
     let method = 'personal_sign';
@@ -158,7 +158,7 @@ showPubKeyBtn.addEventListener('click', async () => {
       signature = await window.ethereum.request({ method, params });
     } catch (err1) {
       // Try reversed params for compatibility
-      params = [from, '0x' + Buffer.from(msg, 'utf8').toString('hex')];
+      params = [from, ethers.utils.hexlify(ethers.utils.toUtf8Bytes(msg))];
       try {
         signature = await window.ethereum.request({ method, params });
       } catch (err2) {
@@ -166,18 +166,9 @@ showPubKeyBtn.addEventListener('click', async () => {
         return;
       }
     }
-    // Recover public key using eth-sig-util
-    const ethSigUtil = window.ethSigUtil;
-    const msgHex = '0x' + Buffer.from(msg, 'utf8').toString('hex');
-    console.log('Signature:', signature);
-    console.log('Message (hex):', msgHex);
-    let pubKey;
-    try {
-      pubKey = ethSigUtil.recoverPersonalSignature({ data: msgHex, sig: signature });
-    } catch (e) {
-      showWalletAlert('Public key recovery failed.', 'error');
-      return;
-    }
+    // Recover public key using ethers.js
+    const msgHash = ethers.utils.hashMessage(msg);
+    const pubKey = ethers.utils.recoverPublicKey(msgHash, signature);
     cachedPublicKey = pubKey;
     showPublicKeyModal(pubKey);
   } catch (err) {
