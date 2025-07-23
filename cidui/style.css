@@ -1,16 +1,22 @@
+@import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@300&display=swap');
+
 :root {
-  --main-blue: #229ED9;
-  --light-gray: #f4f4f4;
-  --text-light: #666;
-  --bg-chat: #E6F4F1;
-  --message-sent: #D2F8D2;
-  --message-received: #ffffff;
+  --main-orange: #f7931a;
+  --main-black: #0f0f0f;
+  --main-gray: #1e1e1e;
+  --main-white: #fff;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--main-gray);
+  height: 100%;
 }
 
 body {
-  margin: 0;
-  font-family: 'Segoe UI', sans-serif;
-  background-color: var(--light-gray);
+  font-family: 'Comfortaa', 'Segoe UI', sans-serif;
+  color: var(--main-white);
 }
 
 .app {
@@ -19,120 +25,71 @@ body {
 }
 
 /* ===== Sidebar ===== */
+.sidebar, .sidebar-header, .chat-list, .sidebar-footer, .chat-input {
+  box-sizing: border-box;
+}
+
 .sidebar {
   width: 28%;
-  background-color: #fff;
-  border-right: 1px solid #ddd;
+  background-color: var(--main-gray);
+  border-right: 1px solid #222;
   display: flex;
   flex-direction: column;
 }
 
 .sidebar-header {
-  padding: 0.5rem;
-  background-color: #f2f2f2;
-  color: #000;
-  font-size: 1.2rem;
-  text-align: center;
-  font-weight: bold;
-  height: auto;
   display: flex;
-  flex-direction: column;
   align-items: center;
-}
-
-/* ولت باکس و دکمه‌ها */
-.wallet-box {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  align-items: stretch;
-  margin-top: 0.25rem;
-  width: 100%;
+  justify-content: center;
+  height: 64px;
   padding: 0 1rem;
+  background: var(--main-black);
+  border-bottom: 1px solid #222;
   box-sizing: border-box;
 }
 
-#connectWallet {
-  padding: 6px 12px;
-  background-color: #229ED9;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.85rem;
+.sidebar-title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--main-orange);
+  letter-spacing: 2px;
+  font-family: 'Comfortaa', 'Segoe UI', sans-serif;
 }
 
-#walletAddress {
-  font-size: 0.75rem;
-  color: #444;
-  word-break: break-all;
-}
-
-#getPubKey {
-  padding: 6px 12px;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.85rem;
-}
-
-#publicKeyBox {
-  background-color: #fff;
-  padding: 10px;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  color: #333;
-  word-break: break-word;
-  white-space: pre-wrap;
-}
-
-#privateKeyInput {
-  padding: 6px 12px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 0.85rem;
-}
-
-#decryptBtn {
-  padding: 6px 12px;
-  background-color: #ff9800;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.85rem;
-}
-
-.decrypt-box {
+.chat-header {
   display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
   align-items: center;
+  height: 64px;
+  padding: 0 1rem;
+  background: var(--main-black);
+  border-bottom: 1px solid #222;
+  box-sizing: border-box;
 }
 
 /* ===== Chat List ===== */
 .chat-list {
   overflow-y: auto;
-  flex: 1;
+  flex: 1 1 auto;
+  min-height: 0;
+  background: transparent;
 }
 
 .chat-item {
   display: flex;
   padding: 0.8rem;
   cursor: pointer;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid #222;
   align-items: center;
   transition: background 0.2s;
+  background: var(--main-gray);
 }
 
 .chat-item:hover {
-  background-color: #f7f7f7;
+  background-color: #222;
 }
 
 .chat-item.active {
-  background-color: #e7f5fc;
+  background-color: var(--main-black);
 }
 
 .chat-item .avatar {
@@ -145,13 +102,15 @@ body {
 .chat-details h4 {
   margin: 0;
   font-size: 1rem;
-  color: #000;
+  color: var(--main-white);
+  font-family: 'Comfortaa', 'Segoe UI', sans-serif;
 }
 
 .chat-details p {
   margin: 0;
   font-size: 0.9rem;
-  color: var(--text-light);
+  color: #bbb;
+  font-family: 'Comfortaa', 'Segoe UI', sans-serif;
 }
 
 /* ===== Chat Area ===== */
@@ -159,15 +118,7 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background-color: var(--bg-chat);
-}
-
-.chat-header {
-  display: flex;
-  align-items: center;
-  padding: 1rem;
-  background-color: #fff;
-  border-bottom: 1px solid #ddd;
+  background-color: var(--main-gray);
 }
 
 .chat-header .avatar {
@@ -180,6 +131,8 @@ body {
 .chat-header h3 {
   margin: 0;
   font-size: 1.1rem;
+  color: var(--main-white);
+  font-family: 'Comfortaa', 'Segoe UI', sans-serif;
 }
 
 .chat-messages {
@@ -197,15 +150,19 @@ body {
   max-width: 60%;
   font-size: 0.95rem;
   line-height: 1.4;
+  background: var(--main-black);
+  color: var(--main-white);
+  font-family: 'Comfortaa', 'Segoe UI', sans-serif;
 }
 
 .message.received {
-  background-color: var(--message-received);
+  background-color: var(--main-gray);
   align-self: flex-start;
 }
 
 .message.sent {
-  background-color: var(--message-sent);
+  background-color: var(--main-orange);
+  color: var(--main-white);
   align-self: flex-end;
 }
 
@@ -213,24 +170,156 @@ body {
 .chat-input {
   display: flex;
   padding: 1rem;
-  background-color: #fff;
-  border-top: 1px solid #ddd;
+  background-color: var(--main-black);
+  border-top: 1px solid #222;
+  height: 72px;
+  box-sizing: border-box;
 }
 
 .chat-input input {
   flex: 1;
   padding: 0.6rem 1rem;
-  border: 1px solid #ccc;
+  border: 1px solid #444;
   border-radius: 20px;
   outline: none;
+  background: var(--main-gray);
+  color: var(--main-white);
+  font-family: 'Comfortaa', 'Segoe UI', sans-serif;
+}
+
+.chat-input input::placeholder {
+  color: #bbb;
+  font-family: 'Comfortaa', 'Segoe UI', sans-serif;
+  font-weight: 300;
 }
 
 .chat-input button {
   margin-left: 0.5rem;
-  background-color: var(--main-blue);
-  color: white;
+  background-color: var(--main-orange);
+  color: var(--main-white);
   padding: 0.6rem 1.2rem;
   border: none;
   border-radius: 20px;
   cursor: pointer;
+  font-family: 'Comfortaa', 'Segoe UI', sans-serif;
+  font-weight: 300;
+}
+
+.sidebar-footer {
+  height: 72px;
+  background: var(--main-black);
+  border-top: 1px solid #222;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.sidebar-actions {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  height: 100%;
+}
+
+.action-btn {
+  background: none;
+  border: none;
+  outline: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+  padding: 0;
+}
+
+.action-btn:hover {
+  background: #222;
+}
+
+/* Sidebar icon styles */
+.sidebar-icon {
+  width: 32px;
+  height: 32px;
+  display: block;
+}
+.sidebar-icon-circle {
+  cx: 16;
+  cy: 16;
+  r: 11;
+}
+
+/* Wallet connect icon color states */
+#wallet-connect-icon.wallet-success {
+  stroke: #27ae60;
+}
+#wallet-connect-icon.wallet-error {
+  stroke: #e74c3c;
+}
+
+/* Wallet connect alert styles */
+.wallet-alert {
+  position: fixed;
+  top: 32px;
+  right: 32px;
+  left: auto;
+  bottom: auto;
+  transform: none;
+  min-width: 220px;
+  max-width: 90vw;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  color: #fff;
+  font-family: 'Comfortaa', 'Segoe UI', sans-serif;
+  font-size: 1rem;
+  z-index: 9999;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.15);
+  opacity: 0.95;
+  text-align: center;
+  animation: fadeOut 2s 2s forwards;
+}
+.wallet-alert.success {
+  background: #27ae60;
+}
+.wallet-alert.error {
+  background: #e74c3c;
+}
+@keyframes fadeOut {
+  to { opacity: 0; }
+}
+
+.custom-tooltip {
+  position: fixed;
+  background: #222;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-family: 'Comfortaa', 'Segoe UI', sans-serif;
+  font-size: 0.95rem;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s;
+  z-index: 10000;
+  white-space: nowrap;
+}
+.custom-tooltip.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+.custom-tooltip::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: -8px;
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid #222;
 }
