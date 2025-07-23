@@ -148,17 +148,24 @@ showPubKeyBtn.addEventListener('click', async () => {
   const msg = 'Show my public key';
   try {
     const from = account;
-    const params = [
+    let params = [
       '0x' + Buffer.from(msg, 'utf8').toString('hex'),
       from
     ];
-    const method = 'personal_sign';
-    const signature = await window.ethereum.request({ method, params });
-    // Try to recover public key from signature
-    // In browser, we can't do ecrecover without a lib, so as a fallback, show the signature
-    // (If you want, you can show the signature as a placeholder for the public key)
-    // If you want to use a real public key, you need a lib like ethers.js or ethereumjs-util
-    // Here, we show the signature as a placeholder
+    let method = 'personal_sign';
+    let signature;
+    try {
+      signature = await window.ethereum.request({ method, params });
+    } catch (err1) {
+      // Try reversed params for compatibility
+      params = [from, '0x' + Buffer.from(msg, 'utf8').toString('hex')];
+      try {
+        signature = await window.ethereum.request({ method, params });
+      } catch (err2) {
+        showWalletAlert('Signature rejected or failed.', 'error');
+        return;
+      }
+    }
     cachedPublicKey = signature;
     showPublicKeyModal(signature);
   } catch (err) {
