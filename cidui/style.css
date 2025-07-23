@@ -323,3 +323,69 @@ body {
   border-right: 8px solid transparent;
   border-top: 8px solid #222;
 }
+
+#public-key-modal {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 10001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.public-key-box {
+  background: #181818;
+  border-radius: 18px;
+  box-shadow: 0 4px 32px rgba(0,0,0,0.25);
+  padding: 2.2rem 2.5rem 1.5rem 2.5rem;
+  min-width: 320px;
+  max-width: 90vw;
+  text-align: center;
+  position: relative;
+}
+.public-key-title {
+  font-size: 1.2rem;
+  color: #fff;
+  margin-bottom: 1.2rem;
+  font-family: 'Comfortaa', 'Segoe UI', sans-serif;
+}
+.public-key-value {
+  background: #222;
+  color: #27ae60;
+  font-family: 'Comfortaa', 'Segoe UI', monospace;
+  font-size: 1.05rem;
+  border-radius: 10px;
+  padding: 0.7rem 1.2rem;
+  margin-bottom: 1.2rem;
+  word-break: break-all;
+  user-select: all;
+}
+.copy-btn {
+  background: #27ae60;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1.2rem;
+  font-family: 'Comfortaa', 'Segoe UI', sans-serif;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-right: 0.5rem;
+  transition: background 0.2s;
+}
+.copy-btn:hover {
+  background: #219150;
+}
+.close-btn {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  background: none;
+  border: none;
+  color: #bbb;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.close-btn:hover {
+  color: #fff;
+}
