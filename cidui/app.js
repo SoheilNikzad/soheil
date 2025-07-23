@@ -92,3 +92,61 @@ walletBtn.addEventListener('mouseenter', (e) => {
 walletBtn.addEventListener('mouseleave', () => {
   if (walletTooltip) walletTooltip.remove();
 });
+
+// Public Key Modal logic
+const showPubKeyBtn = document.getElementById('show-public-key-btn');
+const pubKeyModal = document.getElementById('public-key-modal');
+let currentAccount = null;
+
+// Listen for wallet connect to update currentAccount
+if (window.ethereum) {
+  window.ethereum.on && window.ethereum.on('accountsChanged', (accounts) => {
+    currentAccount = accounts && accounts[0] ? accounts[0] : null;
+  });
+}
+
+async function getCurrentAccount() {
+  if (typeof window.ethereum === 'undefined') return null;
+  try {
+    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+    return accounts && accounts[0] ? accounts[0] : null;
+  } catch {
+    return null;
+  }
+}
+
+showPubKeyBtn.addEventListener('click', async () => {
+  const account = await getCurrentAccount();
+  if (!account) {
+    showWalletAlert('Please connect your wallet first.', 'error');
+    return;
+  }
+  // Show modal
+  pubKeyModal.innerHTML = `
+    <div class="public-key-box">
+      <button class="close-btn" title="Close">&times;</button>
+      <div class="public-key-title">Your Public Key</div>
+      <div class="public-key-value" id="public-key-value">${account}</div>
+      <button class="copy-btn" id="copy-public-key">Copy</button>
+    </div>
+  `;
+  pubKeyModal.style.display = 'flex';
+
+  // Copy logic
+  document.getElementById('copy-public-key').onclick = () => {
+    const value = document.getElementById('public-key-value').textContent;
+    navigator.clipboard.writeText(value).then(() => {
+      showWalletAlert('Copied!', 'success');
+    }, () => {
+      showWalletAlert('Copy failed!', 'error');
+    });
+  };
+  // Close logic
+  pubKeyModal.querySelector('.close-btn').onclick = () => {
+    pubKeyModal.style.display = 'none';
+  };
+  // Close on overlay click
+  pubKeyModal.onclick = (e) => {
+    if (e.target === pubKeyModal) pubKeyModal.style.display = 'none';
+  };
+});
