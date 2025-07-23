@@ -39,53 +39,56 @@ button.addEventListener('click', () => {
     messages.scrollTop = messages.scrollHeight;
   }
 });
-const connectButton = document.getElementById("connectWallet");
-const walletAddress = document.getElementById("walletAddress");
 
-async function connectWallet() {
-  if (window.ethereum) {
+// Wallet connect logic
+const walletBtn = document.getElementById('wallet-connect-btn');
+const walletIcon = document.getElementById('wallet-connect-icon');
+
+function showWalletAlert(message, type) {
+  // Remove existing alert if any
+  document.querySelectorAll('.wallet-alert').forEach(e => e.remove());
+  const alert = document.createElement('div');
+  alert.className = `wallet-alert ${type}`;
+  alert.textContent = message;
+  document.body.appendChild(alert);
+  setTimeout(() => alert.remove(), 4000);
+}
+
+walletBtn.addEventListener('click', async () => {
+  // Remove previous color states
+  walletIcon.classList.remove('wallet-success', 'wallet-error');
+  if (typeof window.ethereum !== 'undefined') {
     try {
-      const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
-      const address = accounts[0];
-      walletAddress.textContent = shortenAddress(address);
-      connectButton.style.display = "none"; // دکمه رو مخفی می‌کنیم بعد از اتصال
+      await window.ethereum.request({ method: 'eth_requestAccounts' });
+      walletIcon.classList.add('wallet-success');
+      showWalletAlert('Wallet connected successfully!', 'success');
     } catch (err) {
-      console.error("User rejected the connection");
+      walletIcon.classList.add('wallet-error');
+      showWalletAlert('Wallet connection failed!', 'error');
     }
   } else {
-    alert("لطفاً MetaMask را نصب کنید!");
+    walletIcon.classList.add('wallet-error');
+    showWalletAlert('MetaMask is not installed!', 'error');
   }
-}
-
-function shortenAddress(address) {
-  return address.slice(0, 6) + "..." + address.slice(-4);
-}
-
-connectButton.addEventListener("click", connectWallet);
-const getPubKeyBtn = document.getElementById("getPubKey");
-const publicKeyBox = document.getElementById("publicKeyBox");
-
-getPubKeyBtn.addEventListener("click", async () => {
-  if (!window.ethereum || !ethereum.selectedAddress) {
-    alert("اول کیف پول رو وصل کن");
-    return;
-  }
-
-  try {
-    const publicKey = await window.ethereum.request({
-      method: 'eth_getEncryptionPublicKey',
-      params: [ethereum.selectedAddress],
-    });
-
-    publicKeyBox.textContent = publicKey;
-  } catch (err) {
-    if (err.code === 4001) {
-      alert("درخواست رد شد.");
-    } else {
-      console.error(err);
-      alert("خطا در دریافت کلید عمومی");
-    }
-  }
+  // No timeout to remove color; color stays until next click
 });
 
+// Custom tooltip for wallet connect
+const walletTooltipText = 'Wallet Connect';
+let walletTooltip;
 
+walletBtn.addEventListener('mouseenter', (e) => {
+  if (walletTooltip) walletTooltip.remove();
+  walletTooltip = document.createElement('div');
+  walletTooltip.className = 'custom-tooltip show';
+  walletTooltip.textContent = walletTooltipText;
+  document.body.appendChild(walletTooltip);
+  // Position above the button
+  const rect = walletBtn.getBoundingClientRect();
+  walletTooltip.style.left = rect.left + rect.width / 2 + 'px';
+  walletTooltip.style.top = (rect.top - walletTooltip.offsetHeight - 12) + 'px';
+  walletTooltip.style.transform = 'translateX(-50%)';
+});
+walletBtn.addEventListener('mouseleave', () => {
+  if (walletTooltip) walletTooltip.remove();
+});
