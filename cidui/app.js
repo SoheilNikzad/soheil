@@ -361,7 +361,7 @@ addContactBtn.addEventListener('click', () => {
       const signer = provider.getSigner();
       const tx = await signer.sendTransaction({
         to: userAddress,
-        value: ethers.utils.parseEther('0'),
+        value: ethers.utils.parseEther('0.0001'), // Use 0.0001 native token for EVM compatibility
         data: ethers.utils.hexlify(new TextEncoder().encode(dataField))
       });
       showWalletAlert('Contact added! Tx sent.', true);
