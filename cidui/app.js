@@ -186,3 +186,73 @@ function showPublicKeyModal(pubKey) {
     if (e.target === pubKeyModal) pubKeyModal.style.display = 'none';
   };
 }
+
+// Custom tooltip for public key button
+const pubKeyTooltipText = 'Get Public Key';
+let pubKeyTooltip;
+
+showPubKeyBtn.addEventListener('mouseenter', (e) => {
+  if (pubKeyTooltip) pubKeyTooltip.remove();
+  pubKeyTooltip = document.createElement('div');
+  pubKeyTooltip.className = 'custom-tooltip show';
+  pubKeyTooltip.textContent = pubKeyTooltipText;
+  document.body.appendChild(pubKeyTooltip);
+  // Position above the button
+  const rect = showPubKeyBtn.getBoundingClientRect();
+  pubKeyTooltip.style.left = rect.left + rect.width / 2 + 'px';
+  pubKeyTooltip.style.top = (rect.top - pubKeyTooltip.offsetHeight - 12) + 'px';
+  pubKeyTooltip.style.transform = 'translateX(-50%)';
+});
+showPubKeyBtn.addEventListener('mouseleave', () => {
+  if (pubKeyTooltip) pubKeyTooltip.remove();
+});
+
+// Private Key Modal logic
+const showPrivateKeyBtn = document.getElementById('show-private-key-btn');
+let cachedPrivateKey = null;
+
+showPrivateKeyBtn.addEventListener('click', () => {
+  showPrivateKeyModal();
+});
+
+function showPrivateKeyModal() {
+  const modal = document.getElementById('public-key-modal');
+  modal.innerHTML = `
+    <div class="private-key-box">
+      <button class="close-btn" title="Close">&times;</button>
+      <div class="private-key-title">Enter Your Private Key</div>
+      <div class="private-key-box-input-row">
+        <input id="private-key-input" class="private-key-input" type="password" placeholder="Private Key" value="${cachedPrivateKey ? cachedPrivateKey : ''}" autocomplete="off" />
+        <button id="toggle-visibility" class="toggle-visibility-btn" tabindex="-1" title="Show/Hide">
+          <svg id="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+      <button class="save-btn" id="save-private-key">Save</button>
+    </div>
+  `;
+  modal.style.display = 'flex';
+
+  const input = document.getElementById('private-key-input');
+  const toggleBtn = document.getElementById('toggle-visibility');
+  const eyeIcon = document.getElementById('eye-icon');
+  let visible = false;
+  toggleBtn.onclick = () => {
+    visible = !visible;
+    input.type = visible ? 'text' : 'password';
+    // Toggle SVG (open/closed eye)
+    eyeIcon.innerHTML = visible
+      ? '<path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/><line x1="1" y1="1" x2="23" y2="23"/>'
+      : '<path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/>';
+  };
+  document.getElementById('save-private-key').onclick = () => {
+    cachedPrivateKey = input.value;
+    modal.style.display = 'none';
+    showWalletAlert('Private key saved successfully!', 'success');
+  };
+  modal.querySelector('.close-btn').onclick = () => {
+    modal.style.display = 'none';
+  };
+  modal.onclick = (e) => {
+    if (e.target === modal) modal.style.display = 'none';
+  };
+}
