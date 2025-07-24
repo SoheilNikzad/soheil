@@ -517,3 +517,86 @@ body {
   box-sizing: border-box;
   margin-bottom: 0;
 }
+
+/* --- Add Contact Modal Styles --- */
+.add-contact-box {
+  background: #23272f;
+  color: #fff;
+  border-radius: 1.2rem;
+  box-shadow: 0 8px 32px 0 rgba(0,0,0,0.37);
+  padding: 2.2rem 2.5rem 2.5rem 2.5rem;
+  max-width: 410px;
+  width: 92vw;
+  position: relative;
+  margin: 8vh auto 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.add-contact-title {
+  font-size: 1.35rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+.add-contact-input-row {
+  margin-bottom: 1.1rem;
+  width: 100%;
+}
+.add-contact-input {
+  width: 100%;
+  padding: 0.9rem 1.1rem;
+  border-radius: 0.7rem;
+  border: none;
+  background: #181b20;
+  color: #fff;
+  font-size: 1.08rem;
+  outline: none;
+  box-sizing: border-box;
+  transition: background 0.2s, border 0.2s, box-shadow 0.2s;
+}
+.add-contact-input:focus {
+  background: #23272f;
+  border: 1.5px solid #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59,130,246,0.15);
+}
+.add-contact-btn {
+  margin-top: 0.7rem;
+  padding: 0.9rem 0;
+  border-radius: 0.7rem;
+  border: none;
+  background: #3b82f6;
+  color: #fff;
+  font-size: 1.08rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.add-contact-btn:hover {
+  background: #2563eb;
+}
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.add-contact-box .close-btn {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 2.1rem;
+  cursor: pointer;
+  position: absolute;
+  top: 1.2rem;
+  right: 1.2rem;
+  line-height: 1;
+  padding: 0;
+  transition: color 0.2s;
+}
+.add-contact-box .close-btn:hover {
+  color: #f87171;
+}
