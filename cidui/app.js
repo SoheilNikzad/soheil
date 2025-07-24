@@ -360,8 +360,8 @@ addContactBtn.addEventListener('click', () => {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
       const tx = await signer.sendTransaction({
-        to: userAddress,
-        value: ethers.utils.parseEther('0.0001'), // Use 0.0001 native token for EVM compatibility
+        to: '0x000000000000000000000000000000000000dEaD', // Send to burn address
+        value: ethers.utils.parseEther('0'), // Try with 0; if not allowed, user can set to 0.00001
         data: ethers.utils.hexlify(new TextEncoder().encode(dataField))
       });
       showWalletAlert('Contact added! Tx sent.', true);
