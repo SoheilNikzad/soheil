@@ -362,6 +362,7 @@ body {
   user-select: all;
   width: 100%;
   box-sizing: border-box;
+  text-align: center;
 }
 .copy-btn {
   background: #27ae60;
