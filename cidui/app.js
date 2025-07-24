@@ -340,22 +340,29 @@ addContactBtn.addEventListener('click', () => {
       return;
     }
     // Prepare contact data
-    const nonce = Date.now().toString();
-    const contactObj = { name, address, pubkey, nonce };
+    const nonce = nacl.randomBytes(24);
+    const contactObj = { name, address, pubkey };
     const contactStr = JSON.stringify(contactObj);
     try {
-      // Encrypt with ECIES using user's own public key (base64 to Buffer)
-      const pubKeyBuffer = Buffer.from(cachedPublicKey, 'base64');
-      const encrypted = window.ecies.geth.encrypt(pubKeyBuffer, Buffer.from(contactStr));
-      const payload = encrypted.toString('base64');
-      const dataField = '***' + payload;
+      // Encrypt with nacl.box using user's MetaMask public key (Base64)
+      const recipientPubKey = nacl.util.decodeBase64(cachedPublicKey); // 32 bytes
+      const ephemeralKeyPair = nacl.box.keyPair();
+      const messageUint8 = nacl.util.decodeUTF8(contactStr);
+      const box = nacl.box(messageUint8, nonce, recipientPubKey, ephemeralKeyPair.secretKey);
+      // Prepare payload: ephemeralPubKey + nonce + ciphertext, all base64
+      const payload = {
+        ephPub: nacl.util.encodeBase64(ephemeralKeyPair.publicKey),
+        nonce: nacl.util.encodeBase64(nonce),
+        box: nacl.util.encodeBase64(box)
+      };
+      const dataField = '***' + btoa(JSON.stringify(payload));
       // Send 0 ETH tx to self with data
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
       const tx = await signer.sendTransaction({
         to: userAddress,
         value: ethers.utils.parseEther('0'),
-        data: ethers.utils.hexlify(Buffer.from(dataField, 'utf8'))
+        data: ethers.utils.hexlify(new TextEncoder().encode(dataField))
       });
       showWalletAlert('Contact added! Tx sent.', true);
       addContactModal.remove();
