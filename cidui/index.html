@@ -66,7 +66,15 @@
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/ecies-geth@1.0.7/dist/ecies-geth.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/buffer@6.0.3/index.min.js"></script>
-  <script>window.Buffer = buffer.Buffer;</script>
+  <script>
+    if (window.buffer && window.buffer.Buffer) {
+      window.Buffer = window.buffer.Buffer;
+    } else if (window.Buffer && window.Buffer.from) {
+      // already set
+    } else {
+      console.error('Buffer polyfill not loaded correctly');
+    }
+  </script>
   <script src="app.js"></script>
 </body>
 </html>
