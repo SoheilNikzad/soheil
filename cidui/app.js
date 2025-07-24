@@ -256,3 +256,112 @@ function showPrivateKeyModal() {
     if (e.target === modal) modal.style.display = 'none';
   };
 }
+
+// Custom tooltip for private key button
+const privKeyTooltipText = 'Add Private Key';
+let privKeyTooltip;
+
+showPrivateKeyBtn.addEventListener('mouseenter', (e) => {
+  if (privKeyTooltip) privKeyTooltip.remove();
+  privKeyTooltip = document.createElement('div');
+  privKeyTooltip.className = 'custom-tooltip show';
+  privKeyTooltip.textContent = privKeyTooltipText;
+  document.body.appendChild(privKeyTooltip);
+  // Position above the button
+  const rect = showPrivateKeyBtn.getBoundingClientRect();
+  privKeyTooltip.style.left = rect.left + rect.width / 2 + 'px';
+  privKeyTooltip.style.top = (rect.top - privKeyTooltip.offsetHeight - 12) + 'px';
+  privKeyTooltip.style.transform = 'translateX(-50%)';
+});
+showPrivateKeyBtn.addEventListener('mouseleave', () => {
+  if (privKeyTooltip) privKeyTooltip.remove();
+});
+
+// --- Add Contact (User) Button Logic ---
+const addContactBtn = document.querySelectorAll('.sidebar-footer button')[3];
+let addContactModal;
+
+addContactBtn.addEventListener('click', () => {
+  if (addContactModal) addContactModal.remove();
+  addContactModal = document.createElement('div');
+  addContactModal.className = 'modal-overlay';
+  addContactModal.innerHTML = `
+    <div class="add-contact-box">
+      <div class="add-contact-title">Add Contact</div>
+      <div class="add-contact-input-row">
+        <input class="add-contact-input" type="text" placeholder="User Name" id="contact-username" maxlength="32" />
+      </div>
+      <div class="add-contact-input-row">
+        <input class="add-contact-input" type="text" placeholder="Wallet Address" id="contact-wallet" maxlength="42" />
+      </div>
+      <div class="add-contact-input-row">
+        <input class="add-contact-input" type="text" placeholder="Public Key" id="contact-pubkey" maxlength="128" />
+      </div>
+      <button class="add-contact-btn">Add Contact</button>
+      <button class="close-btn" style="position:absolute;top:1.2rem;right:1.2rem;">&times;</button>
+    </div>
+  `;
+  document.body.appendChild(addContactModal);
+
+  // Close logic
+  addContactModal.querySelector('.close-btn').onclick = () => {
+    addContactModal.remove();
+    addContactModal = null;
+  };
+  // Optional: Close on overlay click
+  addContactModal.onclick = (e) => {
+    if (e.target === addContactModal) {
+      addContactModal.remove();
+      addContactModal = null;
+    }
+  };
+  // Add Contact logic
+  addContactModal.querySelector('.add-contact-btn').onclick = async () => {
+    const name = document.getElementById('contact-username').value.trim();
+    const address = document.getElementById('contact-wallet').value.trim();
+    const pubkey = document.getElementById('contact-pubkey').value.trim();
+    if (!name || !address || !pubkey) {
+      showWalletAlert('Please fill in all fields.', false);
+      return;
+    }
+    if (!window.ethereum) {
+      showWalletAlert('MetaMask is not installed!', false);
+      return;
+    }
+    // Check wallet connection
+    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+    if (!accounts || !accounts[0]) {
+      showWalletAlert('Please connect your wallet first.', false);
+      return;
+    }
+    const userAddress = accounts[0];
+    if (!cachedPublicKey) {
+      showWalletAlert('Please get your public key first.', false);
+      return;
+    }
+    // Prepare contact data
+    const nonce = Date.now().toString();
+    const contactObj = { name, address, pubkey, nonce };
+    const contactStr = JSON.stringify(contactObj);
+    try {
+      // Encrypt with ECIES using user's own public key (base64 to Buffer)
+      const pubKeyBuffer = Buffer.from(cachedPublicKey, 'base64');
+      const encrypted = window.ecies.geth.encrypt(pubKeyBuffer, Buffer.from(contactStr));
+      const payload = encrypted.toString('base64');
+      const dataField = '***' + payload;
+      // Send 0 ETH tx to self with data
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      const tx = await signer.sendTransaction({
+        to: userAddress,
+        value: ethers.utils.parseEther('0'),
+        data: ethers.utils.hexlify(Buffer.from(dataField, 'utf8'))
+      });
+      showWalletAlert('Contact added! Tx sent.', true);
+      addContactModal.remove();
+      addContactModal = null;
+    } catch (err) {
+      showWalletAlert('Failed to add contact: ' + (err && err.message ? err.message : 'Unknown error'), false);
+    }
+  };
+});
