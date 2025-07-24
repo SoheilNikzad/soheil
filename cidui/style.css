@@ -390,3 +390,125 @@ body {
 .close-btn:hover {
   color: #fff;
 }
+
+/* Unify private key and public key modal styles */
+.private-key-box, .public-key-box {
+  background: #181818;
+  border-radius: 18px;
+  box-shadow: 0 4px 32px rgba(0,0,0,0.25);
+  padding: 2.2rem 2.5rem 1.5rem 2.5rem;
+  min-width: 320px;
+  max-width: 600px;
+  width: 90vw;
+  text-align: center;
+  position: relative;
+}
+.private-key-title, .public-key-title {
+  font-size: 1.2rem;
+  color: #fff;
+  margin-bottom: 1.2rem;
+  font-family: 'Comfortaa', 'Segoe UI', sans-serif;
+}
+.private-key-box-input-row, .public-key-value-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin-bottom: 1.2rem;
+  width: 100%;
+  max-width: 420px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.private-key-input, .public-key-value {
+  background: #222;
+  color: #27ae60;
+  font-family: 'Comfortaa', 'Segoe UI', monospace;
+  font-size: 1.05rem;
+  border-radius: 10px;
+  padding: 0.7rem 2.5rem 0.7rem 1.2rem;
+  border: none;
+  outline: none;
+  width: 100%;
+  letter-spacing: 0.1em;
+  box-sizing: border-box;
+  margin-bottom: 0;
+}
+.toggle-visibility-btn {
+  background: none;
+  border: none;
+  color: #bbb;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: color 0.2s;
+  z-index: 2;
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.toggle-visibility-btn svg {
+  width: 22px;
+  height: 22px;
+  display: block;
+}
+.toggle-visibility-btn:hover {
+  color: #fff;
+}
+.save-btn {
+  background: #27ae60;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1.2rem;
+  font-family: 'Comfortaa', 'Segoe UI', sans-serif;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-right: 0.5rem;
+  transition: background 0.2s;
+}
+.save-btn:hover {
+  background: #219150;
+}
+
+/* Force private key modal to match public key modal exactly */
+.private-key-box {
+  min-width: 320px !important;
+  max-width: 600px !important;
+  width: 90vw !important;
+  padding: 2.2rem 2.5rem 1.5rem 2.5rem !important;
+  border-radius: 18px !important;
+  box-shadow: 0 4px 32px rgba(0,0,0,0.25) !important;
+  background: #181818 !important;
+  text-align: center !important;
+  position: relative !important;
+}
+.private-key-box-input-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin-bottom: 1.2rem;
+  width: 100%;
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+.private-key-input {
+  background: #222;
+  color: #27ae60;
+  font-family: 'Comfortaa', 'Segoe UI', monospace;
+  font-size: 1.05rem;
+  border-radius: 10px;
+  padding: 0.7rem 2.5rem 0.7rem 1.2rem;
+  border: none;
+  outline: none;
+  width: 100%;
+  letter-spacing: 0.1em;
+  box-sizing: border-box;
+  margin-bottom: 0;
+}
