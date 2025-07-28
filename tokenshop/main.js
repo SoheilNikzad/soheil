@@ -526,6 +526,8 @@ async function loadUserRequests() {
             const request = await contract.getRequest(i);
             console.log(`Request ${i}:`, request);
             console.log('Request requester:', request.requester);
+            console.log('Request name:', request.name);
+            console.log('Request symbol:', request.symbol);
             console.log('User address:', userAddress);
             
             if (request.requester.toLowerCase() === userAddress.toLowerCase()) {
