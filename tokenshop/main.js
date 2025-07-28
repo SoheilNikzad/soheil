@@ -363,6 +363,7 @@ async function connectWallet() {
 // Connect admin wallet function
 async function connectAdminWallet() {
     try {
+        console.log('Connecting admin wallet...');
         if (typeof window.ethereum !== 'undefined') {
             await window.ethereum.request({ method: 'eth_requestAccounts' });
             provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -370,6 +371,8 @@ async function connectAdminWallet() {
             const address = await signer.getAddress();
             
             // Check if connected wallet is admin
+            console.log('Connected address:', address);
+            console.log('Admin address:', ADMIN_ADDRESS);
             if (address.toLowerCase() !== ADMIN_ADDRESS.toLowerCase()) {
                 adminStatusDiv.textContent = "Error: Connected wallet is not the admin wallet!";
                 return;
@@ -383,6 +386,7 @@ async function connectAdminWallet() {
             contract = new ethers.Contract(CONTRACT_ADDRESS, requestManagerABI, signer);
             
             adminStatusDiv.textContent = "Admin wallet connected successfully!";
+            console.log('Loading pending requests...');
             loadPendingRequests();
         } else {
             adminStatusDiv.textContent = "Please install MetaMask!";
@@ -439,7 +443,11 @@ async function submitTokenRequest() {
 // Load pending requests for admin
 async function loadPendingRequests() {
     try {
+        console.log('loadPendingRequests called');
+        console.log('adminConnected:', adminConnected);
+        console.log('contract:', contract);
         if (!adminConnected || !contract) {
+            console.log('Early return - admin not connected or no contract');
             return;
         }
 
