@@ -7,6 +7,9 @@ let adminConnected = false;
 const CONTRACT_ADDRESS = "0x55417ba2ba2543ffd585190be6db3f272520066d";
 const ADMIN_ADDRESS = "0x81C24aEDaC6fCe6F69a3e0135290Ab2aE61AaDd0";
 
+console.log('Contract address:', CONTRACT_ADDRESS);
+console.log('Admin address:', ADMIN_ADDRESS);
+
 // RequestManager ABI
 const requestManagerABI = [
 	{
@@ -348,6 +351,7 @@ async function connectWallet() {
             
             // Initialize contract
             contract = new ethers.Contract(CONTRACT_ADDRESS, requestManagerABI, signer);
+            console.log('Contract initialized:', contract);
             
             output.textContent = "Wallet connected successfully! You can now submit token requests.";
             
@@ -423,6 +427,7 @@ async function submitTokenRequest() {
         console.log('Transaction sent:', tx.hash);
         await tx.wait();
         console.log('Transaction confirmed!');
+        console.log('Transaction hash:', tx.hash);
 
         output.textContent = `Request submitted successfully! Transaction: ${tx.hash}`;
         document.getElementById('createToken').disabled = false;
@@ -516,10 +521,15 @@ async function loadUserRequests() {
 
         let userRequestCount = 0;
 
+        console.log('User address:', userAddress);
         for (let i = 0; i < totalRequests.toNumber(); i++) {
             const request = await contract.getRequest(i);
+            console.log(`Request ${i}:`, request);
+            console.log('Request requester:', request.requester);
+            console.log('User address:', userAddress);
             
             if (request.requester.toLowerCase() === userAddress.toLowerCase()) {
+                console.log('Found user request!');
                 userRequestCount++;
                 const statusText = getStatusText(request.status);
                 const statusClass = getStatusClass(request.status);
