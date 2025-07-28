@@ -327,12 +327,8 @@ const requestManagerABI = [
 ];
 
 // UI Elements
-const connectBtn = document.getElementById("connectWallet");
-const createTokenBtn = document.getElementById("createToken");
 const output = document.getElementById("output");
-const adminConnectBtn = document.getElementById("adminConnectBtn");
 const adminStatusDiv = document.getElementById("adminStatus");
-const adminWalletInput = document.getElementById("adminWalletInput");
 const requestsContainer = document.getElementById("requestsContainer");
 const userRequestsSection = document.getElementById("userRequestsSection");
 const userRequestsContainer = document.getElementById("userRequestsContainer");
@@ -345,8 +341,8 @@ async function connectWallet() {
             provider = new ethers.providers.Web3Provider(window.ethereum);
             signer = provider.getSigner();
             const address = await signer.getAddress();
-            connectBtn.textContent = `Connected: ${address.substring(0, 6)}...${address.substring(38)}`;
-            connectBtn.disabled = true;
+            document.getElementById('connectWallet').textContent = `Connected: ${address.substring(0, 6)}...${address.substring(38)}`;
+            document.getElementById('connectWallet').disabled = true;
             
             // Initialize contract
             contract = new ethers.Contract(CONTRACT_ADDRESS, requestManagerABI, signer);
@@ -378,8 +374,8 @@ async function connectAdminWallet() {
                 return;
             }
             
-            adminConnectBtn.textContent = `Admin Connected: ${address.substring(0, 6)}...${address.substring(38)}`;
-            adminConnectBtn.disabled = true;
+            document.getElementById('adminConnectBtn').textContent = `Admin Connected: ${address.substring(0, 6)}...${address.substring(38)}`;
+            document.getElementById('adminConnectBtn').disabled = true;
             adminConnected = true;
             
             // Initialize contract
@@ -415,13 +411,13 @@ async function submitTokenRequest() {
         }
 
         output.textContent = "Submitting request... Please wait...";
-        createTokenBtn.disabled = true;
+        document.getElementById('createToken').disabled = true;
 
         const tx = await contract.submitRequest(name, symbol, description, whitepaper, totalSupply);
         await tx.wait();
 
         output.textContent = `Request submitted successfully! Transaction: ${tx.hash}`;
-        createTokenBtn.disabled = false;
+        document.getElementById('createToken').disabled = false;
         
         // Clear form
         document.getElementById("name").value = "";
@@ -435,7 +431,7 @@ async function submitTokenRequest() {
         
     } catch (error) {
         output.textContent = `Error submitting request: ${error.message}`;
-        createTokenBtn.disabled = false;
+        document.getElementById('createToken').disabled = false;
     }
 }
 
@@ -633,9 +629,9 @@ document.querySelectorAll('.tab-btn').forEach(button => {
 });
 
 // Event listeners
-connectBtn.addEventListener('click', connectWallet);
-createTokenBtn.addEventListener('click', submitTokenRequest);
-adminConnectBtn.addEventListener('click', connectAdminWallet);
+document.getElementById('connectWallet').addEventListener('click', connectWallet);
+document.getElementById('createToken').addEventListener('click', submitTokenRequest);
+document.getElementById('adminConnectBtn').addEventListener('click', connectAdminWallet);
 
 // Initialize
 output.textContent = "Please connect your wallet to submit token requests.";
