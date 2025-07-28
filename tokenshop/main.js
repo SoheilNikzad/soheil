@@ -642,7 +642,10 @@ document.querySelectorAll('.tab-btn').forEach(button => {
         
         // Show corresponding content
         const targetId = button.getAttribute('data-tab');
-        document.getElementById(targetId).classList.add('active');
+        const targetElement = document.getElementById(targetId + '-tab');
+        if (targetElement) {
+            targetElement.classList.add('active');
+        }
     });
 });
 
