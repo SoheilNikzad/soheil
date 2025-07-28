@@ -342,8 +342,9 @@ async function connectWallet() {
             provider = new ethers.providers.Web3Provider(window.ethereum);
             signer = provider.getSigner();
             const address = await signer.getAddress();
-            document.getElementById('connectWallet').textContent = `Connected: ${address.substring(0, 6)}...${address.substring(38)}`;
+            document.getElementById('connectWallet').textContent = "Connected";
             document.getElementById('connectWallet').disabled = true;
+            document.getElementById('status').textContent = `Wallet connected: ${address.substring(0, 6)}...${address.substring(38)}`;
             
             // Initialize contract
             contract = new ethers.Contract(CONTRACT_ADDRESS, requestManagerABI, signer);
@@ -378,14 +379,13 @@ async function connectAdminWallet() {
                 return;
             }
             
-            document.getElementById('adminConnectBtn').textContent = `Admin Connected: ${address.substring(0, 6)}...${address.substring(38)}`;
+            document.getElementById('adminConnectBtn').textContent = "Admin Connected";
             document.getElementById('adminConnectBtn').disabled = true;
+            adminStatusDiv.textContent = `Admin wallet connected: ${address.substring(0, 6)}...${address.substring(38)}`;
             adminConnected = true;
             
             // Initialize contract
             contract = new ethers.Contract(CONTRACT_ADDRESS, requestManagerABI, signer);
-            
-            adminStatusDiv.textContent = "Admin wallet connected successfully!";
             console.log('Loading pending requests...');
             loadPendingRequests();
         } else {
@@ -418,8 +418,11 @@ async function submitTokenRequest() {
         output.textContent = "Submitting request... Please wait...";
         document.getElementById('createToken').disabled = true;
 
+        console.log('Submitting request...');
         const tx = await contract.submitRequest(name, symbol, description, whitepaper, totalSupply);
+        console.log('Transaction sent:', tx.hash);
         await tx.wait();
+        console.log('Transaction confirmed!');
 
         output.textContent = `Request submitted successfully! Transaction: ${tx.hash}`;
         document.getElementById('createToken').disabled = false;
@@ -451,10 +454,13 @@ async function loadPendingRequests() {
             return;
         }
 
+        console.log('Getting pending requests...');
         const pendingRequestIds = await contract.getPendingRequests();
+        console.log('Pending request IDs:', pendingRequestIds);
         requestsContainer.innerHTML = "";
 
         if (pendingRequestIds.length === 0) {
+            console.log('No pending requests found');
             requestsContainer.innerHTML = "<p>No pending requests.</p>";
             return;
         }
@@ -497,10 +503,13 @@ async function loadUserRequests() {
         }
 
         const userAddress = await signer.getAddress();
+        console.log('Getting total requests...');
         const totalRequests = await contract.requestCount();
+        console.log('Total requests:', totalRequests.toNumber());
         userRequestsContainer.innerHTML = "";
 
         if (totalRequests.toNumber() === 0) {
+            console.log('No requests found');
             userRequestsSection.style.display = "none";
             return;
         }
