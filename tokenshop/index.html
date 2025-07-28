@@ -48,7 +48,7 @@
       font-weight: 500;
     }
 
-    input, textarea, select, .fake-upload, button {
+    input, select, button, textarea {
       background: #0f172a;
       border: 1px solid var(--color-border);
       border-radius: 10px;
@@ -65,21 +65,7 @@
       min-height: 80px;
     }
 
-    .fake-upload {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-top: 0.5rem;
-      opacity: 0.5;
-    }
 
-    .toggle {
-      margin-top: 1rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      opacity: 0.5;
-    }
 
     .note {
       color: #facc15;
@@ -106,54 +92,231 @@
       font-size: 0.9rem;
       white-space: pre-wrap;
     }
+
+    /* Tab Navigation */
+    .tab-nav {
+      display: flex;
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--color-muted);
+      padding: 1rem 2rem;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin: 0;
+      width: auto;
+    }
+
+    .tab-btn.active {
+      color: var(--color-primary);
+      border-bottom-color: var(--color-primary);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Admin Panel */
+    #admin-tab h2 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      color: white;
+    }
+
+    #admin-tab h3 {
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+      color: white;
+    }
+
+    .request-item {
+      background: #0f172a;
+      border: 1px solid var(--color-border);
+      border-radius: 10px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .request-info {
+      margin-bottom: 1rem;
+    }
+
+    .request-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .request-actions button {
+      flex: 1;
+      margin: 0;
+    }
+
+    .btn-approve {
+      background: #10b981 !important;
+    }
+
+    .btn-reject {
+      background: #ef4444 !important;
+    }
+
+    .btn-revision {
+      background: #ff9800;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 2px;
+    }
+
+    .btn-revision:hover {
+      background: #f57c00;
+    }
+
+    /* User Requests Section */
+    #userRequestsSection {
+      background: #f9f9f9;
+      padding: 20px;
+      border-radius: 8px;
+      margin-top: 20px;
+    }
+
+    .user-request-item {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .user-request-info h4 {
+      margin: 0 0 10px 0;
+      color: #333;
+      border-bottom: 2px solid #007bff;
+      padding-bottom: 5px;
+    }
+
+    .user-request-info p {
+      margin: 5px 0;
+      line-height: 1.4;
+    }
+
+    /* Status Styles */
+    .status-pending {
+      background: #fff3cd;
+      color: #856404;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+
+    .status-approved {
+      background: #d4edda;
+      color: #155724;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+
+    .status-rejected {
+      background: #f8d7da;
+      color: #721c24;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+
+    .status-revision {
+      background: #fff3cd;
+      color: #856404;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+
+    .status-unknown {
+      background: #e2e3e5;
+      color: #383d41;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Token Shop</h1>
 
-    <button id="connectBtn"> Connect Wallet</button>
-    <p id="status">Waiting for connection...</p>
-    <input type="text" id="yourWallet" readonly />
-
-    <label for="name">Token Name:</label>
-    <input type="text" id="name" placeholder="e.g. MyToken" />
-
-    <label for="symbol">Token Symbol:</label>
-    <input type="text" id="symbol" placeholder="e.g. MTK" />
-
-    <label for="description">Description:</label>
-    <textarea id="description" placeholder="(disabled)" disabled></textarea>
-
-    <label for="image">Image or GIF:</label>
-    <div class="fake-upload" disabled>
-      <span>Drag and drop an image or GIF</span>
-      <button disabled>Select a file</button>
-    </div>
-    
-    <label for="decimals">Decimals (fixed at 18):</label>
-    <input type="number" id="decimals" value="18" readonly />
-
-    <label for="supply">Total Supply:</label>
-    <input type="number" id="supply" placeholder="e.g. 1000000" />
-
-    <div class="toggle">
-      <label for="lp-share">Creator LP fee share:</label>
-      <input type="checkbox" id="lp-share" disabled />
+    <!-- Tab Navigation -->
+    <div class="tab-nav">
+      <button class="tab-btn active" data-tab="user">User</button>
+      <button class="tab-btn" data-tab="admin">Admin</button>
     </div>
 
-    <div class="toggle">
-      <label for="more-options">Socials & more options:</label>
-      <select id="more-options" disabled>
-        <option value="">(coming soon)</option>
-      </select>
+    <!-- User Tab -->
+    <div class="tab-content active" id="user-tab">
+      <button id="connectBtn"> Connect Wallet</button>
+      <p id="status">Waiting for connection...</p>
+      <input type="text" id="yourWallet" readonly />
+
+      <h2>Token Request Form</h2>
+      <form id="tokenForm">
+        <label for="name">Token Name:</label>
+        <input type="text" id="name" placeholder="Enter token name..." required />
+
+        <label for="symbol">Token Symbol:</label>
+        <input type="text" id="symbol" placeholder="Enter token symbol..." required />
+
+        <label for="description">Description:</label>
+        <textarea id="description" placeholder="Enter token description..." rows="3"></textarea>
+
+        <label for="whitepaper">Whitepaper Content:</label>
+        <textarea id="whitepaper" placeholder="Enter whitepaper content or file link here..." rows="4"></textarea>
+
+        <label for="decimals">Decimals (fixed at 18):</label>
+        <input type="number" id="decimals" value="18" readonly />
+
+        <label for="totalSupply">Total Supply:</label>
+        <input type="number" id="totalSupply" placeholder="Enter total supply..." required />
+
+        <button type="button" id="createToken">Submit for Review</button>
+      </form>
+
+      <div id="output"></div>
+
+      <!-- User's Requests Section -->
+      <div id="userRequestsSection" style="margin-top: 30px; display: none;">
+        <h3>My Requests</h3>
+        <div id="userRequestsContainer"></div>
+      </div>
     </div>
 
-    <p class="note">Note: token data can’t be changed after creation</p>
+    <!-- Admin Tab -->
+    <div class="tab-content" id="admin-tab">
+      <h2>Admin Panel</h2>
+      
+      <button id="adminConnectBtn">Connect Admin Wallet</button>
+      <p id="adminStatus">Waiting for admin connection...</p>
+      <input type="text" id="adminWallet" readonly />
 
-    <button id="createToken">Sign to Create token</button>
+      <div id="requestsList">
+        <h3>Pending Requests</h3>
+        <div id="requestsContainer">
+          <!-- Requests will be loaded here -->
+        </div>
+      </div>
 
-    <pre id="output"></pre>
+      <pre id="adminOutput"></pre>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
     <script defer src="main.js"></script>
