@@ -1,309 +1,642 @@
 let provider;
 let signer;
-let connected = false;
+let contract;
+let adminConnected = false;
 
-const connectBtn = document.getElementById('connectBtn');
-const statusDiv = document.getElementById('status');
-const yourWalletInput = document.getElementById('yourWallet');
+// Contract configuration
+const CONTRACT_ADDRESS = "0x55417ba2ba2543ffd585190be6db3f272520066d";
+const ADMIN_ADDRESS = "0x81C24aEDaC6fCe6F69a3e0135290Ab2aE61AaDd0";
 
-connectBtn.addEventListener('click', connectWallet);
+// RequestManager ABI
+const requestManagerABI = [
+	{
+		"inputs": [],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "requestId",
+				"type": "uint256"
+			}
+		],
+		"name": "RequestApproved",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "requestId",
+				"type": "uint256"
+			}
+		],
+		"name": "RequestRejected",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "requestId",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "requester",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "symbol",
+				"type": "string"
+			}
+		],
+		"name": "RequestSubmitted",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "requestId",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "message",
+				"type": "string"
+			}
+		],
+		"name": "RevisionRequested",
+		"type": "event"
+	},
+	{
+		"inputs": [],
+		"name": "admin",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_requestId",
+				"type": "uint256"
+			}
+		],
+		"name": "approveRequest",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getPendingRequests",
+		"outputs": [
+			{
+				"internalType": "uint256[]",
+				"name": "",
+				"type": "uint256[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_requestId",
+				"type": "uint256"
+			}
+		],
+		"name": "getRequest",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "symbol",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "description",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "whitepaper",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "supply",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "requester",
+				"type": "address"
+			},
+			{
+				"internalType": "enum RequestManager.RequestStatus",
+				"name": "status",
+				"type": "uint8"
+			},
+			{
+				"internalType": "string",
+				"name": "adminMessage",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "timestamp",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_requestId",
+				"type": "uint256"
+			}
+		],
+		"name": "rejectRequest",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "requestCount",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_requestId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "_message",
+				"type": "string"
+			}
+		],
+		"name": "requestRevision",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "requests",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "symbol",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "description",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "whitepaper",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "supply",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "requester",
+				"type": "address"
+			},
+			{
+				"internalType": "enum RequestManager.RequestStatus",
+				"name": "status",
+				"type": "uint8"
+			},
+			{
+				"internalType": "string",
+				"name": "adminMessage",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "timestamp",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "_name",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "_symbol",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "_description",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "_whitepaper",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_supply",
+				"type": "uint256"
+			}
+		],
+		"name": "submitRequest",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	}
+];
 
+// UI Elements
+const connectBtn = document.getElementById("connectWallet");
+const createTokenBtn = document.getElementById("createToken");
+const output = document.getElementById("output");
+const adminConnectBtn = document.getElementById("adminConnectBtn");
+const adminStatusDiv = document.getElementById("adminStatus");
+const adminWalletInput = document.getElementById("adminWalletInput");
+const requestsContainer = document.getElementById("requestsContainer");
+const userRequestsSection = document.getElementById("userRequestsSection");
+const userRequestsContainer = document.getElementById("userRequestsContainer");
+
+// Connect wallet function
 async function connectWallet() {
-  if (typeof window.ethereum === 'undefined') {
-    statusDiv.innerText = '❌ MetaMask نصب نشده است.';
-    return;
-  }
-
-  try {
-    await window.ethereum.request({ method: 'eth_requestAccounts' });
-    provider = new ethers.BrowserProvider(window.ethereum);
-    signer = await provider.getSigner();
-    const address = await signer.getAddress();
-
-    yourWalletInput.value = address;
-    statusDiv.innerText = `✅ Wallet connected: ${address.slice(0, 6)}...${address.slice(-4)}`;
-    connected = true;
-  } catch (err) {
-    statusDiv.innerText = '❌ اتصال به کیف پول لغو شد یا خطا داشت.';
-    console.error(err);
-  }
+    try {
+        if (typeof window.ethereum !== 'undefined') {
+            await window.ethereum.request({ method: 'eth_requestAccounts' });
+            provider = new ethers.providers.Web3Provider(window.ethereum);
+            signer = provider.getSigner();
+            const address = await signer.getAddress();
+            connectBtn.textContent = `Connected: ${address.substring(0, 6)}...${address.substring(38)}`;
+            connectBtn.disabled = true;
+            
+            // Initialize contract
+            contract = new ethers.Contract(CONTRACT_ADDRESS, requestManagerABI, signer);
+            
+            output.textContent = "Wallet connected successfully! You can now submit token requests.";
+            
+            // Load user's requests
+            loadUserRequests();
+        } else {
+            output.textContent = "Please install MetaMask!";
+        }
+    } catch (error) {
+        output.textContent = `Error connecting wallet: ${error.message}`;
+    }
 }
 
-const erc20ABI = [{
-    "inputs": [
-      {
-        "internalType": "string",
-        "name": "name",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "symbol",
-        "type": "string"
-      },
-      {
-        "internalType": "uint256",
-        "name": "initialSupply",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "constructor"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "owner",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "spender",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "value",
-        "type": "uint256"
-      }
-    ],
-    "name": "Approval",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "from",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "to",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "value",
-        "type": "uint256"
-      }
-    ],
-    "name": "Transfer",
-    "type": "event"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "owner",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "spender",
-        "type": "address"
-      }
-    ],
-    "name": "allowance",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "spender",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "approve",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
-      }
-    ],
-    "name": "balanceOf",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "decimals",
-    "outputs": [
-      {
-        "internalType": "uint8",
-        "name": "",
-        "type": "uint8"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "name",
-    "outputs": [
-      {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "symbol",
-    "outputs": [
-      {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "totalSupply",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "to",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "transfer",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "from",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "to",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "transferFrom",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  }];
-const erc20Bytecode = "608060405234801562000010575f80fd5b5060405162000b8c38038062000b8c83398101604081905262000033916200029d565b8282600362000043838262000397565b50600462000052828262000397565b5050506200006733826200007060201b60201c565b50505062000485565b6001600160a01b0382166200009f5760405163ec442f0560e01b81525f60048201526024015b60405180910390fd5b620000ac5f8383620000b0565b5050565b6001600160a01b038316620000de578060025f828254620000d291906200045f565b90915550620001509050565b6001600160a01b0383165f9081526020819052604090205481811015620001325760405163391434e360e21b81526001600160a01b0385166004820152602481018290526044810183905260640162000096565b6001600160a01b0384165f9081526020819052604090209082900390555b6001600160a01b0382166200016e576002805482900390556200018c565b6001600160a01b0382165f9081526020819052604090208054820190555b816001600160a01b0316836001600160a01b03167fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef83604051620001d291815260200190565b60405180910390a3505050565b634e487b7160e01b5f52604160045260245ffd5b5f82601f83011262000203575f80fd5b81516001600160401b0380821115620002205762000220620001df565b604051601f8301601f19908116603f011681019082821181831017156200024b576200024b620001df565b8160405283815260209250868385880101111562000267575f80fd5b5f91505b838210156200028a57858201830151818301840152908201906200026b565b5f93810190920192909252949350505050565b5f805f60608486031215620002b0575f80fd5b83516001600160401b0380821115620002c7575f80fd5b620002d587838801620001f3565b94506020860151915080821115620002eb575f80fd5b50620002fa86828701620001f3565b925050604084015190509250925092565b600181811c908216806200032057607f821691505b6020821081036200033f57634e487b7160e01b5f52602260045260245ffd5b50919050565b601f82111562000392575f81815260208120601f850160051c810160208610156200036d5750805b601f850160051c820191505b818110156200038e5782815560010162000379565b5050505b505050565b81516001600160401b03811115620003b357620003b3620001df565b620003cb81620003c484546200030b565b8462000345565b602080601f83116001811462000401575f8415620003e95750858301515b5f19600386901b1c1916600185901b1785556200038e565b5f85815260208120601f198616915b82811015620004315788860151825594840194600190910190840162000410565b50858210156200044f57878501515f19600388901b60f8161c191681555b5050505050600190811b01905550565b808201808211156200047f57634e487b7160e01b5f52601160045260245ffd5b92915050565b6106f980620004935f395ff3fe608060405234801561000f575f80fd5b5060043610610090575f3560e01c8063313ce56711610063578063313ce567146100fa57806370a082311461010957806395d89b4114610131578063a9059cbb14610139578063dd62ed3e1461014c575f80fd5b806306fdde0314610094578063095ea7b3146100b257806318160ddd146100d557806323b872dd146100e7575b5f80fd5b61009c610184565b6040516100a99190610554565b60405180910390f35b6100c56100c03660046105ba565b610214565b60405190151581526020016100a9565b6002545b6040519081526020016100a9565b6100c56100f53660046105e2565b61022d565b604051601281526020016100a9565b6100d961011736600461061b565b6001600160a01b03165f9081526020819052604090205490565b61009c610250565b6100c56101473660046105ba565b61025f565b6100d961015a36600461063b565b6001600160a01b039182165f90815260016020908152604080832093909416825291909152205490565b6060600380546101939061066c565b80601f01602080910402602001604051908101604052809291908181526020018280546101bf9061066c565b801561020a5780601f106101e15761010080835404028352916020019161020a565b820191905f5260205f20905b8154815290600101906020018083116101ed57829003601f168201915b5050505050905090565b5f3361022181858561026c565b60019150505b92915050565b5f3361023a85828561027e565b6102458585856102ff565b506001949350505050565b6060600480546101939061066c565b5f336102218185856102ff565b610279838383600161035c565b505050565b6001600160a01b038381165f908152600160209081526040808320938616835292905220545f198110156102f957818110156102eb57604051637dc7a0d960e11b81526001600160a01b038416600482015260248101829052604481018390526064015b60405180910390fd5b6102f984848484035f61035c565b50505050565b6001600160a01b03831661032857604051634b637e8f60e11b81525f60048201526024016102e2565b6001600160a01b0382166103515760405163ec442f0560e01b81525f60048201526024016102e2565b61027983838361042e565b6001600160a01b0384166103855760405163e602df0560e01b81525f60048201526024016102e2565b6001600160a01b0383166103ae57604051634a1406b160e11b81525f60048201526024016102e2565b6001600160a01b038085165f90815260016020908152604080832093871683529290522082905580156102f957826001600160a01b0316846001600160a01b03167f8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b9258460405161042091815260200190565b60405180910390a350505050565b6001600160a01b038316610458578060025f82825461044d91906106a4565b909155506104c89050565b6001600160a01b0383165f90815260208190526040902054818110156104aa5760405163391434e360e21b81526001600160a01b038516600482015260248101829052604481018390526064016102e2565b6001600160a01b0384165f9081526020819052604090209082900390555b6001600160a01b0382166104e457600280548290039055610502565b6001600160a01b0382165f9081526020819052604090208054820190555b816001600160a01b0316836001600160a01b03167fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef8360405161054791815260200190565b60405180910390a3505050565b5f6020808352835180828501525f5b8181101561057f57858101830151858201604001528201610563565b505f604082860101526040601f19601f8301168501019250505092915050565b80356001600160a01b03811681146105b5575f80fd5b919050565b5f80604083850312156105cb575f80fd5b6105d48361059f565b946020939093013593505050565b5f805f606084860312156105f4575f80fd5b6105fd8461059f565b925061060b6020850161059f565b9150604084013590509250925092565b5f6020828403121561062b575f80fd5b6106348261059f565b9392505050565b5f806040838503121561064c575f80fd5b6106558361059f565b91506106636020840161059f565b90509250929050565b600181811c9082168061068057607f821691505b60208210810361069e57634e487b7160e01b5f52602260045260245ffd5b50919050565b8082018082111561022757634e487b7160e01b5f52601160045260245ffdfea26469706673582212207efdf37de605761bda624751256f2d2f1cd91463f32cf64da84400c8f3b8dd1364736f6c63430008140033";
+// Connect admin wallet function
+async function connectAdminWallet() {
+    try {
+        if (typeof window.ethereum !== 'undefined') {
+            await window.ethereum.request({ method: 'eth_requestAccounts' });
+            provider = new ethers.providers.Web3Provider(window.ethereum);
+            signer = provider.getSigner();
+            const address = await signer.getAddress();
+            
+            // Check if connected wallet is admin
+            if (address.toLowerCase() !== ADMIN_ADDRESS.toLowerCase()) {
+                adminStatusDiv.textContent = "Error: Connected wallet is not the admin wallet!";
+                return;
+            }
+            
+            adminConnectBtn.textContent = `Admin Connected: ${address.substring(0, 6)}...${address.substring(38)}`;
+            adminConnectBtn.disabled = true;
+            adminConnected = true;
+            
+            // Initialize contract
+            contract = new ethers.Contract(CONTRACT_ADDRESS, requestManagerABI, signer);
+            
+            adminStatusDiv.textContent = "Admin wallet connected successfully!";
+            loadPendingRequests();
+        } else {
+            adminStatusDiv.textContent = "Please install MetaMask!";
+        }
+    } catch (error) {
+        adminStatusDiv.textContent = `Error connecting admin wallet: ${error.message}`;
+    }
+}
 
-document.getElementById("createToken").addEventListener("click", async () => {
-  const output = document.getElementById("output");
-  output.textContent = "";
+// Submit token request
+async function submitTokenRequest() {
+    try {
+        if (!contract) {
+            output.textContent = "Please connect your wallet first!";
+            return;
+        }
 
-  if (!connected || !signer) {
-    output.textContent = "⛔ لطفاً ابتدا کیف پول خود را متصل کنید.";
-    return;
-  }
+        const name = document.getElementById("name").value.trim();
+        const symbol = document.getElementById("symbol").value.trim();
+        const description = document.getElementById("description").value.trim();
+        const whitepaper = document.getElementById("whitepaper").value.trim();
+        const totalSupply = document.getElementById("totalSupply").value;
 
-  const name = document.getElementById("name").value.trim();
-  const symbol = document.getElementById("symbol").value.trim();
-  const supply = document.getElementById("supply").value.trim();
-  const decimals = 18;
+        if (!name || !symbol || !description || !whitepaper || !totalSupply) {
+            output.textContent = "Please fill in all fields!";
+            return;
+        }
 
-  if (!name || !symbol || !supply || isNaN(Number(supply))) {
-    output.textContent = "⚠️ لطفاً تمام فیلدها را به‌درستی پر کنید (Supply باید عدد باشد).";
-    return;
-  }
+        output.textContent = "Submitting request... Please wait...";
+        createTokenBtn.disabled = true;
 
-  try {
-    const totalSupply = ethers.parseUnits(supply, decimals);
-    const factory = new ethers.ContractFactory(erc20ABI, erc20Bytecode, signer);
-    const contract = await factory.deploy(name, symbol, totalSupply);
+        const tx = await contract.submitRequest(name, symbol, description, whitepaper, totalSupply);
+        await tx.wait();
 
-    output.textContent = `🚀 در حال انتشار...\nTX: ${contract.deploymentTransaction().hash}`;
-    await contract.waitForDeployment();
-    const contractAddress = await contract.getAddress();
-    output.textContent += `\n✅ قرارداد ساخته شد در آدرس: ${contractAddress}`;
-  } catch (err) {
-    output.textContent = `❌ خطا: ${err.message || err}`;
-    console.error(err);
-  }
+        output.textContent = `Request submitted successfully! Transaction: ${tx.hash}`;
+        createTokenBtn.disabled = false;
+        
+        // Clear form
+        document.getElementById("name").value = "";
+        document.getElementById("symbol").value = "";
+        document.getElementById("description").value = "";
+        document.getElementById("whitepaper").value = "";
+        document.getElementById("totalSupply").value = "";
+        
+        // Reload user's requests
+        loadUserRequests();
+        
+    } catch (error) {
+        output.textContent = `Error submitting request: ${error.message}`;
+        createTokenBtn.disabled = false;
+    }
+}
+
+// Load pending requests for admin
+async function loadPendingRequests() {
+    try {
+        if (!adminConnected || !contract) {
+            return;
+        }
+
+        const pendingRequestIds = await contract.getPendingRequests();
+        requestsContainer.innerHTML = "";
+
+        if (pendingRequestIds.length === 0) {
+            requestsContainer.innerHTML = "<p>No pending requests.</p>";
+            return;
+        }
+
+        for (const requestId of pendingRequestIds) {
+            const request = await contract.getRequest(requestId);
+            
+            const requestDiv = document.createElement("div");
+            requestDiv.className = "request-item";
+            requestDiv.innerHTML = `
+                <div class="request-info">
+                    <h4>Request #${requestId}</h4>
+                    <p><strong>Name:</strong> ${request.name}</p>
+                    <p><strong>Symbol:</strong> ${request.symbol}</p>
+                    <p><strong>Description:</strong> ${request.description}</p>
+                    <p><strong>Whitepaper:</strong> ${request.whitepaper}</p>
+                    <p><strong>Supply:</strong> ${request.supply.toString()}</p>
+                    <p><strong>Requester:</strong> ${request.requester}</p>
+                    <p><strong>Timestamp:</strong> ${new Date(request.timestamp * 1000).toLocaleString()}</p>
+                </div>
+                <div class="request-actions">
+                    <button onclick="approveRequest(${requestId})" class="btn-approve">Approve</button>
+                    <button onclick="rejectRequest(${requestId})" class="btn-reject">Reject</button>
+                    <button onclick="requestRevision(${requestId})" class="btn-revision">Request Revision</button>
+                </div>
+            `;
+            requestsContainer.appendChild(requestDiv);
+        }
+    } catch (error) {
+        console.error("Error loading pending requests:", error);
+        requestsContainer.innerHTML = `<p>Error loading requests: ${error.message}</p>`;
+    }
+}
+
+// Load user's requests
+async function loadUserRequests() {
+    try {
+        if (!contract || !signer) {
+            return;
+        }
+
+        const userAddress = await signer.getAddress();
+        const totalRequests = await contract.requestCount();
+        userRequestsContainer.innerHTML = "";
+
+        if (totalRequests.toNumber() === 0) {
+            userRequestsSection.style.display = "none";
+            return;
+        }
+
+        let userRequestCount = 0;
+
+        for (let i = 0; i < totalRequests.toNumber(); i++) {
+            const request = await contract.getRequest(i);
+            
+            if (request.requester.toLowerCase() === userAddress.toLowerCase()) {
+                userRequestCount++;
+                const statusText = getStatusText(request.status);
+                const statusClass = getStatusClass(request.status);
+                
+                const requestDiv = document.createElement("div");
+                requestDiv.className = "user-request-item";
+                requestDiv.innerHTML = `
+                    <div class="user-request-info">
+                        <h4>Request #${i}</h4>
+                        <p><strong>Name:</strong> ${request.name}</p>
+                        <p><strong>Symbol:</strong> ${request.symbol}</p>
+                        <p><strong>Description:</strong> ${request.description}</p>
+                        <p><strong>Whitepaper:</strong> ${request.whitepaper}</p>
+                        <p><strong>Supply:</strong> ${request.supply.toString()}</p>
+                        <p><strong>Status:</strong> <span class="${statusClass}">${statusText}</span></p>
+                        <p><strong>Submitted:</strong> ${new Date(request.timestamp * 1000).toLocaleString()}</p>
+                        ${request.adminMessage ? `<p><strong>Admin Message:</strong> ${request.adminMessage}</p>` : ''}
+                    </div>
+                `;
+                userRequestsContainer.appendChild(requestDiv);
+            }
+        }
+
+        if (userRequestCount > 0) {
+            userRequestsSection.style.display = "block";
+        } else {
+            userRequestsSection.style.display = "none";
+        }
+    } catch (error) {
+        console.error("Error loading user requests:", error);
+        userRequestsContainer.innerHTML = `<p>Error loading your requests: ${error.message}</p>`;
+    }
+}
+
+// Helper function to get status text
+function getStatusText(status) {
+    switch (status) {
+        case 0: return "Pending";
+        case 1: return "Approved";
+        case 2: return "Rejected";
+        case 3: return "Revision Requested";
+        default: return "Unknown";
+    }
+}
+
+// Helper function to get status CSS class
+function getStatusClass(status) {
+    switch (status) {
+        case 0: return "status-pending";
+        case 1: return "status-approved";
+        case 2: return "status-rejected";
+        case 3: return "status-revision";
+        default: return "status-unknown";
+    }
+}
+
+// Admin functions
+async function approveRequest(requestId) {
+    try {
+        if (!adminConnected || !contract) {
+            return;
+        }
+
+        const tx = await contract.approveRequest(requestId);
+        await tx.wait();
+        
+        adminStatusDiv.textContent = `Request #${requestId} approved successfully! Transaction: ${tx.hash}`;
+        loadPendingRequests(); // Refresh the list
+    } catch (error) {
+        adminStatusDiv.textContent = `Error approving request: ${error.message}`;
+    }
+}
+
+async function rejectRequest(requestId) {
+    try {
+        if (!adminConnected || !contract) {
+            return;
+        }
+
+        const tx = await contract.rejectRequest(requestId);
+        await tx.wait();
+        
+        adminStatusDiv.textContent = `Request #${requestId} rejected successfully! Transaction: ${tx.hash}`;
+        loadPendingRequests(); // Refresh the list
+    } catch (error) {
+        adminStatusDiv.textContent = `Error rejecting request: ${error.message}`;
+    }
+}
+
+async function requestRevision(requestId) {
+    try {
+        if (!adminConnected || !contract) {
+            return;
+        }
+
+        const message = prompt("Enter revision message:");
+        if (!message) {
+            return;
+        }
+
+        const tx = await contract.requestRevision(requestId, message);
+        await tx.wait();
+        
+        adminStatusDiv.textContent = `Revision requested for #${requestId}! Transaction: ${tx.hash}`;
+        loadPendingRequests(); // Refresh the list
+    } catch (error) {
+        adminStatusDiv.textContent = `Error requesting revision: ${error.message}`;
+    }
+}
+
+// Tab switching
+document.querySelectorAll('.tab-btn').forEach(button => {
+    button.addEventListener('click', () => {
+        // Remove active class from all buttons and content
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        
+        // Add active class to clicked button
+        button.classList.add('active');
+        
+        // Show corresponding content
+        const targetId = button.getAttribute('data-tab');
+        document.getElementById(targetId).classList.add('active');
+    });
 });
+
+// Event listeners
+connectBtn.addEventListener('click', connectWallet);
+createTokenBtn.addEventListener('click', submitTokenRequest);
+adminConnectBtn.addEventListener('click', connectAdminWallet);
+
+// Initialize
+output.textContent = "Please connect your wallet to submit token requests.";
+adminStatusDiv.textContent = "Please connect admin wallet to review requests.";
