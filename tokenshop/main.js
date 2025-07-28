@@ -336,6 +336,7 @@ const userRequestsContainer = document.getElementById("userRequestsContainer");
 // Connect wallet function
 async function connectWallet() {
     try {
+        console.log('Ethers object:', ethers);
         if (typeof window.ethereum !== 'undefined') {
             await window.ethereum.request({ method: 'eth_requestAccounts' });
             provider = new ethers.providers.Web3Provider(window.ethereum);
