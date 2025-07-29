@@ -5,42 +5,36 @@ let adminConnected = false;
 let isLoading = false;
 
 // Contract configuration - Updated with new contract address
-const CONTRACT_ADDRESS = "0x73a911e0f543ebaf12fc8ad0f2dbe6ed337fade3";
+const CONTRACT_ADDRESS = "0x0e3308ed95adaf1523006b139881edfb7afc84db";
 
 console.log('Contract address:', CONTRACT_ADDRESS);
 
-// RequestManager ABI - Updated for the new contract
+// RequestManager ABI - Updated for the new contract with messaging system
 const requestManagerABI = [
 	{
+		"anonymous": false,
 		"inputs": [
 			{
+				"indexed": false,
 				"internalType": "uint256",
-				"name": "_requestId",
+				"name": "requestId",
 				"type": "uint256"
-			}
-		],
-		"name": "approveRequest",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
+			},
 			{
-				"internalType": "uint256",
-				"name": "_requestId",
-				"type": "uint256"
+				"indexed": false,
+				"internalType": "address",
+				"name": "sender",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "message",
+				"type": "string"
 			}
 		],
-		"name": "rejectRequest",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"stateMutability": "nonpayable",
-		"type": "constructor"
+		"name": "MessageSent",
+		"type": "event"
 	},
 	{
 		"anonymous": false,
@@ -50,6 +44,12 @@ const requestManagerABI = [
 				"internalType": "uint256",
 				"name": "requestId",
 				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "tokenAddress",
+				"type": "address"
 			}
 		],
 		"name": "RequestApproved",
@@ -67,24 +67,6 @@ const requestManagerABI = [
 		],
 		"name": "RequestRejected",
 		"type": "event"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "_requestId",
-				"type": "uint256"
-			},
-			{
-				"internalType": "string",
-				"name": "_message",
-				"type": "string"
-			}
-		],
-		"name": "requestRevision",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
 	},
 	{
 		"anonymous": false,
