@@ -879,8 +879,7 @@ async function loadPendingRequests() {
                         <p><strong><i class="fas fa-user"></i> Requester:</strong> ${request.requester}</p>
                         <p><strong><i class="fas fa-info-circle"></i> Status:</strong> <span class="${statusClass}">${statusText}</span></p>
                         <p><strong><i class="fas fa-clock"></i> Submitted:</strong> ${new Date(request.timestamp * 1000).toLocaleString()}</p>
-                        ${request.adminMessage ? `<p><strong><i class="fas fa-comment"></i> Admin Message:</strong> ${request.adminMessage}</p>` : ''}
-                        ${request.deployedTokenAddress !== '0x0000000000000000000000000000000000000000' ? `<p><strong><i class="fas fa-link"></i> Token Address:</strong> <a href="https://sepolia.etherscan.io/address/${request.deployedTokenAddress}" target="_blank">${request.deployedTokenAddress}</a></p>` : ''}
+                        ${request.deployedTokenAddress !== '0x0000000000000000000000000000000000000000' ? `<p><strong><i class="fas fa-link"></i> Token Address:</strong> <a href="https://polygonscan.com/address/${request.deployedTokenAddress}" target="_blank">${request.deployedTokenAddress}</a></p>` : ''}
                     </div>
                     <div class="request-actions">
                         ${request.status === 0 ? `
@@ -895,8 +894,19 @@ async function loadPendingRequests() {
                             </button>
                         ` : ''}
                         ${request.status === 3 ? `
-                            <button onclick="viewMessages(${i})" class="btn-revision">
-                                <i class="fas fa-comments"></i> View Messages
+                            <div class="chat-section" id="chat-${i}">
+                                <div class="chat-messages" id="messages-${i}">
+                                    <!-- Messages will be loaded here -->
+                                </div>
+                                <div class="chat-input">
+                                    <input type="text" id="message-input-${i}" placeholder="Type your message..." />
+                                    <button onclick="sendAdminMessage(${i})" class="btn-send">
+                                        <i class="fas fa-paper-plane"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <button onclick="toggleChat(${i})" class="btn-revision">
+                                <i class="fas fa-comments"></i> Toggle Chat
                             </button>
                         ` : ''}
                     </div>
@@ -989,19 +999,26 @@ async function loadUserRequests() {
                         <p><strong><i class="fas fa-user-shield"></i> Admin Address:</strong> ${request.adminAddress}</p>
                         <p><strong><i class="fas fa-info-circle"></i> Status:</strong> <span class="${statusClass}">${statusText}</span></p>
                         <p><strong><i class="fas fa-clock"></i> Submitted:</strong> ${new Date(request.timestamp * 1000).toLocaleString()}</p>
-                        ${request.adminMessage ? `<p><strong><i class="fas fa-comment"></i> Admin Message:</strong> ${request.adminMessage}</p>` : ''}
                                         ${request.deployedTokenAddress !== '0x0000000000000000000000000000000000000000' ? `
-                            <p><strong><i class="fas fa-link"></i> Token Contract:</strong> <a href="https://sepolia.etherscan.io/address/${request.deployedTokenAddress}" target="_blank" style="color: var(--color-primary);">${request.deployedTokenAddress}</a></p>
+                            <p><strong><i class="fas fa-link"></i> Token Contract:</strong> <a href="https://polygonscan.com/address/${request.deployedTokenAddress}" target="_blank" style="color: var(--color-primary);">${request.deployedTokenAddress}</a></p>
                             <p><strong><i class="fas fa-coins"></i> Token Distribution:</strong> 99% to you, 1% to admin</p>
                         ` : ''}
                     </div>
                     ${request.status === 3 ? `
+                        <div class="chat-section" id="user-chat-${i}">
+                            <div class="chat-messages" id="user-messages-${i}">
+                                <!-- Messages will be loaded here -->
+                            </div>
+                            <div class="chat-input">
+                                <input type="text" id="user-message-input-${i}" placeholder="Type your message..." />
+                                <button onclick="sendUserMessage(${i})" class="btn-send">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </div>
                         <div class="user-request-actions">
-                            <button onclick="viewUserMessages(${i})" class="btn-revision">
-                                <i class="fas fa-comments"></i> View Messages
-                            </button>
-                            <button onclick="sendUserMessage(${i})" class="btn-approve">
-                                <i class="fas fa-reply"></i> Reply to Admin
+                            <button onclick="toggleUserChat(${i})" class="btn-revision">
+                                <i class="fas fa-comments"></i> Toggle Chat
                             </button>
                         </div>
                     ` : ''}
@@ -1071,7 +1088,7 @@ async function approveRequest(requestId) {
             <div style="color: #10b981; font-weight: 500;">
                 <i class="fas fa-check-circle"></i> Request #${requestId} approved successfully!
                 <br>Transaction: ${tx.hash}
-                <br>Token Contract: <a href="https://sepolia.etherscan.io/address/${tokenAddress}" target="_blank" style="color: #10b981;">${tokenAddress}</a>
+                <br>Token Contract: <a href="https://polygonscan.com/address/${tokenAddress}" target="_blank" style="color: #10b981;">${tokenAddress}</a>
             </div>
         `;
         
@@ -1241,12 +1258,29 @@ setInterval(() => {
 // Message functions
 async function viewMessages(requestId) {
     try {
+        const request = await contract.getRequest(requestId);
         const messages = await contract.getRequestMessages(requestId);
         let messageHtml = '<div class="messages-container">';
         messageHtml += '<h4><i class="fas fa-comments"></i> Messages for Request #' + requestId + '</h4>';
         
+        // Add initial admin message if exists
+        if (request.adminMessage && request.adminMessage.trim() !== '') {
+            messageHtml += `
+                <div class="message admin-message">
+                    <div class="message-header">
+                        <strong>Admin:</strong> Initial Revision Request
+                        <span class="message-time">${new Date(request.timestamp * 1000).toLocaleString()}</span>
+                    </div>
+                    <div class="message-content">${request.adminMessage}</div>
+                </div>
+            `;
+        }
+        
+        // Add conversation messages
         if (messages.senders.length === 0) {
-            messageHtml += '<p>No messages yet.</p>';
+            if (!request.adminMessage || request.adminMessage.trim() === '') {
+                messageHtml += '<p>No messages yet.</p>';
+            }
         } else {
             for (let i = 0; i < messages.senders.length; i++) {
                 const isAdmin = await contract.isAdminForRequest(requestId, messages.senders[i]);
@@ -1277,12 +1311,29 @@ async function viewMessages(requestId) {
 
 async function viewUserMessages(requestId) {
     try {
+        const request = await contract.getRequest(requestId);
         const messages = await contract.getRequestMessages(requestId);
         let messageHtml = '<div class="messages-container">';
         messageHtml += '<h4><i class="fas fa-comments"></i> Messages for Request #' + requestId + '</h4>';
         
+        // Add initial admin message if exists
+        if (request.adminMessage && request.adminMessage.trim() !== '') {
+            messageHtml += `
+                <div class="message admin-message">
+                    <div class="message-header">
+                        <strong>Admin:</strong> Initial Revision Request
+                        <span class="message-time">${new Date(request.timestamp * 1000).toLocaleString()}</span>
+                    </div>
+                    <div class="message-content">${request.adminMessage}</div>
+                </div>
+            `;
+        }
+        
+        // Add conversation messages
         if (messages.senders.length === 0) {
-            messageHtml += '<p>No messages yet.</p>';
+            if (!request.adminMessage || request.adminMessage.trim() === '') {
+                messageHtml += '<p>No messages yet.</p>';
+            }
         } else {
             for (let i = 0; i < messages.senders.length; i++) {
                 const isAdmin = await contract.isAdminForRequest(requestId, messages.senders[i]);
@@ -1313,23 +1364,113 @@ async function viewUserMessages(requestId) {
 
 async function sendUserMessage(requestId) {
     try {
-        const message = prompt("Enter your message to admin:");
-        if (!message || message.trim() === '') {
+        const messageInput = document.getElementById(`user-message-input-${requestId}`);
+        const message = messageInput.value.trim();
+        
+        if (!message) {
             return;
         }
 
-        const tx = await contract.sendMessage(requestId, message.trim());
+        const tx = await contract.sendMessage(requestId, message);
         showNotification('Sending message...', 'info');
         
         await tx.wait();
         
         showNotification('Message sent successfully!', 'success');
         
-        // Refresh user requests to show updated messages
-        await loadUserRequests();
+        // Clear input and refresh messages
+        messageInput.value = '';
+        await loadChatMessages(requestId, 'user');
     } catch (error) {
         console.error("Error sending message:", error);
         showNotification(`Failed to send message: ${error.message}`, 'error');
+    }
+}
+
+async function sendAdminMessage(requestId) {
+    try {
+        const messageInput = document.getElementById(`message-input-${requestId}`);
+        const message = messageInput.value.trim();
+        
+        if (!message) {
+            return;
+        }
+
+        const tx = await contract.sendMessage(requestId, message);
+        showNotification('Sending message...', 'info');
+        
+        await tx.wait();
+        
+        showNotification('Message sent successfully!', 'success');
+        
+        // Clear input and refresh messages
+        messageInput.value = '';
+        await loadChatMessages(requestId, 'admin');
+    } catch (error) {
+        console.error("Error sending message:", error);
+        showNotification(`Failed to send message: ${error.message}`, 'error');
+    }
+}
+
+// Chat functions
+async function toggleChat(requestId) {
+    const chatSection = document.getElementById(`chat-${requestId}`);
+    if (chatSection.style.display === 'none' || chatSection.style.display === '') {
+        chatSection.style.display = 'block';
+        await loadChatMessages(requestId, 'admin');
+    } else {
+        chatSection.style.display = 'none';
+    }
+}
+
+async function toggleUserChat(requestId) {
+    const chatSection = document.getElementById(`user-chat-${requestId}`);
+    if (chatSection.style.display === 'none' || chatSection.style.display === '') {
+        chatSection.style.display = 'block';
+        await loadChatMessages(requestId, 'user');
+    } else {
+        chatSection.style.display = 'none';
+    }
+}
+
+async function loadChatMessages(requestId, type) {
+    try {
+        const request = await contract.getRequest(requestId);
+        const messages = await contract.getRequestMessages(requestId);
+        const messagesContainer = document.getElementById(type === 'admin' ? `messages-${requestId}` : `user-messages-${requestId}`);
+        
+        let messagesHtml = '';
+        
+        // Add initial admin message if exists
+        if (request.adminMessage && request.adminMessage.trim() !== '') {
+            messagesHtml += `
+                <div class="chat-message admin-message">
+                    <div class="message-sender">Admin</div>
+                    <div class="message-text">${request.adminMessage}</div>
+                    <div class="message-time">${new Date(request.timestamp * 1000).toLocaleString()}</div>
+                </div>
+            `;
+        }
+        
+        // Add conversation messages
+        for (let i = 0; i < messages.senders.length; i++) {
+            const isAdmin = await contract.isAdminForRequest(requestId, messages.senders[i]);
+            const senderType = isAdmin ? 'Admin' : 'User';
+            const messageClass = isAdmin ? 'admin-message' : 'user-message';
+            
+            messagesHtml += `
+                <div class="chat-message ${messageClass}">
+                    <div class="message-sender">${senderType}</div>
+                    <div class="message-text">${messages.messages[i]}</div>
+                    <div class="message-time">${new Date(messages.timestamps[i] * 1000).toLocaleString()}</div>
+                </div>
+            `;
+        }
+        
+        messagesContainer.innerHTML = messagesHtml;
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    } catch (error) {
+        console.error("Error loading chat messages:", error);
     }
 }
 
