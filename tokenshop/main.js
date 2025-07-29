@@ -879,7 +879,7 @@ async function loadPendingRequests() {
                         <p><strong><i class="fas fa-user"></i> Requester:</strong> ${request.requester}</p>
                         <p><strong><i class="fas fa-info-circle"></i> Status:</strong> <span class="${statusClass}">${statusText}</span></p>
                         <p><strong><i class="fas fa-clock"></i> Submitted:</strong> ${new Date(request.timestamp * 1000).toLocaleString()}</p>
-                        ${request.deployedTokenAddress !== '0x0000000000000000000000000000000000000000' ? `<p><strong><i class="fas fa-link"></i> Token Address:</strong> <a href="https://polygonscan.com/address/${request.deployedTokenAddress}" target="_blank">${request.deployedTokenAddress}</a></p>` : ''}
+                        ${request.deployedTokenAddress !== '0x0000000000000000000000000000000000000000' ? `<p><strong><i class="fas fa-link"></i> Token Address:</strong> <a href="https://polygonscan.com/address/${request.deployedTokenAddress}" target="_blank" style="color: var(--color-primary);">${request.deployedTokenAddress}</a></p>` : ''}
                     </div>
                     <div class="request-actions">
                         ${request.status === 0 ? `
