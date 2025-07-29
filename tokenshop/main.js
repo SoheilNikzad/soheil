@@ -894,11 +894,6 @@ async function loadPendingRequests() {
                             </button>
                         ` : ''}
                         ${request.status === 3 ? `
-                            <div style="margin-bottom: 1rem;">
-                                <button onclick="toggleChat(${i})" class="btn-revision" style="width: auto; min-width: 150px;">
-                                    <i class="fas fa-comments"></i> Toggle Chat
-                                </button>
-                            </div>
                             <div class="chat-section" id="chat-${i}">
                                 <div class="chat-messages" id="messages-${i}">
                                     <!-- Messages will be loaded here -->
@@ -909,6 +904,11 @@ async function loadPendingRequests() {
                                         <i class="fas fa-paper-plane"></i>
                                     </button>
                                 </div>
+                            </div>
+                            <div style="margin-top: 1rem;">
+                                <button onclick="toggleChat(${i})" class="btn-revision" style="width: auto; min-width: 120px;">
+                                    <i class="fas fa-comments"></i> Toggle Chat
+                                </button>
                             </div>
                         ` : ''}
                     </div>
@@ -1007,11 +1007,6 @@ async function loadUserRequests() {
                         ` : ''}
                     </div>
                     ${request.status === 3 ? `
-                        <div style="margin-bottom: 1rem;">
-                            <button onclick="toggleUserChat(${i})" class="btn-revision" style="width: auto; min-width: 150px;">
-                                <i class="fas fa-comments"></i> Toggle Chat
-                            </button>
-                        </div>
                         <div class="chat-section" id="user-chat-${i}">
                             <div class="chat-messages" id="user-messages-${i}">
                                 <!-- Messages will be loaded here -->
@@ -1022,6 +1017,11 @@ async function loadUserRequests() {
                                     <i class="fas fa-paper-plane"></i>
                                 </button>
                             </div>
+                        </div>
+                        <div style="margin-top: 1rem;">
+                            <button onclick="toggleUserChat(${i})" class="btn-revision" style="width: auto; min-width: 120px;">
+                                <i class="fas fa-comments"></i> Toggle Chat
+                            </button>
                         </div>
                     ` : ''}
                 `;
