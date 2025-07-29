@@ -750,7 +750,12 @@
 
       <!-- User's Requests Section -->
       <div id="userRequestsSection" style="margin-top: 30px; display: none;">
-        <h3><i class="fas fa-list"></i> My Token Requests</h3>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <h3><i class="fas fa-list"></i> My Token Requests</h3>
+          <button onclick="refreshUserRequests()" class="btn-revision" style="width: auto; min-width: 100px; font-size: 0.9rem; padding: 0.6rem 1rem;">
+            <i class="fas fa-sync-alt"></i> Refresh
+          </button>
+        </div>
         <div id="userRequestsContainer"></div>
       </div>
     </div>
@@ -765,7 +770,12 @@
       <p id="adminStatus">Waiting for admin connection...</p>
 
       <div id="requestsList">
-        <h3><i class="fas fa-clock"></i> Pending Requests</h3>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <h3><i class="fas fa-clock"></i> Pending Requests</h3>
+          <button onclick="refreshAdminRequests()" class="btn-revision" style="width: auto; min-width: 100px; font-size: 0.9rem; padding: 0.6rem 1rem;">
+            <i class="fas fa-sync-alt"></i> Refresh
+          </button>
+        </div>
         <div id="requestsContainer">
           <!-- Requests will be loaded here -->
         </div>
