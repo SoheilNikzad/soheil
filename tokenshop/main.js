@@ -905,9 +905,11 @@ async function loadPendingRequests() {
                                     </button>
                                 </div>
                             </div>
-                            <button onclick="toggleChat(${i})" class="btn-revision">
-                                <i class="fas fa-comments"></i> Toggle Chat
-                            </button>
+                            <div style="margin-top: 1rem;">
+                                <button onclick="toggleChat(${i})" class="btn-revision" style="width: auto; min-width: 150px;">
+                                    <i class="fas fa-comments"></i> Toggle Chat
+                                </button>
+                            </div>
                         ` : ''}
                     </div>
                 `;
@@ -1017,7 +1019,7 @@ async function loadUserRequests() {
                             </div>
                         </div>
                         <div class="user-request-actions">
-                            <button onclick="toggleUserChat(${i})" class="btn-revision">
+                            <button onclick="toggleUserChat(${i})" class="btn-revision" style="width: auto; min-width: 150px;">
                                 <i class="fas fa-comments"></i> Toggle Chat
                             </button>
                         </div>
