@@ -378,6 +378,19 @@ const requestManagerABI = [
 		"stateMutability": "view",
 		"type": "function"
 	},
+	{
+		"inputs": [],
+		"name": "requestCount",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
 
 	{
 		"inputs": [
@@ -890,8 +903,24 @@ async function loadUserRequests() {
 
         const userAddress = await signer.getAddress();
         console.log('Getting total requests...');
-        const totalRequests = await contract.requestCount;
-        console.log('Total requests:', totalRequests.toNumber());
+        
+        // Try to get request count safely
+        let totalRequests = 0;
+        try {
+            totalRequests = await contract.requestCount();
+            console.log('Total requests:', totalRequests.toNumber());
+        } catch (error) {
+            console.log('Error getting request count, trying alternative method...');
+            // Try to get it as a variable
+            try {
+                totalRequests = await contract.requestCount;
+                console.log('Total requests (as variable):', totalRequests.toNumber());
+            } catch (error2) {
+                console.log('Both methods failed, setting to 0');
+                totalRequests = { toNumber: () => 0 };
+            }
+        }
+        
         userRequestsContainer.innerHTML = "";
 
         if (totalRequests.toNumber() === 0) {
