@@ -823,7 +823,7 @@ async function submitTokenRequest() {
     }
 }
 
-// Load pending requests for admin
+// Load all requests for admin (pending, approved, rejected, revision requested)
 async function loadPendingRequests() {
     try {
         console.log('loadPendingRequests called');
@@ -837,54 +837,84 @@ async function loadPendingRequests() {
         const adminAddress = await signer.getAddress();
         console.log('Admin address:', adminAddress);
 
-        console.log('Getting pending requests for admin...');
-        const pendingRequestIds = await contract.getPendingRequestsForAdmin(adminAddress);
-        console.log('Pending request IDs for admin:', pendingRequestIds);
+        console.log('Getting all requests for admin...');
+        const totalRequests = await contract.requestCount();
+        console.log('Total requests:', totalRequests.toNumber());
         requestsContainer.innerHTML = "";
 
-        if (pendingRequestIds.length === 0) {
-            console.log('No pending requests found for this admin');
+        if (totalRequests.toNumber() === 0) {
+            console.log('No requests found');
             requestsContainer.innerHTML = `
                 <div style="text-align: center; color: var(--color-muted); padding: 2rem;">
                     <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 1rem;"></i>
-                    <p>No pending requests for your admin address at the moment.</p>
+                    <p>No requests found at the moment.</p>
                 </div>
             `;
             return;
         }
 
-        for (const requestId of pendingRequestIds) {
-            const request = await contract.getRequest(requestId);
+        let adminRequestCount = 0;
+
+        for (let i = 0; i < totalRequests.toNumber(); i++) {
+            const request = await contract.getRequest(i);
             
-            const requestDiv = document.createElement("div");
-            requestDiv.className = "request-item";
-            requestDiv.innerHTML = `
-                <div class="request-info">
-                    <h4><i class="fas fa-file-alt"></i> Request #${requestId}</h4>
-                    <p><strong><i class="fas fa-tag"></i> Name:</strong> ${request.name}</p>
-                    <p><strong><i class="fas fa-hashtag"></i> Symbol:</strong> ${request.symbol}</p>
-                    <p><strong><i class="fas fa-align-left"></i> Description:</strong> ${request.description}</p>
-                    <p><strong><i class="fas fa-file-alt"></i> Whitepaper:</strong> ${request.whitepaper}</p>
-                    <p><strong><i class="fas fa-coins"></i> Supply:</strong> ${request.supply.toString()}</p>
-                    <p><strong><i class="fas fa-user"></i> Requester:</strong> ${request.requester}</p>
-                    <p><strong><i class="fas fa-clock"></i> Submitted:</strong> ${new Date(request.timestamp * 1000).toLocaleString()}</p>
-                </div>
-                <div class="request-actions">
-                    <button onclick="approveRequest(${requestId})" class="btn-approve">
-                        <i class="fas fa-check"></i> Approve
-                    </button>
-                    <button onclick="rejectRequest(${requestId})" class="btn-reject">
-                        <i class="fas fa-times"></i> Reject
-                    </button>
-                    <button onclick="requestRevision(${requestId})" class="btn-revision">
-                        <i class="fas fa-edit"></i> Request Revision
-                    </button>
+            // Check if current admin is the admin for this request
+            const isAdminForThisRequest = await contract.isAdminForRequest(i, adminAddress);
+            
+            if (isAdminForThisRequest) {
+                adminRequestCount++;
+                const statusText = getStatusText(request.status);
+                const statusClass = getStatusClass(request.status);
+                
+                const requestDiv = document.createElement("div");
+                requestDiv.className = "request-item";
+                requestDiv.innerHTML = `
+                    <div class="request-info">
+                        <h4><i class="fas fa-file-alt"></i> Request #${i}</h4>
+                        <p><strong><i class="fas fa-tag"></i> Name:</strong> ${request.name}</p>
+                        <p><strong><i class="fas fa-hashtag"></i> Symbol:</strong> ${request.symbol}</p>
+                        <p><strong><i class="fas fa-align-left"></i> Description:</strong> ${request.description}</p>
+                        <p><strong><i class="fas fa-file-alt"></i> Whitepaper:</strong> ${request.whitepaper}</p>
+                        <p><strong><i class="fas fa-coins"></i> Supply:</strong> ${request.supply.toString()}</p>
+                        <p><strong><i class="fas fa-user"></i> Requester:</strong> ${request.requester}</p>
+                        <p><strong><i class="fas fa-info-circle"></i> Status:</strong> <span class="${statusClass}">${statusText}</span></p>
+                        <p><strong><i class="fas fa-clock"></i> Submitted:</strong> ${new Date(request.timestamp * 1000).toLocaleString()}</p>
+                        ${request.adminMessage ? `<p><strong><i class="fas fa-comment"></i> Admin Message:</strong> ${request.adminMessage}</p>` : ''}
+                        ${request.deployedTokenAddress !== '0x0000000000000000000000000000000000000000' ? `<p><strong><i class="fas fa-link"></i> Token Address:</strong> <a href="https://sepolia.etherscan.io/address/${request.deployedTokenAddress}" target="_blank">${request.deployedTokenAddress}</a></p>` : ''}
+                    </div>
+                    <div class="request-actions">
+                        ${request.status === 0 ? `
+                            <button onclick="approveRequest(${i})" class="btn-approve">
+                                <i class="fas fa-check"></i> Approve
+                            </button>
+                            <button onclick="rejectRequest(${i})" class="btn-reject">
+                                <i class="fas fa-times"></i> Reject
+                            </button>
+                            <button onclick="requestRevision(${i})" class="btn-revision">
+                                <i class="fas fa-edit"></i> Request Revision
+                            </button>
+                        ` : ''}
+                        ${request.status === 3 ? `
+                            <button onclick="viewMessages(${i})" class="btn-revision">
+                                <i class="fas fa-comments"></i> View Messages
+                            </button>
+                        ` : ''}
+                    </div>
+                `;
+                requestsContainer.appendChild(requestDiv);
+            }
+        }
+
+        if (adminRequestCount === 0) {
+            requestsContainer.innerHTML = `
+                <div style="text-align: center; color: var(--color-muted); padding: 2rem;">
+                    <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                    <p>No requests for your admin address at the moment.</p>
                 </div>
             `;
-            requestsContainer.appendChild(requestDiv);
         }
     } catch (error) {
-        console.error("Error loading pending requests:", error);
+        console.error("Error loading requests:", error);
         requestsContainer.innerHTML = `
             <div style="color: #ef4444; font-weight: 500; text-align: center; padding: 2rem;">
                 <i class="fas fa-exclamation-triangle"></i> Error loading requests: ${error.message}
@@ -960,7 +990,21 @@ async function loadUserRequests() {
                         <p><strong><i class="fas fa-info-circle"></i> Status:</strong> <span class="${statusClass}">${statusText}</span></p>
                         <p><strong><i class="fas fa-clock"></i> Submitted:</strong> ${new Date(request.timestamp * 1000).toLocaleString()}</p>
                         ${request.adminMessage ? `<p><strong><i class="fas fa-comment"></i> Admin Message:</strong> ${request.adminMessage}</p>` : ''}
+                                        ${request.deployedTokenAddress !== '0x0000000000000000000000000000000000000000' ? `
+                            <p><strong><i class="fas fa-link"></i> Token Contract:</strong> <a href="https://sepolia.etherscan.io/address/${request.deployedTokenAddress}" target="_blank" style="color: var(--color-primary);">${request.deployedTokenAddress}</a></p>
+                            <p><strong><i class="fas fa-coins"></i> Token Distribution:</strong> 99% to you, 1% to admin</p>
+                        ` : ''}
                     </div>
+                    ${request.status === 3 ? `
+                        <div class="user-request-actions">
+                            <button onclick="viewUserMessages(${i})" class="btn-revision">
+                                <i class="fas fa-comments"></i> View Messages
+                            </button>
+                            <button onclick="sendUserMessage(${i})" class="btn-approve">
+                                <i class="fas fa-reply"></i> Reply to Admin
+                            </button>
+                        </div>
+                    ` : ''}
                 `;
                 userRequestsContainer.appendChild(requestDiv);
             }
@@ -1018,16 +1062,20 @@ async function approveRequest(requestId) {
         const tx = await contract.approveRequest(requestId);
         showNotification('Approving request...', 'info');
         
-        await tx.wait();
+        // Get the deployed token address from the event
+        const receipt = await tx.wait();
+        const event = receipt.events?.find(e => e.event === 'RequestApproved');
+        const tokenAddress = event?.args?.tokenAddress;
         
         adminStatusDiv.innerHTML = `
             <div style="color: #10b981; font-weight: 500;">
                 <i class="fas fa-check-circle"></i> Request #${requestId} approved successfully!
                 <br>Transaction: ${tx.hash}
+                <br>Token Contract: <a href="https://sepolia.etherscan.io/address/${tokenAddress}" target="_blank" style="color: #10b981;">${tokenAddress}</a>
             </div>
         `;
         
-        showNotification(`Request #${requestId} approved successfully!`, 'success');
+        showNotification(`Request #${requestId} approved successfully! Token deployed at: ${tokenAddress}`, 'success');
         await loadPendingRequests(); // Refresh the list
     } catch (error) {
         adminStatusDiv.innerHTML = `
@@ -1189,6 +1237,101 @@ setInterval(() => {
         loadUserRequests();
     }
 }, 30000);
+
+// Message functions
+async function viewMessages(requestId) {
+    try {
+        const messages = await contract.getRequestMessages(requestId);
+        let messageHtml = '<div class="messages-container">';
+        messageHtml += '<h4><i class="fas fa-comments"></i> Messages for Request #' + requestId + '</h4>';
+        
+        if (messages.senders.length === 0) {
+            messageHtml += '<p>No messages yet.</p>';
+        } else {
+            for (let i = 0; i < messages.senders.length; i++) {
+                const isAdmin = await contract.isAdminForRequest(requestId, messages.senders[i]);
+                const senderType = isAdmin ? 'Admin' : 'User';
+                const senderClass = isAdmin ? 'admin-message' : 'user-message';
+                
+                messageHtml += `
+                    <div class="message ${senderClass}">
+                        <div class="message-header">
+                            <strong>${senderType}:</strong> ${messages.senders[i]}
+                            <span class="message-time">${new Date(messages.timestamps[i] * 1000).toLocaleString()}</span>
+                        </div>
+                        <div class="message-content">${messages.messages[i]}</div>
+                    </div>
+                `;
+            }
+        }
+        
+        messageHtml += '</div>';
+        
+        // Show messages in a modal or alert
+        alert(messageHtml.replace(/<[^>]*>/g, '')); // Simple text version for now
+    } catch (error) {
+        console.error("Error loading messages:", error);
+        showNotification(`Failed to load messages: ${error.message}`, 'error');
+    }
+}
+
+async function viewUserMessages(requestId) {
+    try {
+        const messages = await contract.getRequestMessages(requestId);
+        let messageHtml = '<div class="messages-container">';
+        messageHtml += '<h4><i class="fas fa-comments"></i> Messages for Request #' + requestId + '</h4>';
+        
+        if (messages.senders.length === 0) {
+            messageHtml += '<p>No messages yet.</p>';
+        } else {
+            for (let i = 0; i < messages.senders.length; i++) {
+                const isAdmin = await contract.isAdminForRequest(requestId, messages.senders[i]);
+                const senderType = isAdmin ? 'Admin' : 'User';
+                const senderClass = isAdmin ? 'admin-message' : 'user-message';
+                
+                messageHtml += `
+                    <div class="message ${senderClass}">
+                        <div class="message-header">
+                            <strong>${senderType}:</strong> ${messages.senders[i]}
+                            <span class="message-time">${new Date(messages.timestamps[i] * 1000).toLocaleString()}</span>
+                        </div>
+                        <div class="message-content">${messages.messages[i]}</div>
+                    </div>
+                `;
+            }
+        }
+        
+        messageHtml += '</div>';
+        
+        // Show messages in a modal or alert
+        alert(messageHtml.replace(/<[^>]*>/g, '')); // Simple text version for now
+    } catch (error) {
+        console.error("Error loading messages:", error);
+        showNotification(`Failed to load messages: ${error.message}`, 'error');
+    }
+}
+
+async function sendUserMessage(requestId) {
+    try {
+        const message = prompt("Enter your message to admin:");
+        if (!message || message.trim() === '') {
+            return;
+        }
+
+        const tx = await contract.sendMessage(requestId, message.trim());
+        showNotification('Sending message...', 'info');
+        
+        await tx.wait();
+        
+        showNotification('Message sent successfully!', 'success');
+        
+        // Refresh user requests to show updated messages
+        await loadUserRequests();
+    } catch (error) {
+        console.error("Error sending message:", error);
+        showNotification(`Failed to send message: ${error.message}`, 'error');
+    }
+}
 
 // Auto-refresh admin requests every 30 seconds if connected
 setInterval(() => {
