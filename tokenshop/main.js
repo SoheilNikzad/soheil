@@ -9,8 +9,21 @@ const CONTRACT_ADDRESS = "0x0e3308ed95adaf1523006b139881edfb7afc84db";
 
 console.log('Contract address:', CONTRACT_ADDRESS);
 
-// RequestManager ABI - Updated for the new contract with messaging system
+// RequestManager ABI - Complete and accurate ABI from the deployed contract
 const requestManagerABI = [
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_requestId",
+				"type": "uint256"
+			}
+		],
+		"name": "approveRequest",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
 	{
 		"anonymous": false,
 		"inputs": [
@@ -35,6 +48,19 @@ const requestManagerABI = [
 		],
 		"name": "MessageSent",
 		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_requestId",
+				"type": "uint256"
+			}
+		],
+		"name": "rejectRequest",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
 	},
 	{
 		"anonymous": false,
@@ -67,6 +93,24 @@ const requestManagerABI = [
 		],
 		"name": "RequestRejected",
 		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_requestId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "_message",
+				"type": "string"
+			}
+		],
+		"name": "requestRevision",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
 	},
 	{
 		"anonymous": false,
@@ -123,6 +167,24 @@ const requestManagerABI = [
 		],
 		"name": "RevisionRequested",
 		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_requestId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "_message",
+				"type": "string"
+			}
+		],
+		"name": "sendMessage",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
 	},
 	{
 		"inputs": [
@@ -253,6 +315,40 @@ const requestManagerABI = [
 				"internalType": "uint256",
 				"name": "timestamp",
 				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "deployedTokenAddress",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_requestId",
+				"type": "uint256"
+			}
+		],
+		"name": "getRequestMessages",
+		"outputs": [
+			{
+				"internalType": "address[]",
+				"name": "senders",
+				"type": "address[]"
+			},
+			{
+				"internalType": "string[]",
+				"name": "messages",
+				"type": "string[]"
+			},
+			{
+				"internalType": "uint256[]",
+				"name": "timestamps",
+				"type": "uint256[]"
 			}
 		],
 		"stateMutability": "view",
@@ -289,6 +385,40 @@ const requestManagerABI = [
 			{
 				"internalType": "uint256",
 				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "requestMessages",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "sender",
+				"type": "address"
+			},
+			{
+				"internalType": "string",
+				"name": "message",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "timestamp",
 				"type": "uint256"
 			}
 		],
@@ -354,6 +484,11 @@ const requestManagerABI = [
 				"internalType": "uint256",
 				"name": "timestamp",
 				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "deployedTokenAddress",
+				"type": "address"
 			}
 		],
 		"stateMutability": "view",
