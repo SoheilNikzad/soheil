@@ -893,25 +893,25 @@ async function loadPendingRequests() {
                                 <i class="fas fa-edit"></i> Request Revision
                             </button>
                         ` : ''}
-                        ${request.status === 3 ? `
-                            <div class="chat-section" id="chat-${i}">
-                                <div class="chat-messages" id="messages-${i}">
-                                    <!-- Messages will be loaded here -->
-                                </div>
-                                <div class="chat-input">
-                                    <input type="text" id="message-input-${i}" placeholder="Type your message..." />
-                                    <button onclick="sendAdminMessage(${i})" class="btn-send">
-                                        <i class="fas fa-paper-plane"></i>
-                                    </button>
-                                </div>
+                    </div>
+                    ${request.status === 3 ? `
+                        <div style="margin-bottom: 1rem;">
+                            <button onclick="toggleChat(${i})" class="btn-revision" style="width: auto; min-width: 100px; font-size: 0.9rem; padding: 0.6rem 1rem;">
+                                <i class="fas fa-comments"></i> Toggle Chat
+                            </button>
+                        </div>
+                        <div class="chat-section" id="chat-${i}">
+                            <div class="chat-messages" id="messages-${i}">
+                                <!-- Messages will be loaded here -->
                             </div>
-                            <div style="margin-top: 1rem;">
-                                <button onclick="toggleChat(${i})" class="btn-revision" style="width: auto; min-width: 120px;">
-                                    <i class="fas fa-comments"></i> Toggle Chat
+                            <div class="chat-input">
+                                <input type="text" id="message-input-${i}" placeholder="Type your message..." />
+                                <button onclick="sendAdminMessage(${i})" class="btn-send">
+                                    <i class="fas fa-paper-plane"></i>
                                 </button>
                             </div>
-                        ` : ''}
-                    </div>
+                        </div>
+                    ` : ''}
                 `;
                 requestsContainer.appendChild(requestDiv);
             }
@@ -1019,7 +1019,7 @@ async function loadUserRequests() {
                             </div>
                         </div>
                         <div style="margin-top: 1rem;">
-                            <button onclick="toggleUserChat(${i})" class="btn-revision" style="width: auto; min-width: 120px;">
+                            <button onclick="toggleUserChat(${i})" class="btn-revision" style="width: auto; min-width: 100px; font-size: 0.9rem; padding: 0.6rem 1rem;">
                                 <i class="fas fa-comments"></i> Toggle Chat
                             </button>
                         </div>
@@ -1250,12 +1250,20 @@ adminStatusDiv.innerHTML = `
     </div>
 `;
 
-// Auto-refresh user requests every 30 seconds if connected
-setInterval(() => {
+// Manual refresh functions
+async function refreshUserRequests() {
     if (contract && signer && !adminConnected) {
-        loadUserRequests();
+        await loadUserRequests();
+        showNotification('User requests refreshed!', 'success');
     }
-}, 30000);
+}
+
+async function refreshAdminRequests() {
+    if (contract && signer && adminConnected) {
+        await loadPendingRequests();
+        showNotification('Admin requests refreshed!', 'success');
+    }
+}
 
 // Message functions
 async function viewMessages(requestId) {
@@ -1476,9 +1484,4 @@ async function loadChatMessages(requestId, type) {
     }
 }
 
-// Auto-refresh admin requests every 30 seconds if connected
-setInterval(() => {
-    if (contract && signer && adminConnected) {
-        loadPendingRequests();
-    }
-}, 30000);
+
