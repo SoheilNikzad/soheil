@@ -378,19 +378,7 @@ const requestManagerABI = [
 		"stateMutability": "view",
 		"type": "function"
 	},
-	{
-		"inputs": [],
-		"name": "requestCount",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
+
 	{
 		"inputs": [
 			{
@@ -902,7 +890,7 @@ async function loadUserRequests() {
 
         const userAddress = await signer.getAddress();
         console.log('Getting total requests...');
-        const totalRequests = await contract.requestCount();
+        const totalRequests = await contract.requestCount;
         console.log('Total requests:', totalRequests.toNumber());
         userRequestsContainer.innerHTML = "";
 
