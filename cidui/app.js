@@ -17,8 +17,16 @@ chatItems.forEach(item => {
     // آپدیت هدر با اسم و آواتار جدید
     const name = item.dataset.name;
     const avatar = item.dataset.avatar;
+    const address = item.dataset.address;
+    
     headerName.textContent = name;
-    headerAvatar.src = avatar;
+    headerAvatar.textContent = avatar;
+    
+    // Update address if available
+    const headerAddress = document.querySelector('.contact-address');
+    if (headerAddress) {
+      headerAddress.textContent = address || '';
+    }
 
     // پیام‌ها رو فعلاً پاک می‌کنیم (برای نسخه ساده)
     messages.innerHTML = '';
@@ -404,6 +412,66 @@ showPrivateKeyBtn.addEventListener('mouseleave', () => {
   if (privKeyTooltip) privKeyTooltip.remove();
 });
 
+// --- Settings Button Logic ---
+const settingsBtn = document.querySelector('.action-btn[title="Settings"]');
+let settingsModal;
+
+settingsBtn.addEventListener('click', () => {
+  if (settingsModal) settingsModal.remove();
+  settingsModal = document.createElement('div');
+  settingsModal.className = 'modal-overlay';
+  
+  const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+  
+  settingsModal.innerHTML = `
+    <div class="settings-box">
+      <div class="settings-title">Settings</div>
+      <div class="settings-option">
+        <span class="settings-option-label">Theme</span>
+        <div class="theme-toggle ${currentTheme === 'light' ? 'active' : ''}" id="theme-toggle">
+        </div>
+      </div>
+      <button class="close-btn" style="position:absolute;top:1.2rem;right:1.2rem;">&times;</button>
+    </div>
+  `;
+  document.body.appendChild(settingsModal);
+
+  // Theme toggle logic
+  const themeToggle = document.getElementById('theme-toggle');
+  themeToggle.addEventListener('click', () => {
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    
+    document.documentElement.setAttribute('data-theme', newTheme);
+    themeToggle.classList.toggle('active');
+    
+    // Save to localStorage
+    localStorage.setItem('theme', newTheme);
+    
+    showWalletAlert(`Theme changed to ${newTheme} mode!`, 'success');
+  });
+
+  // Close logic
+  settingsModal.querySelector('.close-btn').onclick = () => {
+    settingsModal.remove();
+    settingsModal = null;
+  };
+  
+  // Close on overlay click
+  settingsModal.onclick = (e) => {
+    if (e.target === settingsModal) {
+      settingsModal.remove();
+      settingsModal = null;
+    }
+  };
+});
+
+// Load saved theme on page load
+document.addEventListener('DOMContentLoaded', () => {
+  const savedTheme = localStorage.getItem('theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+});
+
 // --- Add Contact (User) Button Logic ---
 const addContactBtn = document.getElementById('add-contact-btn');
 let addContactModal;
@@ -787,6 +855,7 @@ function updateContactsList() {
     contactElement.className = 'chat-item' + (index === 0 ? ' active' : '');
     contactElement.dataset.name = contact.name;
     contactElement.dataset.avatar = contact.avatar;
+    contactElement.dataset.address = contact.address;
     
     contactElement.innerHTML = `
       <div class="avatar-placeholder">${contact.avatar}</div>
@@ -805,8 +874,11 @@ function updateContactsList() {
       // Update header
       const headerName = document.querySelector('.chat-header h3');
       const headerAvatar = document.querySelector('.chat-header .avatar-placeholder');
+      const headerAddress = document.querySelector('.contact-address');
+      
       headerName.textContent = contact.name;
       headerAvatar.textContent = contact.avatar;
+      headerAddress.textContent = contact.address;
       
       // Clear messages and show overlay if no messages
       const messages = document.querySelector('.chat-messages');
