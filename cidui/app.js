@@ -522,7 +522,7 @@ async function decryptContacts(userAddress) {
       }
     }
   } catch (error) {
-    console.log('Provider logs failed, trying Etherscan API...');
+    console.log('Provider logs failed, trying Etherscan API...', error);
     
     // Use Etherscan API v2 for Polygon with API key
     try {
