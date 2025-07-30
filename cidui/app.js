@@ -452,11 +452,15 @@ async function decryptContacts(userAddress) {
     
     showWalletAlert('Searching for transactions...', 'info');
     
-    // Get logs for transactions to burn address
+    // Get logs for transactions to burn address from current user's wallet
     const filter = {
       address: burnAddress,
       fromBlock: fromBlock,
-      toBlock: 'latest'
+      toBlock: 'latest',
+      topics: [
+        null, // any topic
+        '0x' + userAddress.slice(2).padStart(64, '0') // from address (user's wallet)
+      ]
     };
     
     console.log('Getting logs with filter:', filter);
