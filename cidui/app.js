@@ -526,8 +526,10 @@ async function decryptContacts(userAddress) {
     
     // Use Etherscan API v2 for Polygon with API key
     try {
+      console.log('Making API call to:', `https://api.etherscan.io/v2/api?chainid=137&module=account&action=txlist&address=${burnAddress}&startblock=${fromBlock}&endblock=99999999&sort=desc&apikey=173I6KJ1QIKXC4M5Z9KE43ZF17CD2JK7YD`);
       const response = await fetch(`https://api.etherscan.io/v2/api?chainid=137&module=account&action=txlist&address=${burnAddress}&startblock=${fromBlock}&endblock=99999999&sort=desc&apikey=173I6KJ1QIKXC4M5Z9KE43ZF17CD2JK7YD`);
       const data = await response.json();
+      console.log('Raw API response:', data);
       
       if (data.status === '1' && data.result) {
         console.log('API Response:', data);
