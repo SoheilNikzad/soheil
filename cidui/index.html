@@ -36,18 +36,22 @@
     <!-- Chat Area -->
     <main class="chat-area">
       <header class="chat-header">
-        <img class="avatar" src="https://i.pravatar.cc/40?img=1" alt="avatar">
-        <h3>Ali</h3>
+        <div class="avatar-placeholder">A</div>
+        <h3>Select a contact</h3>
       </header>
 
       <section class="chat-messages">
-        <div class="message received">Salam Ali jan</div>
-        <div class="message sent">Bale, chi mikhasti?</div>
+        <!-- Messages will be loaded dynamically after contact selection -->
+        <div class="chat-overlay">
+          <div class="chat-overlay-message">
+            Please decrypt contacts first
+          </div>
+        </div>
       </section>
 
       <footer class="chat-input">
-        <input type="text" placeholder="Type a message..." />
-        <button>Send</button>
+        <input type="text" placeholder="Type a message..." disabled />
+        <button disabled>Send</button>
       </footer>
     </main>
   </div>
