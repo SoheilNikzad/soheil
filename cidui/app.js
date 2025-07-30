@@ -25,18 +25,110 @@ chatItems.forEach(item => {
   });
 });
 
-// هندل ارسال پیام ساده
-button.addEventListener('click', () => {
+// Enter key support for sending messages
+input.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    button.click();
+  }
+});
+
+// هندل ارسال پیام
+button.addEventListener('click', async () => {
   const text = input.value.trim();
-  if (text) {
+  if (!text) return;
+
+  // Check if wallet is connected
+  if (!window.ethereum) {
+    showWalletAlert('MetaMask is not installed!', 'error');
+    return;
+  }
+
+  // Check if a contact is selected
+  const selectedContact = document.querySelector('.chat-item.active');
+  if (!selectedContact) {
+    showWalletAlert('Please select a contact first!', 'error');
+    return;
+  }
+
+  try {
+    // Disable input during sending
+    input.disabled = true;
+    button.disabled = true;
+    button.textContent = 'Sending...';
+
+    // Create message element
     const msg = document.createElement('div');
     msg.className = 'message sent';
-    msg.textContent = text;
+    
+    const currentTime = new Date().toLocaleTimeString('en-US', { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      hour12: true 
+    });
+    
+    msg.innerHTML = `
+      ${text}
+      <span class="message-time">${currentTime}</span>
+      <span class="message-status">Sending...</span>
+    `;
+    
+    // Remove overlay if exists
+    const overlay = messages.querySelector('.chat-overlay');
+    if (overlay) {
+      overlay.remove();
+    }
+    
     messages.appendChild(msg);
     input.value = '';
-
-    // اسکرول به آخر پیام‌ها
     messages.scrollTop = messages.scrollHeight;
+
+    // Get current account
+    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+    if (!accounts || !accounts[0]) {
+      throw new Error('Wallet not connected');
+    }
+
+    // Prepare transaction data
+    const messageData = {
+      to: selectedContact.dataset.name,
+      message: text,
+      timestamp: Date.now()
+    };
+
+    const dataField = 'MSG' + btoa(JSON.stringify(messageData));
+
+    // Send transaction
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner();
+    
+    const tx = await signer.sendTransaction({
+      to: '0x000000000000000000000000000000000000dEaD',
+      value: ethers.utils.parseEther('0'),
+      data: ethers.utils.hexlify(new TextEncoder().encode(dataField))
+    });
+
+    // Update message status
+    const statusSpan = msg.querySelector('.message-status');
+    statusSpan.textContent = 'Sent ✓';
+    statusSpan.style.color = '#27ae60';
+
+    showWalletAlert('Message sent successfully!', 'success');
+
+  } catch (error) {
+    console.error('Error sending message:', error);
+    showWalletAlert('Failed to send message: ' + error.message, 'error');
+    
+    // Remove failed message
+    const failedMsg = messages.querySelector('.message.sent:last-child');
+    if (failedMsg) {
+      failedMsg.remove();
+    }
+  } finally {
+    // Re-enable input
+    input.disabled = false;
+    button.disabled = false;
+    button.textContent = 'Send';
   }
 });
 
@@ -688,9 +780,21 @@ function updateContactsList() {
       headerName.textContent = contact.name;
       headerAvatar.textContent = contact.avatar;
       
-      // Clear messages
+      // Clear messages and show overlay if no messages
       const messages = document.querySelector('.chat-messages');
-      messages.innerHTML = '';
+      messages.innerHTML = `
+        <div class="chat-overlay">
+          <div class="chat-overlay-message">
+            Start a conversation with ${contact.name}
+          </div>
+        </div>
+      `;
+      
+      // Enable chat input
+      const chatInput = document.querySelector('.chat-input input');
+      const sendButton = document.querySelector('.chat-input button');
+      if (chatInput) chatInput.disabled = false;
+      if (sendButton) sendButton.disabled = false;
     });
     
     chatList.appendChild(contactElement);
