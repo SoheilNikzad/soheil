@@ -245,7 +245,14 @@ function showPrivateKeyModal() {
       : '<path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/>';
   };
   document.getElementById('save-private-key').onclick = () => {
-    cachedPrivateKey = input.value;
+    let privateKey = input.value.trim();
+    
+    // اضافه کردن 0x اگر نباشه
+    if (privateKey && !privateKey.startsWith('0x')) {
+      privateKey = '0x' + privateKey;
+    }
+    
+    cachedPrivateKey = privateKey;
     modal.style.display = 'none';
     showWalletAlert('Private key saved successfully!', 'success');
   };
@@ -525,9 +532,16 @@ async function decryptContactData(payload) {
     // Create keypair from user's private key
     // Convert hex private key to bytes - handle both 64 and 65 character keys
     let privateKeyHex = cachedPrivateKey;
-    if (privateKeyHex.length === 65) {
-      privateKeyHex = privateKeyHex.slice(0, 64); // Remove last character if 65 chars
+    
+    // اطمینان از وجود 0x
+    if (privateKeyHex && !privateKeyHex.startsWith('0x')) {
+      privateKeyHex = '0x' + privateKeyHex;
     }
+    
+    if (privateKeyHex.length === 67) { // 0x + 64 chars
+      privateKeyHex = privateKeyHex.slice(0, 66); // Remove last character if 67 chars
+    }
+    
     const userPrivateKey = ethers.utils.arrayify(privateKeyHex);
     const userKeyPair = nacl.box.keyPair.fromSecretKey(userPrivateKey);
     
