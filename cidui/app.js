@@ -433,6 +433,20 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Final contacts array:', contacts);
         updateContactsList();
         
+        // Remove chat overlay if contacts found
+        if (contacts.length > 0) {
+          const chatOverlay = document.querySelector('.chat-overlay');
+          if (chatOverlay) {
+            chatOverlay.remove();
+          }
+          
+          // Enable chat input
+          const chatInput = document.querySelector('.chat-input input');
+          const sendButton = document.querySelector('.chat-input button');
+          if (chatInput) chatInput.disabled = false;
+          if (sendButton) sendButton.disabled = false;
+        }
+        
         showWalletAlert(`Contacts decrypted successfully! Found ${contacts.length} contacts.`, 'success');
       } catch (error) {
         showWalletAlert('Failed to decrypt contacts: ' + error.message, 'error');
@@ -560,7 +574,7 @@ async function decryptContactData(payload) {
       name: contactData.name,
       address: contactData.address,
       pubkey: contactData.pubkey,
-      avatar: `https://i.pravatar.cc/40?img=${Math.abs(contactData.name.charCodeAt(0)) % 70 + 1}`,
+      avatar: contactData.name.charAt(0).toUpperCase(),
       lastMessage: 'Contact added'
     };
   } catch (error) {
@@ -617,6 +631,20 @@ function updateContactsList() {
           // Update UI
           updateContactsList();
           
+          // Remove chat overlay if contacts found
+          if (contacts.length > 0) {
+            const chatOverlay = document.querySelector('.chat-overlay');
+            if (chatOverlay) {
+              chatOverlay.remove();
+            }
+            
+            // Enable chat input
+            const chatInput = document.querySelector('.chat-input input');
+            const sendButton = document.querySelector('.chat-input button');
+            if (chatInput) chatInput.disabled = false;
+            if (sendButton) sendButton.disabled = false;
+          }
+          
           showWalletAlert('Contacts decrypted successfully!', 'success');
         } catch (error) {
           showWalletAlert('Failed to decrypt contacts: ' + error.message, 'error');
@@ -641,7 +669,7 @@ function updateContactsList() {
     contactElement.dataset.avatar = contact.avatar;
     
     contactElement.innerHTML = `
-      <img class="avatar" src="${contact.avatar}" alt="avatar">
+      <div class="avatar-placeholder">${contact.avatar}</div>
       <div class="chat-details">
         <h4>${contact.name}</h4>
         <p>${contact.lastMessage}</p>
@@ -656,9 +684,9 @@ function updateContactsList() {
       
       // Update header
       const headerName = document.querySelector('.chat-header h3');
-      const headerAvatar = document.querySelector('.chat-header .avatar');
+      const headerAvatar = document.querySelector('.chat-header .avatar-placeholder');
       headerName.textContent = contact.name;
-      headerAvatar.src = contact.avatar;
+      headerAvatar.textContent = contact.avatar;
       
       // Clear messages
       const messages = document.querySelector('.chat-messages');
