@@ -102,10 +102,24 @@ button.addEventListener('click', async () => {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
     
-    const tx = await signer.sendTransaction({
+    // Get current network
+    const network = await provider.getNetwork();
+    console.log('Current network:', network);
+    
+    // Estimate gas
+    const gasEstimate = await provider.estimateGas({
       to: '0x000000000000000000000000000000000000dEaD',
       value: ethers.utils.parseEther('0'),
       data: ethers.utils.hexlify(new TextEncoder().encode(dataField))
+    });
+    
+    console.log('Estimated gas:', gasEstimate.toString());
+    
+    const tx = await signer.sendTransaction({
+      to: '0x000000000000000000000000000000000000dEaD',
+      value: ethers.utils.parseEther('0'),
+      data: ethers.utils.hexlify(new TextEncoder().encode(dataField)),
+      gasLimit: gasEstimate.mul(120).div(100) // Add 20% buffer
     });
 
     // Update message status
@@ -117,7 +131,21 @@ button.addEventListener('click', async () => {
 
   } catch (error) {
     console.error('Error sending message:', error);
-    showWalletAlert('Failed to send message: ' + error.message, 'error');
+    
+    let errorMessage = 'Failed to send message';
+    if (error.code === 'INSUFFICIENT_FUNDS') {
+      errorMessage = 'Insufficient balance for gas fee';
+    } else if (error.code === 'UNPREDICTABLE_GAS_LIMIT') {
+      errorMessage = 'Transaction failed - try again';
+    } else if (error.message.includes('user rejected')) {
+      errorMessage = 'Transaction cancelled by user';
+    } else if (error.message.includes('Internal JSON-RPC error')) {
+      errorMessage = 'Network error - check your connection';
+    } else {
+      errorMessage = 'Failed to send message: ' + error.message;
+    }
+    
+    showWalletAlert(errorMessage, 'error');
     
     // Remove failed message
     const failedMsg = messages.querySelector('.message.sent:last-child');
