@@ -372,3 +372,212 @@ addContactBtn.addEventListener('click', () => {
     }
   };
 });
+
+// --- Decrypt Contacts Button Logic ---
+const decryptContactsBtn = document.getElementById('decrypt-contacts-btn');
+let contacts = [];
+
+decryptContactsBtn.addEventListener('click', async () => {
+  // Check if wallet is connected
+  if (!window.ethereum) {
+    showWalletAlert('MetaMask is not installed!', 'error');
+    return;
+  }
+
+  // Check if private key is entered
+  if (!cachedPrivateKey) {
+    showWalletAlert('Please enter your private key first!', 'error');
+    return;
+  }
+
+  try {
+    // Show loading state
+    decryptContactsBtn.style.opacity = '0.5';
+    decryptContactsBtn.disabled = true;
+    
+    // Get current account
+    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+    if (!accounts || !accounts[0]) {
+      showWalletAlert('Please connect your wallet first!', 'error');
+      return;
+    }
+    
+    const userAddress = accounts[0];
+    
+    // Decrypt contacts
+    await decryptContacts(userAddress);
+    
+    // Update UI
+    updateContactsList();
+    
+    showWalletAlert('Contacts decrypted successfully!', 'success');
+  } catch (error) {
+    showWalletAlert('Failed to decrypt contacts: ' + error.message, 'error');
+  } finally {
+    // Reset button state
+    decryptContactsBtn.style.opacity = '1';
+    decryptContactsBtn.disabled = false;
+  }
+});
+
+async function decryptContacts(userAddress) {
+  try {
+    // Get provider and signer
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    
+    // Get transactions to burn address (0x000000000000000000000000000000000000dEaD)
+    const burnAddress = '0x000000000000000000000000000000000000dEaD';
+    
+    // Get block number to limit search
+    const currentBlock = await provider.getBlockNumber();
+    const fromBlock = Math.max(0, currentBlock - 10000); // Search last 10k blocks
+    
+    // Get logs for transactions to burn address
+    const filter = {
+      address: burnAddress,
+      fromBlock: fromBlock,
+      toBlock: 'latest'
+    };
+    
+    const logs = await provider.getLogs(filter);
+    
+    // Process each transaction
+    for (const log of logs) {
+      try {
+        // Get transaction details
+        const tx = await provider.getTransaction(log.transactionHash);
+        
+        // Check if transaction has data
+        if (tx.data && tx.data !== '0x') {
+          // Decode data
+          const decodedData = ethers.utils.toUtf8String(tx.data);
+          
+          // Check if it's our encrypted data (starts with ***)
+          if (decodedData.startsWith('***')) {
+            const encryptedData = decodedData.substring(3); // Remove ***
+            const payload = JSON.parse(atob(encryptedData));
+            
+            // Decrypt the contact data
+            const decryptedContact = await decryptContactData(payload);
+            
+            if (decryptedContact) {
+              contacts.push(decryptedContact);
+            }
+          }
+        }
+      } catch (error) {
+        console.log('Error processing transaction:', error);
+        continue;
+      }
+    }
+  } catch (error) {
+    throw new Error('Failed to fetch transactions: ' + error.message);
+  }
+}
+
+async function decryptContactData(payload) {
+  try {
+    // Decode base64 data
+    const ephemeralPubKey = nacl.util.decodeBase64(payload.ephPub);
+    const nonce = nacl.util.decodeBase64(payload.nonce);
+    const encryptedBox = nacl.util.decodeBase64(payload.box);
+    
+    // Create keypair from user's private key
+    const userPrivateKey = nacl.util.decodeUTF8(cachedPrivateKey);
+    const userKeyPair = nacl.box.keyPair.fromSecretKey(userPrivateKey);
+    
+    // Decrypt the data
+    const decryptedBytes = nacl.box.open(encryptedBox, nonce, ephemeralPubKey, userKeyPair.secretKey);
+    
+    if (!decryptedBytes) {
+      return null; // Decryption failed
+    }
+    
+    // Convert to string and parse
+    const decryptedString = nacl.util.encodeUTF8(decryptedBytes);
+    const contactData = JSON.parse(decryptedString);
+    
+    return {
+      name: contactData.name,
+      address: contactData.address,
+      pubkey: contactData.pubkey,
+      avatar: `https://i.pravatar.cc/40?img=${Math.abs(contactData.name.charCodeAt(0)) % 70 + 1}`,
+      lastMessage: 'Contact added'
+    };
+  } catch (error) {
+    console.log('Error decrypting contact:', error);
+    return null;
+  }
+}
+
+function updateContactsList() {
+  const chatList = document.querySelector('.chat-list');
+  
+  if (contacts.length === 0) {
+    chatList.innerHTML = `
+      <div class="empty-contacts">
+        <p>No contacts found</p>
+        <p>Add contacts to see them here</p>
+      </div>
+    `;
+    return;
+  }
+  
+  // Clear existing content
+  chatList.innerHTML = '';
+  
+  // Add each contact
+  contacts.forEach((contact, index) => {
+    const contactElement = document.createElement('div');
+    contactElement.className = 'chat-item' + (index === 0 ? ' active' : '');
+    contactElement.dataset.name = contact.name;
+    contactElement.dataset.avatar = contact.avatar;
+    
+    contactElement.innerHTML = `
+      <img class="avatar" src="${contact.avatar}" alt="avatar">
+      <div class="chat-details">
+        <h4>${contact.name}</h4>
+        <p>${contact.lastMessage}</p>
+      </div>
+    `;
+    
+    // Add click event
+    contactElement.addEventListener('click', () => {
+      // Update active state
+      document.querySelector('.chat-item.active')?.classList.remove('active');
+      contactElement.classList.add('active');
+      
+      // Update header
+      const headerName = document.querySelector('.chat-header h3');
+      const headerAvatar = document.querySelector('.chat-header .avatar');
+      headerName.textContent = contact.name;
+      headerAvatar.src = contact.avatar;
+      
+      // Clear messages
+      const messages = document.querySelector('.chat-messages');
+      messages.innerHTML = '';
+    });
+    
+    chatList.appendChild(contactElement);
+  });
+}
+
+// Custom tooltip for decrypt contacts button
+const decryptTooltipText = 'Decrypt Contacts';
+let decryptTooltip;
+
+decryptContactsBtn.addEventListener('mouseenter', (e) => {
+  if (decryptTooltip) decryptTooltip.remove();
+  decryptTooltip = document.createElement('div');
+  decryptTooltip.className = 'custom-tooltip show';
+  decryptTooltip.textContent = decryptTooltipText;
+  document.body.appendChild(decryptTooltip);
+  // Position above the button
+  const rect = decryptContactsBtn.getBoundingClientRect();
+  decryptTooltip.style.left = rect.left + rect.width / 2 + 'px';
+  decryptTooltip.style.top = (rect.top - decryptTooltip.offsetHeight - 12) + 'px';
+  decryptTooltip.style.transform = 'translateX(-50%)';
+});
+decryptContactsBtn.addEventListener('mouseleave', () => {
+  if (decryptTooltip) decryptTooltip.remove();
+});
