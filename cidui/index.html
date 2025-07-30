@@ -37,7 +37,10 @@
     <main class="chat-area">
       <header class="chat-header">
         <div class="avatar-placeholder">A</div>
-        <h3>Select a contact</h3>
+        <div class="contact-info">
+          <h3>Select a contact</h3>
+          <span class="contact-address"></span>
+        </div>
       </header>
 
       <section class="chat-messages">
@@ -57,6 +60,9 @@
   </div>
   <!-- Public Key Modal -->
   <div id="public-key-modal" style="display:none;"></div>
+  
+  <!-- Settings Modal -->
+  <div id="settings-modal" style="display:none;"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl.min.js"></script>
