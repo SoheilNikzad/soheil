@@ -374,49 +374,54 @@ addContactBtn.addEventListener('click', () => {
 });
 
 // --- Decrypt Contacts Button Logic ---
-const decryptContactsBtn = document.getElementById('decrypt-contacts-btn');
 let contacts = [];
 
-decryptContactsBtn.addEventListener('click', async () => {
-  // Check if wallet is connected
-  if (!window.ethereum) {
-    showWalletAlert('MetaMask is not installed!', 'error');
-    return;
-  }
+// Initial decrypt button event listener
+document.addEventListener('DOMContentLoaded', () => {
+  const initialDecryptBtn = document.getElementById('decrypt-contacts-btn');
+  if (initialDecryptBtn) {
+    initialDecryptBtn.addEventListener('click', async () => {
+      // Check if wallet is connected
+      if (!window.ethereum) {
+        showWalletAlert('MetaMask is not installed!', 'error');
+        return;
+      }
 
-  // Check if private key is entered
-  if (!cachedPrivateKey) {
-    showWalletAlert('Please enter your private key first!', 'error');
-    return;
-  }
+      // Check if private key is entered
+      if (!cachedPrivateKey) {
+        showWalletAlert('Please enter your private key first!', 'error');
+        return;
+      }
 
-  try {
-    // Show loading state
-    decryptContactsBtn.style.opacity = '0.5';
-    decryptContactsBtn.disabled = true;
-    
-    // Get current account
-    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-    if (!accounts || !accounts[0]) {
-      showWalletAlert('Please connect your wallet first!', 'error');
-      return;
-    }
-    
-    const userAddress = accounts[0];
-    
-    // Decrypt contacts
-    await decryptContacts(userAddress);
-    
-    // Update UI
-    updateContactsList();
-    
-    showWalletAlert('Contacts decrypted successfully!', 'success');
-  } catch (error) {
-    showWalletAlert('Failed to decrypt contacts: ' + error.message, 'error');
-  } finally {
-    // Reset button state
-    decryptContactsBtn.style.opacity = '1';
-    decryptContactsBtn.disabled = false;
+      try {
+        // Show loading state
+        initialDecryptBtn.style.opacity = '0.5';
+        initialDecryptBtn.disabled = true;
+        
+        // Get current account
+        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+        if (!accounts || !accounts[0]) {
+          showWalletAlert('Please connect your wallet first!', 'error');
+          return;
+        }
+        
+        const userAddress = accounts[0];
+        
+        // Decrypt contacts
+        await decryptContacts(userAddress);
+        
+        // Update UI
+        updateContactsList();
+        
+        showWalletAlert('Contacts decrypted successfully!', 'success');
+      } catch (error) {
+        showWalletAlert('Failed to decrypt contacts: ' + error.message, 'error');
+      } finally {
+        // Reset button state
+        initialDecryptBtn.style.opacity = '1';
+        initialDecryptBtn.disabled = false;
+      }
+    });
   }
 });
 
@@ -517,9 +522,57 @@ function updateContactsList() {
     chatList.innerHTML = `
       <div class="empty-contacts">
         <p>No contacts found</p>
-        <p>Add contacts to see them here</p>
+        <p>Connect wallet and decrypt to see your contacts</p>
+        <button id="decrypt-contacts-btn" class="decrypt-btn">Decrypt Contacts</button>
       </div>
     `;
+    
+    // Re-add event listener for the new decrypt button
+    const newDecryptBtn = document.getElementById('decrypt-contacts-btn');
+    if (newDecryptBtn) {
+      newDecryptBtn.addEventListener('click', async () => {
+        // Check if wallet is connected
+        if (!window.ethereum) {
+          showWalletAlert('MetaMask is not installed!', 'error');
+          return;
+        }
+
+        // Check if private key is entered
+        if (!cachedPrivateKey) {
+          showWalletAlert('Please enter your private key first!', 'error');
+          return;
+        }
+
+        try {
+          // Show loading state
+          newDecryptBtn.style.opacity = '0.5';
+          newDecryptBtn.disabled = true;
+          
+          // Get current account
+          const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+          if (!accounts || !accounts[0]) {
+            showWalletAlert('Please connect your wallet first!', 'error');
+            return;
+          }
+          
+          const userAddress = accounts[0];
+          
+          // Decrypt contacts
+          await decryptContacts(userAddress);
+          
+          // Update UI
+          updateContactsList();
+          
+          showWalletAlert('Contacts decrypted successfully!', 'success');
+        } catch (error) {
+          showWalletAlert('Failed to decrypt contacts: ' + error.message, 'error');
+        } finally {
+          // Reset button state
+          newDecryptBtn.style.opacity = '1';
+          newDecryptBtn.disabled = false;
+        }
+      });
+    }
     return;
   }
   
@@ -562,22 +615,4 @@ function updateContactsList() {
   });
 }
 
-// Custom tooltip for decrypt contacts button
-const decryptTooltipText = 'Decrypt Contacts';
-let decryptTooltip;
 
-decryptContactsBtn.addEventListener('mouseenter', (e) => {
-  if (decryptTooltip) decryptTooltip.remove();
-  decryptTooltip = document.createElement('div');
-  decryptTooltip.className = 'custom-tooltip show';
-  decryptTooltip.textContent = decryptTooltipText;
-  document.body.appendChild(decryptTooltip);
-  // Position above the button
-  const rect = decryptContactsBtn.getBoundingClientRect();
-  decryptTooltip.style.left = rect.left + rect.width / 2 + 'px';
-  decryptTooltip.style.top = (rect.top - decryptTooltip.offsetHeight - 12) + 'px';
-  decryptTooltip.style.transform = 'translateX(-50%)';
-});
-decryptContactsBtn.addEventListener('mouseleave', () => {
-  if (decryptTooltip) decryptTooltip.remove();
-});
