@@ -523,7 +523,8 @@ async function decryptContactData(payload) {
     const encryptedBox = nacl.util.decodeBase64(payload.box);
     
     // Create keypair from user's private key
-    const userPrivateKey = nacl.util.decodeUTF8(cachedPrivateKey);
+    // Convert hex private key to bytes
+    const userPrivateKey = ethers.utils.arrayify(cachedPrivateKey);
     const userKeyPair = nacl.box.keyPair.fromSecretKey(userPrivateKey);
     
     // Decrypt the data
