@@ -423,9 +423,10 @@ document.addEventListener('DOMContentLoaded', () => {
         await decryptContacts(userAddress);
         
         // Update UI
+        console.log('Final contacts array:', contacts);
         updateContactsList();
         
-        showWalletAlert('Contacts decrypted successfully!', 'success');
+        showWalletAlert(`Contacts decrypted successfully! Found ${contacts.length} contacts.`, 'success');
       } catch (error) {
         showWalletAlert('Failed to decrypt contacts: ' + error.message, 'error');
       } finally {
@@ -529,27 +530,43 @@ async function decryptContacts(userAddress) {
       const data = await response.json();
       
       if (data.status === '1' && data.result) {
+        console.log('API Response:', data);
         showWalletAlert(`Found ${data.result.length} transactions via API, processing...`, 'info');
+        
+        // Log first few transactions to see their structure
+        console.log('First 3 transactions:', data.result.slice(0, 3));
         
         let processedCount = 0;
         for (const tx of data.result) {
           try {
             if (tx.input && tx.input !== '0x') {
+              console.log('Transaction with data found:', tx.hash);
+              console.log('Input data:', tx.input.substring(0, 100) + '...');
               // Decode data
               const decodedData = ethers.utils.toUtf8String(tx.input);
               
-              // Check if it's our encrypted data (starts with ***)
-              if (decodedData.startsWith('***')) {
+                          // Check if it's our encrypted data (starts with ***)
+            if (decodedData.startsWith('***')) {
+              console.log('Found encrypted data:', decodedData.substring(0, 50) + '...');
+              try {
                 const encryptedData = decodedData.substring(3);
                 const payload = JSON.parse(atob(encryptedData));
+                console.log('Decoded payload:', payload);
                 
                 // Decrypt the contact data
                 const decryptedContact = await decryptContactData(payload);
+                console.log('Decrypted contact:', decryptedContact);
                 
                 if (decryptedContact) {
                   contacts.push(decryptedContact);
+                  console.log('Contact added to list. Total contacts:', contacts.length);
                 }
+              } catch (decryptError) {
+                console.log('Error decrypting data:', decryptError);
               }
+            } else {
+              console.log('Data does not start with ***:', decodedData.substring(0, 50) + '...');
+            }
             }
             processedCount++;
             
