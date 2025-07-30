@@ -452,11 +452,11 @@ async function decryptContacts(userAddress) {
     
     showWalletAlert('Searching for transactions...', 'info');
     
-    // Get logs for transactions to burn address from current user's wallet
+    // Get all transactions from current user's wallet
     const filter = {
-      address: burnAddress,
       fromBlock: fromBlock,
       toBlock: 'latest',
+      address: null, // any address
       topics: [
         null, // any topic
         '0x' + userAddress.slice(2).padStart(64, '0') // from address (user's wallet)
@@ -472,59 +472,60 @@ async function decryptContacts(userAddress) {
     // Process each transaction
     let processedCount = 0;
     for (const log of logs) {
-      try {
-        // Get transaction details using Etherscan API v2 for better performance
+      // Check if transaction has data (not just ETH transfer)
+      if (log.data && log.data !== '0x') {
         try {
-          const txResponse = await fetch(`https://api.etherscan.io/v2/api?chainid=137&module=proxy&action=eth_getTransactionByHash&txhash=${log.transactionHash}&apikey=173I6KJ1QIKXC4M5Z9KE43ZF17CD2JK7YD`);
-          const txData = await txResponse.json();
-          
-          if (txData.result && txData.result.input && txData.result.input !== '0x') {
-            // Decode data
-            const decodedData = ethers.utils.toUtf8String(txData.result.input);
-            
-            // Check if it's our encrypted data (starts with ***)
-            if (decodedData.startsWith('***')) {
-              const encryptedData = decodedData.substring(3); // Remove ***
-              const payload = JSON.parse(atob(encryptedData));
-              
-              // Decrypt the contact data
-              const decryptedContact = await decryptContactData(payload);
-              
-              if (decryptedContact) {
-                contacts.push(decryptedContact);
-              }
-            }
-          }
-        } catch (txError) {
-          console.log('Error getting transaction details:', txError);
-          // Fallback to provider method
+          // Get transaction details using Etherscan API v2 for better performance
           try {
-            const tx = await provider.getTransaction(log.transactionHash);
-            if (tx.data && tx.data !== '0x') {
-              const decodedData = ethers.utils.toUtf8String(tx.data);
+            const txResponse = await fetch(`https://api.etherscan.io/v2/api?chainid=137&module=proxy&action=eth_getTransactionByHash&txhash=${log.transactionHash}&apikey=173I6KJ1QIKXC4M5Z9KE43ZF17CD2JK7YD`);
+            const txData = await txResponse.json();
+            
+            if (txData.result && txData.result.input && txData.result.input !== '0x') {
+              // Decode data
+              const decodedData = ethers.utils.toUtf8String(txData.result.input);
+              
+              // Check if it's our encrypted data (starts with ***)
               if (decodedData.startsWith('***')) {
-                const encryptedData = decodedData.substring(3);
+                const encryptedData = decodedData.substring(3); // Remove ***
                 const payload = JSON.parse(atob(encryptedData));
+                
+                // Decrypt the contact data
                 const decryptedContact = await decryptContactData(payload);
+                
                 if (decryptedContact) {
                   contacts.push(decryptedContact);
                 }
               }
             }
-          } catch (fallbackError) {
-            console.log('Fallback also failed:', fallbackError);
+          } catch (txError) {
+            console.log('Error getting transaction details:', txError);
+            // Fallback to provider method
+            try {
+              const tx = await provider.getTransaction(log.transactionHash);
+              if (tx.data && tx.data !== '0x') {
+                const decodedData = ethers.utils.toUtf8String(tx.data);
+                if (decodedData.startsWith('***')) {
+                  const encryptedData = decodedData.substring(3);
+                  const payload = JSON.parse(atob(encryptedData));
+                  const decryptedContact = await decryptContactData(payload);
+                  if (decryptedContact) {
+                    contacts.push(decryptedContact);
+                  }
+                }
+              }
+            } catch (fallbackError) {
+              console.log('Fallback also failed:', fallbackError);
+            }
           }
+        } catch (error) {
+          console.log('Error processing transaction:', error);
         }
-        processedCount++;
-        
-        // Update progress every 10 transactions
-        if (processedCount % 10 === 0) {
-          showWalletAlert(`Processed ${processedCount}/${logs.length} transactions...`, 'info');
-        }
-      } catch (error) {
-        console.log('Error processing transaction:', error);
-        processedCount++;
-        continue;
+      }
+      processedCount++;
+      
+      // Update progress every 10 transactions
+      if (processedCount % 10 === 0) {
+        showWalletAlert(`Processed ${processedCount}/${logs.length} transactions...`, 'info');
       }
     }
   } catch (error) {
