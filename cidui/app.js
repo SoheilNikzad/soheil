@@ -459,7 +459,9 @@ async function decryptContacts(userAddress) {
       toBlock: 'latest'
     };
     
+    console.log('Getting logs with filter:', filter);
     const logs = await provider.getLogs(filter);
+    console.log('Found logs:', logs.length);
     
     showWalletAlert(`Found ${logs.length} transactions, processing...`, 'info');
     
