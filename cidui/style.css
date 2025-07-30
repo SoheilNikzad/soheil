@@ -173,6 +173,21 @@ body {
   margin-right: 1rem;
 }
 
+.avatar-placeholder {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--main-orange);
+  color: var(--main-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.2rem;
+  margin-right: 1rem;
+  font-family: 'Comfortaa', 'Segoe UI', sans-serif;
+}
+
 .chat-header h3 {
   margin: 0;
   font-size: 1.1rem;
@@ -187,6 +202,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
+  position: relative;
 }
 
 .message {
@@ -332,6 +348,9 @@ body {
 }
 .wallet-alert.error {
   background: #e74c3c;
+}
+.wallet-alert.info {
+  background: #3498db;
 }
 @keyframes fadeOut {
   to { opacity: 0; }
@@ -536,6 +555,33 @@ body {
   background: #181818 !important;
   text-align: center !important;
   position: relative !important;
+}
+
+/* Chat overlay styles */
+.chat-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.chat-overlay-message {
+  color: #bbb;
+  font-size: 1.1rem;
+  text-align: center;
+  font-family: 'Comfortaa', 'Segoe UI', sans-serif;
+  padding: 2rem;
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 .private-key-box-input-row {
   display: flex;
