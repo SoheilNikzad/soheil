@@ -74,6 +74,29 @@ body {
   background: transparent;
 }
 
+.empty-contacts {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: #666;
+  text-align: center;
+  padding: 2rem;
+}
+
+.empty-contacts p {
+  margin: 0.3rem 0;
+  font-size: 0.9rem;
+  font-family: 'Comfortaa', 'Segoe UI', sans-serif;
+}
+
+.empty-contacts p:first-child {
+  font-size: 1rem;
+  color: #888;
+  font-weight: 600;
+}
+
 .chat-item {
   display: flex;
   padding: 0.8rem;
