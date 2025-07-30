@@ -443,119 +443,36 @@ async function decryptContacts(userAddress) {
     // Get provider and signer
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     
-    // Get transactions to burn address (Polygon burn address)
-    const burnAddress = '0x000000000000000000000000000000000000dEaD';
-    
     // Get block number to limit search
     const currentBlock = await provider.getBlockNumber();
-    const fromBlock = Math.max(0, currentBlock - 1000); // Search last 1k blocks instead of 10k
+    const fromBlock = Math.max(0, currentBlock - 1000); // Search last 1k blocks
     
     showWalletAlert('Searching for transactions...', 'info');
     
-    // Get all transactions from current user's wallet
-    const filter = {
-      fromBlock: fromBlock,
-      toBlock: 'latest',
-      address: null, // any address
-      topics: [
-        null, // any topic
-        '0x' + userAddress.slice(2).padStart(64, '0') // from address (user's wallet)
-      ]
-    };
+    // Use Etherscan API to get all transactions from user's wallet
+    console.log('Making API call to get user transactions...');
+    const response = await fetch(`https://api.etherscan.io/v2/api?chainid=137&module=account&action=txlist&address=${userAddress}&startblock=${fromBlock}&endblock=99999999&sort=desc&apikey=173I6KJ1QIKXC4M5Z9KE43ZF17CD2JK7YD`);
+    const data = await response.json();
+    console.log('Raw API response:', data);
     
-    console.log('Getting logs with filter:', filter);
-    const logs = await provider.getLogs(filter);
-    console.log('Found logs:', logs.length);
-    
-    showWalletAlert(`Found ${logs.length} transactions, processing...`, 'info');
-    
-    // Process each transaction
-    let processedCount = 0;
-    for (const log of logs) {
-      // Check if transaction has data (not just ETH transfer)
-      if (log.data && log.data !== '0x') {
+    if (data.status === '1' && data.result) {
+      console.log('API Response:', data);
+      showWalletAlert(`Found ${data.result.length} transactions via API, processing...`, 'info');
+      
+      // Log first few transactions to see their structure
+      console.log('First 3 transactions:', data.result.slice(0, 3));
+      
+      let processedCount = 0;
+      for (const tx of data.result) {
         try {
-          // Get transaction details using Etherscan API v2 for better performance
-          try {
-            const txResponse = await fetch(`https://api.etherscan.io/v2/api?chainid=137&module=proxy&action=eth_getTransactionByHash&txhash=${log.transactionHash}&apikey=173I6KJ1QIKXC4M5Z9KE43ZF17CD2JK7YD`);
-            const txData = await txResponse.json();
+          if (tx.input && tx.input !== '0x') {
+            console.log('Transaction with data found:', tx.hash);
+            console.log('Input data:', tx.input.substring(0, 100) + '...');
+            // Decode data - convert hex to string
+            const decodedData = ethers.utils.toUtf8String(tx.input);
+            console.log('Decoded data:', decodedData.substring(0, 50) + '...');
             
-            if (txData.result && txData.result.input && txData.result.input !== '0x') {
-              // Decode data
-              const decodedData = ethers.utils.toUtf8String(txData.result.input);
-              
-              // Check if it's our encrypted data (starts with ***)
-              if (decodedData.startsWith('***')) {
-                const encryptedData = decodedData.substring(3); // Remove ***
-                const payload = JSON.parse(atob(encryptedData));
-                
-                // Decrypt the contact data
-                const decryptedContact = await decryptContactData(payload);
-                
-                if (decryptedContact) {
-                  contacts.push(decryptedContact);
-                }
-              }
-            }
-          } catch (txError) {
-            console.log('Error getting transaction details:', txError);
-            // Fallback to provider method
-            try {
-              const tx = await provider.getTransaction(log.transactionHash);
-              if (tx.data && tx.data !== '0x') {
-                const decodedData = ethers.utils.toUtf8String(tx.data);
-                if (decodedData.startsWith('***')) {
-                  const encryptedData = decodedData.substring(3);
-                  const payload = JSON.parse(atob(encryptedData));
-                  const decryptedContact = await decryptContactData(payload);
-                  if (decryptedContact) {
-                    contacts.push(decryptedContact);
-                  }
-                }
-              }
-            } catch (fallbackError) {
-              console.log('Fallback also failed:', fallbackError);
-            }
-          }
-        } catch (error) {
-          console.log('Error processing transaction:', error);
-        }
-      }
-      processedCount++;
-      
-      // Update progress every 10 transactions
-      if (processedCount % 10 === 0) {
-        showWalletAlert(`Processed ${processedCount}/${logs.length} transactions...`, 'info');
-      }
-    }
-  } catch (error) {
-    console.log('Provider logs failed, trying Etherscan API...', error);
-    
-    // Use Etherscan API v2 for Polygon with API key
-    try {
-      console.log('Making API call to:', `https://api.etherscan.io/v2/api?chainid=137&module=account&action=txlist&address=${burnAddress}&startblock=${fromBlock}&endblock=99999999&sort=desc&apikey=173I6KJ1QIKXC4M5Z9KE43ZF17CD2JK7YD`);
-      const response = await fetch(`https://api.etherscan.io/v2/api?chainid=137&module=account&action=txlist&address=${burnAddress}&startblock=${fromBlock}&endblock=99999999&sort=desc&apikey=173I6KJ1QIKXC4M5Z9KE43ZF17CD2JK7YD`);
-      const data = await response.json();
-      console.log('Raw API response:', data);
-      
-      if (data.status === '1' && data.result) {
-        console.log('API Response:', data);
-        showWalletAlert(`Found ${data.result.length} transactions via API, processing...`, 'info');
-        
-        // Log first few transactions to see their structure
-        console.log('First 3 transactions:', data.result.slice(0, 3));
-        
-        let processedCount = 0;
-        for (const tx of data.result) {
-          try {
-            if (tx.input && tx.input !== '0x') {
-              console.log('Transaction with data found:', tx.hash);
-              console.log('Input data:', tx.input.substring(0, 100) + '...');
-              // Decode data - convert hex to string
-              const decodedData = ethers.utils.toUtf8String(tx.input);
-              console.log('Decoded data:', decodedData.substring(0, 50) + '...');
-              
-                          // Check if it's our encrypted data (starts with ***)
+            // Check if it's our encrypted data (starts with ***)
             if (decodedData.startsWith('***')) {
               console.log('Found encrypted data:', decodedData.substring(0, 50) + '...');
               try {
@@ -577,24 +494,24 @@ async function decryptContacts(userAddress) {
             } else {
               console.log('Data does not start with ***:', decodedData.substring(0, 50) + '...');
             }
-            }
-            processedCount++;
-            
-            if (processedCount % 10 === 0) {
-              showWalletAlert(`Processed ${processedCount}/${data.result.length} transactions...`, 'info');
-            }
-          } catch (error) {
-            console.log('Error processing API transaction:', error);
-            processedCount++;
-            continue;
           }
+          processedCount++;
+          
+          if (processedCount % 10 === 0) {
+            showWalletAlert(`Processed ${processedCount}/${data.result.length} transactions...`, 'info');
+          }
+        } catch (error) {
+          console.log('Error processing API transaction:', error);
+          processedCount++;
+          continue;
         }
-      } else {
-        throw new Error('No transactions found or API error');
       }
-    } catch (apiError) {
-      throw new Error('Failed to fetch transactions: ' + error.message + ' | API fallback also failed: ' + apiError.message);
+    } else {
+      throw new Error('No transactions found or API error');
     }
+  } catch (error) {
+    console.log('Failed to fetch transactions:', error);
+    throw new Error('Failed to fetch transactions: ' + error.message);
   }
 }
 
