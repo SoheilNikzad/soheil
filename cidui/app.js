@@ -278,7 +278,7 @@ showPrivateKeyBtn.addEventListener('mouseleave', () => {
 });
 
 // --- Add Contact (User) Button Logic ---
-const addContactBtn = document.querySelectorAll('.sidebar-footer button')[3];
+const addContactBtn = document.getElementById('add-contact-btn');
 let addContactModal;
 
 addContactBtn.addEventListener('click', () => {
