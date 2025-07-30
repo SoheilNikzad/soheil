@@ -544,8 +544,9 @@ async function decryptContacts(userAddress) {
             if (tx.input && tx.input !== '0x') {
               console.log('Transaction with data found:', tx.hash);
               console.log('Input data:', tx.input.substring(0, 100) + '...');
-              // Decode data
+              // Decode data - convert hex to string
               const decodedData = ethers.utils.toUtf8String(tx.input);
+              console.log('Decoded data:', decodedData.substring(0, 50) + '...');
               
                           // Check if it's our encrypted data (starts with ***)
             if (decodedData.startsWith('***')) {
