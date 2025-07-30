@@ -523,8 +523,12 @@ async function decryptContactData(payload) {
     const encryptedBox = nacl.util.decodeBase64(payload.box);
     
     // Create keypair from user's private key
-    // Convert hex private key to bytes
-    const userPrivateKey = ethers.utils.arrayify(cachedPrivateKey);
+    // Convert hex private key to bytes - handle both 64 and 65 character keys
+    let privateKeyHex = cachedPrivateKey;
+    if (privateKeyHex.length === 65) {
+      privateKeyHex = privateKeyHex.slice(0, 64); // Remove last character if 65 chars
+    }
+    const userPrivateKey = ethers.utils.arrayify(privateKeyHex);
     const userKeyPair = nacl.box.keyPair.fromSecretKey(userPrivateKey);
     
     // Decrypt the data
