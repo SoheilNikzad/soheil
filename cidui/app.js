@@ -660,7 +660,7 @@ async function decryptContacts(userAddress) {
     
     // Use Etherscan API to get all transactions from user's wallet
     console.log('Making API call to get user transactions...');
-    const response = await fetch(`https://api.etherscan.io/v2/api?chainid=137&module=account&action=txlist&address=${userAddress}&startblock=${fromBlock}&endblock=99999999&sort=desc&apikey=HQBYRBSTNGP1QCAVQT6FXTDPWPAFPH7G27`);
+    const response = await fetch(`https://api.etherscan.io/v2/api?chainid=137&module=account&action=txlist&address=${userAddress}&startblock=${fromBlock}&endblock=99999999&sort=desc&apikey=54HEW6DVQAGFZKD3TJZXBCX8KJTGQGUA2K`);
     const data = await response.json();
     console.log('Raw API response:', data);
     
