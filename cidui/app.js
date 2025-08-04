@@ -715,6 +715,9 @@ async function decryptContacts(userAddress) {
           continue;
         }
       }
+    } else if (data.status === '0' && data.message === 'No transactions found') {
+      showWalletAlert('No transactions found for this address. Try adding a contact first!', 'info');
+      return; // Don't throw error, just return
     } else {
       throw new Error('No transactions found or API error');
     }
