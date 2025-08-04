@@ -655,9 +655,9 @@ async function decryptContacts(userAddress) {
     // Get provider and signer
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     
-    // Get block number to limit search - search more blocks
+    // Get block number to limit search - search all blocks
     const currentBlock = await provider.getBlockNumber();
-    const fromBlock = Math.max(0, currentBlock - 10000); // Search last 10k blocks
+    const fromBlock = 0; // Search all blocks from beginning
     
     showWalletAlert('Searching for transactions...', 'info');
     
