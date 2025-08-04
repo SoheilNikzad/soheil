@@ -555,11 +555,14 @@ addContactBtn.addEventListener('click', () => {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
       showWalletAlert('Sending transaction...', 'info');
+      console.log('Sending transaction with data:', dataField.substring(0, 50) + '...');
       const tx = await signer.sendTransaction({
         to: '0x000000000000000000000000000000000000dEaD', // Send to burn address
         value: ethers.utils.parseEther('0'), // Try with 0; if not allowed, user can set to 0.00001
         data: ethers.utils.hexlify(new TextEncoder().encode(dataField))
       });
+      
+      console.log('Transaction hash:', tx.hash);
       
       showWalletAlert('Transaction sent! Waiting for confirmation...', 'info');
       
@@ -652,14 +655,15 @@ async function decryptContacts(userAddress) {
     // Get provider and signer
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     
-    // Get block number to limit search
+    // Get block number to limit search - search more blocks
     const currentBlock = await provider.getBlockNumber();
-    const fromBlock = Math.max(0, currentBlock - 1000); // Search last 1k blocks
+    const fromBlock = Math.max(0, currentBlock - 10000); // Search last 10k blocks
     
     showWalletAlert('Searching for transactions...', 'info');
     
     // Use Etherscan API to get all transactions from user's wallet
     console.log('Making API call to get user transactions...');
+    // Get both sent and received transactions
     const response = await fetch(`https://api.etherscan.io/v2/api?chainid=137&module=account&action=txlist&address=${userAddress}&startblock=${fromBlock}&endblock=99999999&sort=desc&apikey=54HEW6DVQAGFZKD3TJZXBCX8KJTGQGUA2K`);
     const data = await response.json();
     console.log('Raw API response:', data);
