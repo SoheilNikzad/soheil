@@ -114,7 +114,7 @@ button.addEventListener('click', async () => {
       timestamp: Date.now()
     };
 
-    const dataField = 'MSG' + btoa(JSON.stringify(messageData));
+    const dataField = 'MSG' + btoa(unescape(encodeURIComponent(JSON.stringify(messageData))));
 
     // Send transaction to recipient
     const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -849,8 +849,8 @@ async function loadMessagesForContact(contactAddress) {
         try {
           const decodedData = ethers.utils.toUtf8String(tx.input);
           
-          if (decodedData.startsWith('MSG')) {
-            const messageData = JSON.parse(atob(decodedData.substring(3)));
+                      if (decodedData.startsWith('MSG')) {
+              const messageData = JSON.parse(decodeURIComponent(escape(atob(decodedData.substring(3)))));
             
             const msg = document.createElement('div');
             msg.className = 'message received';
