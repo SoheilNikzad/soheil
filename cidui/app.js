@@ -817,18 +817,35 @@ async function loadMessagesForContact(contactAddress) {
     // Get provider
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     
-    // Get transactions sent to this user from the contact
-    const response = await fetch(`https://api.etherscan.io/v2/api?chainid=137&module=account&action=txlist&address=${userAddress}&startblock=0&endblock=99999999&sort=desc&apikey=54HEW6DVQAGFZKD3TJZXBCX8KJTGQGUA2K`);
-    const data = await response.json();
+    // Get transactions sent to this user from the contact (received messages)
+    const receivedResponse = await fetch(`https://api.etherscan.io/v2/api?chainid=137&module=account&action=txlist&address=${userAddress}&startblock=0&endblock=99999999&sort=desc&apikey=54HEW6DVQAGFZKD3TJZXBCX8KJTGQGUA2K`);
+    const receivedData = await receivedResponse.json();
     
-    if (data.status === '1' && data.result) {
-      const messageTransactions = data.result.filter(tx => 
+    // Get transactions sent by this user to the contact (sent messages)
+    const sentResponse = await fetch(`https://api.etherscan.io/v2/api?chainid=137&module=account&action=txlist&address=${userAddress}&startblock=0&endblock=99999999&sort=desc&apikey=54HEW6DVQAGFZKD3TJZXBCX8KJTGQGUA2K`);
+    const sentData = await sentResponse.json();
+    
+    let allMessageTransactions = [];
+    
+    if (receivedData.status === '1' && receivedData.result) {
+      const receivedMessages = receivedData.result.filter(tx => 
         tx.from.toLowerCase() === contactAddress.toLowerCase() && 
         tx.to.toLowerCase() === userAddress.toLowerCase() &&
         tx.input && tx.input !== '0x'
       );
-      
-      if (messageTransactions.length === 0) {
+      allMessageTransactions = allMessageTransactions.concat(receivedMessages);
+    }
+    
+        if (sentData.status === '1' && sentData.result) {
+      const sentMessages = sentData.result.filter(tx => 
+        tx.from.toLowerCase() === userAddress.toLowerCase() && 
+        tx.to.toLowerCase() === contactAddress.toLowerCase() &&
+        tx.input && tx.input !== '0x'
+      );
+      allMessageTransactions = allMessageTransactions.concat(sentMessages);
+    }
+    
+    if (allMessageTransactions.length === 0) {
         messages.innerHTML = `
           <div class="chat-overlay">
             <div class="chat-overlay-message">
@@ -843,17 +860,19 @@ async function loadMessagesForContact(contactAddress) {
       messages.innerHTML = '';
       
       // Sort messages by timestamp
-      messageTransactions.sort((a, b) => parseInt(a.timeStamp) - parseInt(b.timeStamp));
+      allMessageTransactions.sort((a, b) => parseInt(a.timeStamp) - parseInt(b.timeStamp));
       
-      for (const tx of messageTransactions) {
+      for (const tx of allMessageTransactions) {
         try {
           const decodedData = ethers.utils.toUtf8String(tx.input);
           
-                      if (decodedData.startsWith('MSG')) {
-              const messageData = JSON.parse(decodeURIComponent(escape(atob(decodedData.substring(3)))));
+          if (decodedData.startsWith('MSG')) {
+            const messageData = JSON.parse(decodeURIComponent(escape(atob(decodedData.substring(3)))));
             
             const msg = document.createElement('div');
-            msg.className = 'message received';
+            // Determine if message is sent or received
+            const isSent = tx.from.toLowerCase() === userAddress.toLowerCase();
+            msg.className = isSent ? 'message sent' : 'message received';
             
             const messageTime = new Date(parseInt(messageData.timestamp)).toLocaleTimeString('en-US', { 
               hour: '2-digit', 
@@ -864,7 +883,7 @@ async function loadMessagesForContact(contactAddress) {
             msg.innerHTML = `
               ${messageData.message}
               <span class="message-time">${messageTime}</span>
-              <span class="message-status">Received ✓</span>
+              <span class="message-status">${isSent ? 'Sent ✓' : 'Received ✓'}</span>
             `;
             
             messages.appendChild(msg);
@@ -876,16 +895,6 @@ async function loadMessagesForContact(contactAddress) {
       
       // Scroll to bottom
       messages.scrollTop = messages.scrollHeight;
-      
-    } else {
-      messages.innerHTML = `
-        <div class="chat-overlay">
-          <div class="chat-overlay-message">
-            No messages found
-          </div>
-        </div>
-      `;
-    }
   } catch (error) {
     console.error('Error loading messages:', error);
     const messages = document.querySelector('.chat-messages');
