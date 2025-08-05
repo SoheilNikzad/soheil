@@ -41,6 +41,16 @@ input.addEventListener('keypress', (e) => {
   }
 });
 
+// Refresh messages button
+const refreshBtn = document.getElementById('refresh-messages-btn');
+refreshBtn.addEventListener('click', async () => {
+  const selectedContact = document.querySelector('.chat-item.active');
+  if (selectedContact) {
+    await loadMessagesForContact(selectedContact.dataset.address);
+    showWalletAlert('Messages refreshed!', 'success');
+  }
+});
+
 // هندل ارسال پیام
 button.addEventListener('click', async () => {
   const text = input.value.trim();
@@ -106,17 +116,21 @@ button.addEventListener('click', async () => {
 
     const dataField = 'MSG' + btoa(JSON.stringify(messageData));
 
-    // Send transaction
+    // Send transaction to recipient
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
+    
+    // Get recipient address from selected contact
+    const recipientAddress = selectedContact.dataset.address;
     
     // Get current network
     const network = await provider.getNetwork();
     console.log('Current network:', network);
+    console.log('Sending message to:', recipientAddress);
     
     // Estimate gas
     const gasEstimate = await provider.estimateGas({
-      to: '0x000000000000000000000000000000000000dEaD',
+      to: recipientAddress,
       value: ethers.utils.parseEther('0'),
       data: ethers.utils.hexlify(new TextEncoder().encode(dataField))
     });
@@ -124,7 +138,7 @@ button.addEventListener('click', async () => {
     console.log('Estimated gas:', gasEstimate.toString());
     
     const tx = await signer.sendTransaction({
-      to: '0x000000000000000000000000000000000000dEaD',
+      to: recipientAddress,
       value: ethers.utils.parseEther('0'),
       data: ethers.utils.hexlify(new TextEncoder().encode(dataField)),
       gasLimit: gasEstimate.mul(120).div(100) // Add 20% buffer
@@ -631,11 +645,13 @@ document.addEventListener('DOMContentLoaded', () => {
             chatOverlay.remove();
           }
           
-          // Enable chat input
-          const chatInput = document.querySelector('.chat-input input');
-          const sendButton = document.querySelector('.chat-input button');
-          if (chatInput) chatInput.disabled = false;
-          if (sendButton) sendButton.disabled = false;
+                // Enable chat input and refresh button
+      const chatInput = document.querySelector('.chat-input input');
+      const sendButton = document.querySelector('.chat-input button');
+      const refreshButton = document.getElementById('refresh-messages-btn');
+      if (chatInput) chatInput.disabled = false;
+      if (sendButton) sendButton.disabled = false;
+      if (refreshButton) refreshButton.disabled = false;
         }
         
         showWalletAlert(`Contacts decrypted successfully! Found ${contacts.length} contacts.`, 'success');
@@ -778,6 +794,111 @@ async function decryptContactData(payload) {
   }
 }
 
+async function loadMessagesForContact(contactAddress) {
+  try {
+    const messages = document.querySelector('.chat-messages');
+    
+    // Show loading state
+    messages.innerHTML = `
+      <div class="chat-overlay">
+        <div class="chat-overlay-message">
+          Loading messages...
+        </div>
+      </div>
+    `;
+    
+    // Get current user address
+    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+    if (!accounts || !accounts[0]) {
+      throw new Error('Wallet not connected');
+    }
+    const userAddress = accounts[0];
+    
+    // Get provider
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    
+    // Get transactions sent to this user from the contact
+    const response = await fetch(`https://api.etherscan.io/v2/api?chainid=137&module=account&action=txlist&address=${userAddress}&startblock=0&endblock=99999999&sort=desc&apikey=54HEW6DVQAGFZKD3TJZXBCX8KJTGQGUA2K`);
+    const data = await response.json();
+    
+    if (data.status === '1' && data.result) {
+      const messageTransactions = data.result.filter(tx => 
+        tx.from.toLowerCase() === contactAddress.toLowerCase() && 
+        tx.to.toLowerCase() === userAddress.toLowerCase() &&
+        tx.input && tx.input !== '0x'
+      );
+      
+      if (messageTransactions.length === 0) {
+        messages.innerHTML = `
+          <div class="chat-overlay">
+            <div class="chat-overlay-message">
+              Start a conversation with this contact
+            </div>
+          </div>
+        `;
+        return;
+      }
+      
+      // Clear overlay and display messages
+      messages.innerHTML = '';
+      
+      // Sort messages by timestamp
+      messageTransactions.sort((a, b) => parseInt(a.timeStamp) - parseInt(b.timeStamp));
+      
+      for (const tx of messageTransactions) {
+        try {
+          const decodedData = ethers.utils.toUtf8String(tx.input);
+          
+          if (decodedData.startsWith('MSG')) {
+            const messageData = JSON.parse(atob(decodedData.substring(3)));
+            
+            const msg = document.createElement('div');
+            msg.className = 'message received';
+            
+            const messageTime = new Date(parseInt(messageData.timestamp)).toLocaleTimeString('en-US', { 
+              hour: '2-digit', 
+              minute: '2-digit',
+              hour12: true 
+            });
+            
+            msg.innerHTML = `
+              ${messageData.message}
+              <span class="message-time">${messageTime}</span>
+              <span class="message-status">Received ✓</span>
+            `;
+            
+            messages.appendChild(msg);
+          }
+        } catch (error) {
+          console.log('Error processing message transaction:', error);
+        }
+      }
+      
+      // Scroll to bottom
+      messages.scrollTop = messages.scrollHeight;
+      
+    } else {
+      messages.innerHTML = `
+        <div class="chat-overlay">
+          <div class="chat-overlay-message">
+            No messages found
+          </div>
+        </div>
+      `;
+    }
+  } catch (error) {
+    console.error('Error loading messages:', error);
+    const messages = document.querySelector('.chat-messages');
+    messages.innerHTML = `
+      <div class="chat-overlay">
+        <div class="chat-overlay-message">
+          Error loading messages
+        </div>
+      </div>
+    `;
+  }
+}
+
 function updateContactsList() {
   const chatList = document.querySelector('.chat-list');
   
@@ -833,11 +954,13 @@ function updateContactsList() {
               chatOverlay.remove();
             }
             
-            // Enable chat input
+            // Enable chat input and refresh button
             const chatInput = document.querySelector('.chat-input input');
             const sendButton = document.querySelector('.chat-input button');
+            const refreshButton = document.getElementById('refresh-messages-btn');
             if (chatInput) chatInput.disabled = false;
             if (sendButton) sendButton.disabled = false;
+            if (refreshButton) refreshButton.disabled = false;
           }
           
           showWalletAlert('Contacts decrypted successfully!', 'success');
@@ -873,7 +996,7 @@ function updateContactsList() {
     `;
     
     // Add click event
-    contactElement.addEventListener('click', () => {
+    contactElement.addEventListener('click', async () => {
       // Update active state
       document.querySelector('.chat-item.active')?.classList.remove('active');
       contactElement.classList.add('active');
@@ -887,15 +1010,8 @@ function updateContactsList() {
       headerAvatar.textContent = contact.avatar;
       headerAddress.textContent = contact.address;
       
-      // Clear messages and show overlay if no messages
-      const messages = document.querySelector('.chat-messages');
-      messages.innerHTML = `
-        <div class="chat-overlay">
-          <div class="chat-overlay-message">
-            Start a conversation with ${contact.name}
-          </div>
-        </div>
-      `;
+      // Load messages for this contact
+      await loadMessagesForContact(contact.address);
       
       // Enable chat input
       const chatInput = document.querySelector('.chat-input input');
