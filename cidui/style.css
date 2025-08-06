@@ -531,8 +531,9 @@ body {
 .message-time {
   font-size: 0.75rem;
   opacity: 0.7;
-  margin-top: 0.5rem;
+  margin-top: 0.3rem;
   display: block;
+  font-family: 'Comfortaa', 'Segoe UI', sans-serif;
 }
 
 .message.sent .message-time {
@@ -543,55 +544,6 @@ body {
 .message.received .message-time {
   color: var(--text-secondary);
   text-align: left;
-}
-
-.message-date {
-  font-size: 0.65rem;
-  opacity: 0.7;
-  font-weight: 500;
-  display: block;
-  margin-bottom: 0.2rem;
-}
-
-.message.sent .message-date {
-  text-align: right;
-}
-
-.message.received .message-date {
-  text-align: left;
-}
-
-.message-status {
-  font-size: 0.7rem;
-  opacity: 0.8;
-  font-weight: 600;
-  margin-top: 0.3rem;
-  display: block;
-}
-
-.message.sent .message-status {
-  color: rgba(255, 255, 255, 0.9);
-  text-align: right;
-}
-
-.message.received .message-status {
-  color: var(--text-secondary);
-  text-align: left;
-}
-
-/* Status icons */
-.message-status::before {
-  content: '';
-  font-weight: bold;
-  margin-right: 4px;
-}
-
-.message.sent .message-status::before {
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.message.received .message-status::before {
-  color: var(--text-secondary);
 }
 
 /* Message hover effects */
