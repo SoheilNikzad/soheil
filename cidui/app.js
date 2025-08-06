@@ -596,6 +596,26 @@ settingsBtn.addEventListener('click', () => {
   };
 });
 
+// Custom tooltip for settings button
+const settingsTooltipText = 'Settings';
+let settingsTooltip;
+
+settingsBtn.addEventListener('mouseenter', (e) => {
+  if (settingsTooltip) settingsTooltip.remove();
+  settingsTooltip = document.createElement('div');
+  settingsTooltip.className = 'custom-tooltip show';
+  settingsTooltip.textContent = settingsTooltipText;
+  document.body.appendChild(settingsTooltip);
+  // Position above the button
+  const rect = settingsBtn.getBoundingClientRect();
+  settingsTooltip.style.left = rect.left + rect.width / 2 + 'px';
+  settingsTooltip.style.top = (rect.top - settingsTooltip.offsetHeight - 12) + 'px';
+  settingsTooltip.style.transform = 'translateX(-50%)';
+});
+settingsBtn.addEventListener('mouseleave', () => {
+  if (settingsTooltip) settingsTooltip.remove();
+});
+
 // Load saved theme on page load and check wallet connection
 document.addEventListener('DOMContentLoaded', async () => {
   const savedTheme = localStorage.getItem('theme') || 'dark';
@@ -727,6 +747,26 @@ addContactBtn.addEventListener('click', () => {
       showWalletAlert('Failed to add contact: ' + (err && err.message ? err.message : 'Unknown error'), false);
     }
   };
+});
+
+// Custom tooltip for add contact button
+const addContactTooltipText = 'Add Contact';
+let addContactTooltip;
+
+addContactBtn.addEventListener('mouseenter', (e) => {
+  if (addContactTooltip) addContactTooltip.remove();
+  addContactTooltip = document.createElement('div');
+  addContactTooltip.className = 'custom-tooltip show';
+  addContactTooltip.textContent = addContactTooltipText;
+  document.body.appendChild(addContactTooltip);
+  // Position above the button
+  const rect = addContactBtn.getBoundingClientRect();
+  addContactTooltip.style.left = rect.left + rect.width / 2 + 'px';
+  addContactTooltip.style.top = (rect.top - addContactTooltip.offsetHeight - 12) + 'px';
+  addContactTooltip.style.transform = 'translateX(-50%)';
+});
+addContactBtn.addEventListener('mouseleave', () => {
+  if (addContactTooltip) addContactTooltip.remove();
 });
 
 // --- Decrypt Contacts Button Logic ---
