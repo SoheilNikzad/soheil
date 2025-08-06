@@ -82,10 +82,10 @@ button.addEventListener('click', async () => {
     const { timeString, dateString } = formatMessageDateTime(Date.now());
     
     msg.innerHTML = `
-      ${text}
+      <div class="message-content">${text}</div>
       <div class="message-time">
         ${dateString ? `<div class="message-date">${dateString}</div>` : ''}
-        <div>${timeString}</div>
+        <div class="message-time-text">${timeString}</div>
         <div class="message-status">Sending...</div>
       </div>
     `;
@@ -875,10 +875,10 @@ async function loadMessagesForContact(contactAddress) {
             const { timeString, dateString } = formatMessageDateTime(parseInt(messageData.timestamp));
             
             msg.innerHTML = `
-              ${messageData.message}
+              <div class="message-content">${messageData.message}</div>
               <div class="message-time">
                 ${dateString ? `<div class="message-date">${dateString}</div>` : ''}
-                <div>${timeString}</div>
+                <div class="message-time-text">${timeString}</div>
                 <div class="message-status">${isSent ? 'Sent' : 'Received'}</div>
               </div>
             `;
