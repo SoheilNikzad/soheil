@@ -781,13 +781,13 @@ document.addEventListener('DOMContentLoaded', () => {
             chatOverlay.remove();
           }
           
-                // Enable chat input and refresh button
-      const chatInput = document.querySelector('.chat-input input');
-      const sendButton = document.querySelector('.chat-input button');
-      const refreshButton = document.getElementById('refresh-messages-btn');
-      if (chatInput) chatInput.disabled = false;
-      if (sendButton) sendButton.disabled = false;
-      if (refreshButton) refreshButton.disabled = false;
+          // Enable chat input and refresh button
+          const chatInput = document.querySelector('.chat-input input');
+          const sendButton = document.querySelector('.chat-input button');
+          const refreshButton = document.getElementById('refresh-messages-btn');
+          if (chatInput) chatInput.disabled = false;
+          if (sendButton) sendButton.disabled = false;
+          if (refreshButton) refreshButton.disabled = false;
         }
         
         showWalletAlert(`Contacts decrypted successfully! Found ${contacts.length} contacts.`, 'success');
@@ -804,6 +804,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function decryptContacts(userAddress) {
   try {
+    // Clear contacts array to prevent duplicates
+    contacts = [];
+    
     // Get provider and signer
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     
