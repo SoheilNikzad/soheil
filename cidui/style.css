@@ -362,7 +362,7 @@ body {
   flex: 1;
   padding: 1rem;
   overflow-y: auto;
-  overflow-x: hidden;
+  overflow-x: visible;
   display: flex;
   flex-direction: column;
   gap: 0.8rem;
@@ -387,10 +387,11 @@ body {
   transition: all 0.3s ease;
   word-wrap: break-word;
   overflow-wrap: break-word;
-  word-break: break-word;
+  word-break: normal;
   hyphens: auto;
   box-sizing: border-box;
   white-space: pre-wrap;
+  overflow: visible;
 }
 
 /* Light mode message adjustments */
@@ -467,6 +468,8 @@ body {
   flex-direction: column;
   gap: 0.2rem;
   align-items: flex-end;
+  width: 100%;
+  min-height: 0;
 }
 
 .message.sent .message-time {
@@ -481,6 +484,8 @@ body {
   font-size: 0.65rem;
   opacity: 0.7;
   font-weight: 500;
+  display: block;
+  line-height: 1.2;
 }
 
 .message-status {
@@ -491,6 +496,7 @@ body {
   display: flex;
   align-items: center;
   gap: 0.3rem;
+  line-height: 1.2;
 }
 
 .message.sent .message-status {
