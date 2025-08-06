@@ -46,6 +46,7 @@ body {
 .app {
   display: flex;
   height: 100vh;
+  overflow: hidden;
 }
 
 /* ===== Sidebar ===== */
@@ -60,6 +61,7 @@ body {
   display: flex;
   flex-direction: column;
   transition: all 0.3s ease;
+  flex-shrink: 0;
 }
 
 .sidebar-header {
@@ -278,7 +280,6 @@ body {
   background-color: var(--bg-primary);
   transition: all 0.3s ease;
   min-width: 0;
-  overflow: hidden;
 }
 
 .chat-header .avatar {
@@ -362,13 +363,12 @@ body {
   flex: 1;
   padding: 1rem;
   overflow-y: auto;
-  overflow-x: visible;
   display: flex;
   flex-direction: column;
   gap: 0.8rem;
   position: relative;
   min-height: 0;
-  max-width: 100%;
+  width: 100%;
   box-sizing: border-box;
 }
 
@@ -391,7 +391,6 @@ body {
   hyphens: auto;
   box-sizing: border-box;
   white-space: pre-wrap;
-  overflow: visible;
 }
 
 /* Light mode message adjustments */
