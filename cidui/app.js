@@ -1022,8 +1022,18 @@ async function loadMessagesForContact(contactAddress) {
         
         // Extract message data
         const hexData = inputData.slice(2); // Remove '0x'
-        const base64Data = atob(hexData);
-        const messagePayload = JSON.parse(base64Data);
+        
+        // Convert hex to UTF-8 string
+        const decodedData = ethers.utils.toUtf8String(inputData);
+        
+        // Check if this is our message format
+        if (!decodedData.startsWith('MSG')) {
+          continue; // Skip non-message transactions
+        }
+        
+        // Extract base64 data after 'MSG'
+        const base64Data = decodedData.substring(3);
+        const messagePayload = JSON.parse(atob(base64Data));
         
         let decryptedMessage = null;
         
@@ -1087,45 +1097,6 @@ async function loadMessagesForContact(contactAddress) {
     });
     
     messages.scrollTop = messages.scrollHeight;
-      
-      // Clear overlay and display messages
-      messages.innerHTML = '';
-      
-      // Sort messages by timestamp
-      allMessageTransactions.sort((a, b) => parseInt(a.timeStamp) - parseInt(b.timeStamp));
-      
-      for (const tx of allMessageTransactions) {
-        try {
-          const decodedData = ethers.utils.toUtf8String(tx.input);
-          
-          if (decodedData.startsWith('MSG')) {
-            const messageData = JSON.parse(decodeURIComponent(escape(atob(decodedData.substring(3)))));
-            
-            const msg = document.createElement('div');
-            // Determine if message is sent or received
-            const isSent = tx.from.toLowerCase() === userAddress.toLowerCase();
-            msg.className = isSent ? 'message sent' : 'message received';
-            
-            const { timeString, dateString } = formatMessageDateTime(parseInt(messageData.timestamp));
-            
-            msg.innerHTML = `
-              ${messageData.message}
-              <div class="message-time">
-                ${dateString ? `<div class="message-date">${dateString}</div>` : ''}
-                <div>${timeString}</div>
-                <div class="message-status">${isSent ? 'Sent' : 'Received'}</div>
-              </div>
-            `;
-            
-            messages.appendChild(msg);
-          }
-        } catch (error) {
-          console.log('Error processing message transaction:', error);
-        }
-      }
-      
-      // Scroll to bottom
-      messages.scrollTop = messages.scrollHeight;
   } catch (error) {
     console.error('Error loading messages:', error);
     const messages = document.querySelector('.chat-messages');
