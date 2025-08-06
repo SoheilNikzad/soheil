@@ -310,9 +310,13 @@ walletBtn.addEventListener('click', async () => {
   walletIcon.classList.remove('wallet-success', 'wallet-error');
   if (typeof window.ethereum !== 'undefined') {
     try {
-      await window.ethereum.request({ method: 'eth_requestAccounts' });
-      walletIcon.classList.add('wallet-success');
-      showWalletAlert('Wallet connected successfully!', 'success');
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      if (accounts && accounts[0]) {
+        walletIcon.classList.add('wallet-success');
+        showWalletAlert('Wallet connected successfully!', 'success');
+        // Show current user box
+        showCurrentUserBox(accounts[0]);
+      }
     } catch (err) {
       walletIcon.classList.add('wallet-error');
       showWalletAlert('Wallet connection failed!', 'error');
@@ -355,6 +359,13 @@ if (window.ethereum) {
   window.ethereum.on && window.ethereum.on('accountsChanged', (accounts) => {
     currentAccount = accounts && accounts[0] ? accounts[0] : null;
     cachedPublicKey = null; // reset cached public key on account change
+    
+    // Update current user box
+    if (accounts && accounts[0]) {
+      showCurrentUserBox(accounts[0]);
+    } else {
+      hideCurrentUserBox();
+    }
   });
 }
 
@@ -589,10 +600,26 @@ settingsBtn.addEventListener('click', () => {
   };
 });
 
-// Load saved theme on page load
-document.addEventListener('DOMContentLoaded', () => {
+// Load saved theme on page load and check wallet connection
+document.addEventListener('DOMContentLoaded', async () => {
   const savedTheme = localStorage.getItem('theme') || 'dark';
   document.documentElement.setAttribute('data-theme', savedTheme);
+  
+  // Hide contact copy button initially
+  hideContactCopyButton();
+  
+  // Check if wallet is already connected
+  if (window.ethereum) {
+    try {
+      const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+      if (accounts && accounts[0]) {
+        showCurrentUserBox(accounts[0]);
+        walletIcon.classList.add('wallet-success');
+      }
+    } catch (err) {
+      console.log('Error checking wallet connection:', err);
+    }
+  }
 });
 
 // --- Add Contact (User) Button Logic ---
@@ -1158,14 +1185,28 @@ async function loadMessagesForContact(contactAddress) {
 function updateContactsList() {
   const chatList = document.querySelector('.chat-list');
   
+  // Keep current user box if it exists
+  const currentUserBox = document.getElementById('current-user-box');
+  
   if (contacts.length === 0) {
-    chatList.innerHTML = `
-      <div class="empty-contacts">
+    // Clear everything except current user box
+    const emptyContacts = document.querySelector('.empty-contacts');
+    if (!emptyContacts) {
+      const emptyDiv = document.createElement('div');
+      emptyDiv.className = 'empty-contacts';
+      emptyDiv.innerHTML = `
         <p>No contacts found</p>
         <p>Connect wallet and decrypt to see your contacts</p>
         <button id="decrypt-contacts-btn" class="decrypt-btn">Decrypt Contacts</button>
-      </div>
-    `;
+      `;
+      
+      // Insert after current user box if it exists, otherwise at the beginning
+      if (currentUserBox) {
+        currentUserBox.after(emptyDiv);
+      } else {
+        chatList.appendChild(emptyDiv);
+      }
+    }
     
     // Re-add event listener for the new decrypt button
     const newDecryptBtn = document.getElementById('decrypt-contacts-btn');
@@ -1236,8 +1277,15 @@ function updateContactsList() {
     return;
   }
   
-  // Clear existing content
-  chatList.innerHTML = '';
+  // Remove empty contacts div if it exists
+  const emptyContacts = document.querySelector('.empty-contacts');
+  if (emptyContacts) {
+    emptyContacts.remove();
+  }
+  
+  // Remove existing contact items but keep current user box
+  const existingContacts = chatList.querySelectorAll('.chat-item');
+  existingContacts.forEach(contact => contact.remove());
   
   // Add each contact
   contacts.forEach((contact, index) => {
@@ -1252,7 +1300,7 @@ function updateContactsList() {
       <div class="avatar-placeholder">${contact.avatar}</div>
       <div class="chat-details">
         <h4>${contact.name}</h4>
-        <p>${contact.lastMessage}</p>
+        <p class="contact-address-text">${formatWalletAddress(contact.address)}</p>
       </div>
     `;
     
@@ -1266,10 +1314,24 @@ function updateContactsList() {
       const headerName = document.querySelector('.chat-header h3');
       const headerAvatar = document.querySelector('.chat-header .avatar-placeholder');
       const headerAddress = document.querySelector('.contact-address');
+      const copyAddressBtn = document.getElementById('copy-contact-address-btn');
       
       headerName.textContent = contact.name;
       headerAvatar.textContent = contact.avatar;
-      headerAddress.textContent = contact.address;
+      headerAddress.textContent = formatWalletAddress(contact.address);
+      
+      // Show copy button
+      showContactCopyButton();
+      if (copyAddressBtn) {
+        copyAddressBtn.onclick = async () => {
+          try {
+            await navigator.clipboard.writeText(contact.address);
+            showWalletAlert('Contact address copied!', 'success');
+          } catch (err) {
+            showWalletAlert('Failed to copy address!', 'error');
+          }
+        };
+      }
       
       // Show decrypt overlay
       showDecryptOverlay();
@@ -1332,5 +1394,65 @@ function formatMessageDateTime(timestamp) {
   
   return { timeString, dateString };
 }
+
+// Helper function to format wallet address (shorten with dots)
+function formatWalletAddress(address) {
+  if (!address) return '';
+  if (address.length <= 10) return address;
+  return address.slice(0, 6) + '...' + address.slice(-4);
+}
+
+// Function to show current user box
+function showCurrentUserBox(address) {
+  const currentUserBox = document.getElementById('current-user-box');
+  const walletAddressSpan = document.getElementById('current-wallet-address');
+  
+  if (currentUserBox && walletAddressSpan) {
+    walletAddressSpan.textContent = formatWalletAddress(address);
+    currentUserBox.style.display = 'flex';
+  }
+}
+
+// Function to hide current user box
+function hideCurrentUserBox() {
+  const currentUserBox = document.getElementById('current-user-box');
+  if (currentUserBox) {
+    currentUserBox.style.display = 'none';
+  }
+}
+
+// Function to hide contact copy button when no contact is selected
+function hideContactCopyButton() {
+  const copyContactBtn = document.getElementById('copy-contact-address-btn');
+  if (copyContactBtn) {
+    copyContactBtn.style.display = 'none';
+  }
+}
+
+// Function to show contact copy button when contact is selected
+function showContactCopyButton() {
+  const copyContactBtn = document.getElementById('copy-contact-address-btn');
+  if (copyContactBtn) {
+    copyContactBtn.style.display = 'flex';
+  }
+}
+
+// Copy address functionality
+document.addEventListener('DOMContentLoaded', () => {
+  const copyAddressBtn = document.getElementById('copy-address-btn');
+  if (copyAddressBtn) {
+    copyAddressBtn.addEventListener('click', async () => {
+      const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+      if (accounts && accounts[0]) {
+        try {
+          await navigator.clipboard.writeText(accounts[0]);
+          showWalletAlert('Wallet address copied!', 'success');
+        } catch (err) {
+          showWalletAlert('Failed to copy address!', 'error');
+        }
+      }
+    });
+  }
+});
 
 
