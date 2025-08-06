@@ -662,15 +662,7 @@ body {
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  margin-left: 8px;
-}
-
-.refresh-btn:first-child {
   margin-left: auto;
-  margin-right: 8px;
-}
-
-.refresh-btn:last-child {
   margin-right: 16px;
 }
 
