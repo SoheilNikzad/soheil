@@ -41,16 +41,6 @@ input.addEventListener('keypress', (e) => {
   }
 });
 
-// Refresh messages button
-const refreshBtn = document.getElementById('refresh-messages-btn');
-refreshBtn.addEventListener('click', async () => {
-  const selectedContact = document.querySelector('.chat-item.active');
-  if (selectedContact) {
-    await loadMessagesForContact(selectedContact.dataset.address);
-    showWalletAlert('Messages refreshed!', 'success');
-  }
-});
-
 // Decrypt messages button
 const decryptBtn = document.getElementById('decrypt-messages-btn');
 decryptBtn.addEventListener('click', async () => {
@@ -58,6 +48,29 @@ decryptBtn.addEventListener('click', async () => {
   if (selectedContact) {
     await loadMessagesForContact(selectedContact.dataset.address);
     showWalletAlert('Messages decrypted!', 'success');
+  }
+});
+
+// Custom tooltip for decrypt button
+const decryptTooltipText = 'Decrypt Messages';
+let decryptTooltip;
+
+decryptBtn.addEventListener('mouseenter', (e) => {
+  if (decryptTooltip) decryptTooltip.remove();
+  decryptTooltip = document.createElement('div');
+  decryptTooltip.className = 'custom-tooltip show';
+  decryptTooltip.textContent = decryptTooltipText;
+  document.body.appendChild(decryptTooltip);
+  
+  const rect = e.target.getBoundingClientRect();
+  decryptTooltip.style.left = rect.left + (rect.width / 2) - (decryptTooltip.offsetWidth / 2) + 'px';
+  decryptTooltip.style.top = rect.top - decryptTooltip.offsetHeight - 8 + 'px';
+});
+
+decryptBtn.addEventListener('mouseleave', () => {
+  if (decryptTooltip) {
+    decryptTooltip.remove();
+    decryptTooltip = null;
   }
 });
 
@@ -1168,11 +1181,9 @@ function updateContactsList() {
             // Enable chat input and buttons
             const chatInput = document.querySelector('.chat-input input');
             const sendButton = document.querySelector('.chat-input button');
-            const refreshButton = document.getElementById('refresh-messages-btn');
             const decryptButton = document.getElementById('decrypt-messages-btn');
             if (chatInput) chatInput.disabled = false;
             if (sendButton) sendButton.disabled = false;
-            if (refreshButton) refreshButton.disabled = false;
             if (decryptButton) decryptButton.disabled = false;
           }
           
@@ -1230,11 +1241,9 @@ function updateContactsList() {
       // Enable chat input and buttons
       const chatInput = document.querySelector('.chat-input input');
       const sendButton = document.querySelector('.chat-input button');
-      const refreshButton = document.getElementById('refresh-messages-btn');
       const decryptButton = document.getElementById('decrypt-messages-btn');
       if (chatInput) chatInput.disabled = false;
       if (sendButton) sendButton.disabled = false;
-      if (refreshButton) refreshButton.disabled = false;
       if (decryptButton) decryptButton.disabled = false;
     });
     
