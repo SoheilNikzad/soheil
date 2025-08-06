@@ -196,6 +196,7 @@ body {
   background: var(--bg-primary);
   position: relative;
   overflow: hidden;
+  animation: contactSlideIn 0.5s ease-out;
 }
 
 /* Light mode chat item adjustments */
@@ -381,7 +382,7 @@ body {
   position: relative;
   margin-bottom: 0.8rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  animation: messageSlideIn 0.3s ease-out;
+  animation: messageSlideIn 0.4s ease-out;
   transition: all 0.3s ease;
   word-wrap: break-word;
   min-height: fit-content;
@@ -451,11 +452,34 @@ body {
 @keyframes messageSlideIn {
   from {
     opacity: 0;
-    transform: translateY(20px) scale(0.9) rotateX(10deg);
+    transform: translateY(20px) scale(0.9);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1) rotateX(0deg);
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes contactSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes buttonPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
   }
 }
 
@@ -512,22 +536,17 @@ body {
 
 /* Status icons */
 .message-status::before {
-  content: '';
-  width: 12px;
-  height: 12px;
-  background: currentColor;
-  border-radius: 50%;
-  display: inline-block;
+  content: '✓';
+  font-weight: bold;
+  margin-right: 4px;
 }
 
 .message.sent .message-status::before {
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffffff'%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'/%3E%3C/svg%3E") center/contain no-repeat;
-  opacity: 0.9;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .message.received .message-status::before {
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23bbbbbb'%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'/%3E%3C/svg%3E") center/contain no-repeat;
-  opacity: 0.7;
+  color: var(--text-secondary);
 }
 
 /* Message hover effects */
@@ -675,6 +694,7 @@ body {
 .refresh-btn:hover {
   background: #e67e22;
   transform: scale(1.05);
+  animation: buttonPulse 0.3s ease-in-out;
 }
 
 .refresh-btn:active {
@@ -741,6 +761,7 @@ body {
   background: rgba(255, 255, 255, 0.1);
   transform: scale(1.1);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  animation: buttonPulse 0.3s ease-in-out;
 }
 
 /* Sidebar icon styles */
