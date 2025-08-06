@@ -15,6 +15,23 @@
       </header>
 
       <div class="chat-list">
+        <!-- Current User Box (appears when wallet is connected) -->
+        <div id="current-user-box" class="current-user-box" style="display: none;">
+          <div class="avatar-placeholder current-user-avatar">Y</div>
+          <div class="chat-details">
+            <h4>YOU</h4>
+            <div class="wallet-address-container">
+              <span class="wallet-address" id="current-wallet-address"></span>
+              <button class="copy-address-btn" id="copy-address-btn" title="Copy Address">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+        
         <!-- Contacts will be loaded dynamically after decryption -->
         <div class="empty-contacts">
           <p>No contacts found</p>
@@ -39,7 +56,15 @@
         <div class="avatar-placeholder">A</div>
         <div class="contact-info">
           <h3>Select a contact</h3>
-          <span class="contact-address"></span>
+          <div class="contact-address-container">
+            <span class="contact-address"></span>
+            <button class="copy-contact-address-btn" id="copy-contact-address-btn" title="Copy Address" style="display: none;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+            </button>
+          </div>
         </div>
         <button id="decrypt-messages-btn" class="refresh-btn" title="Decrypt Messages" disabled>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
