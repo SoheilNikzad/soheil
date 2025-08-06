@@ -392,6 +392,19 @@ body {
   align-self: flex-start;
   border-bottom-left-radius: 8px;
   border: 1px solid var(--border-color);
+  position: relative;
+  overflow: hidden;
+}
+
+.message.received::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+  pointer-events: none;
 }
 
 /* Light mode received message adjustments */
@@ -407,16 +420,30 @@ body {
   align-self: flex-end;
   border-bottom-right-radius: 8px;
   border: 1px solid rgba(247, 147, 26, 0.3);
+  box-shadow: 0 4px 16px rgba(247, 147, 26, 0.25);
+  position: relative;
+  overflow: hidden;
+}
+
+.message.sent::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  pointer-events: none;
 }
 
 @keyframes messageSlideIn {
   from {
     opacity: 0;
-    transform: translateY(15px) scale(0.95);
+    transform: translateY(20px) scale(0.9) rotateX(10deg);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0) scale(1) rotateX(0deg);
   }
 }
 
@@ -484,16 +511,27 @@ body {
 
 /* Message hover effects */
 .message:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 [data-theme="light"] .message:hover {
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
 }
 
 .message.sent:hover {
-  box-shadow: 0 6px 20px rgba(247, 147, 26, 0.3);
+  box-shadow: 0 8px 25px rgba(247, 147, 26, 0.4);
+  transform: translateY(-2px) scale(1.02);
+}
+
+.message.received:hover {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px) scale(1.02);
+}
+
+[data-theme="light"] .message.received:hover {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
 }
 
 /* ===== Input ===== */
