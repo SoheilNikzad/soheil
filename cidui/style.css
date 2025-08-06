@@ -361,48 +361,35 @@ body {
 /* ===== Chat Messages ===== */
 .chat-messages {
   flex: 1;
-  padding: 1rem;
+  padding: 1.5rem;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 0.8rem;
+  gap: 1.2rem;
   position: relative;
   width: 100%;
   box-sizing: border-box;
 }
 
 .message {
-  padding: 1rem 1.4rem;
-  border-radius: 24px;
-  max-width: 70%;
-  min-width: 120px;
+  padding: 1rem 1.5rem;
+  border-radius: 20px;
+  max-width: 80%;
   font-size: 0.95rem;
   line-height: 1.5;
   font-family: 'Comfortaa', 'Segoe UI', sans-serif;
   position: relative;
   margin-bottom: 0.8rem;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-  animation: messageSlideIn 0.4s ease-out;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  animation: messageSlideIn 0.3s ease-out;
   transition: all 0.3s ease;
   word-wrap: break-word;
+  min-height: fit-content;
   overflow-wrap: break-word;
-  word-break: normal;
-  hyphens: auto;
-  box-sizing: border-box;
-  white-space: pre-wrap;
-  display: block;
+  word-break: break-word;
 }
 
-.message-content {
-  margin-bottom: 0.5rem;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-}
 
-.message-time-text {
-  font-size: 0.75rem;
-  opacity: 0.8;
-}
 
 /* Light mode message adjustments */
 [data-theme="light"] .message {
@@ -474,13 +461,9 @@ body {
 
 .message-time {
   font-size: 0.75rem;
-  opacity: 0.8;
+  opacity: 0.7;
   margin-top: 0.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  align-items: flex-end;
-  width: 100%;
+  display: block;
 }
 
 .message.sent .message-time {
@@ -496,18 +479,15 @@ body {
   opacity: 0.7;
   font-weight: 500;
   display: block;
-  line-height: 1.2;
+  margin-bottom: 0.2rem;
 }
 
 .message-status {
   font-size: 0.7rem;
-  opacity: 0.9;
+  opacity: 0.8;
   font-weight: 600;
   margin-top: 0.3rem;
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  line-height: 1.2;
+  display: block;
 }
 
 .message.sent .message-status {
