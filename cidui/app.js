@@ -79,16 +79,15 @@ button.addEventListener('click', async () => {
     const msg = document.createElement('div');
     msg.className = 'message sent';
     
-    const currentTime = new Date().toLocaleTimeString('en-US', { 
-      hour: '2-digit', 
-      minute: '2-digit',
-      hour12: true 
-    });
+    const { timeString, dateString } = formatMessageDateTime(Date.now());
     
     msg.innerHTML = `
       ${text}
-      <span class="message-time">${currentTime}</span>
-      <span class="message-status">Sending...</span>
+      <div class="message-time">
+        ${dateString ? `<div class="message-date">${dateString}</div>` : ''}
+        <div>${timeString}</div>
+        <div class="message-status">Sending...</div>
+      </div>
     `;
     
     // Remove overlay if exists
@@ -146,7 +145,7 @@ button.addEventListener('click', async () => {
 
     // Update message status
     const statusSpan = msg.querySelector('.message-status');
-    statusSpan.textContent = 'Sent ✓';
+    statusSpan.textContent = 'Sent';
     statusSpan.style.color = '#27ae60';
 
     showWalletAlert('Message sent successfully!', 'success');
@@ -874,16 +873,15 @@ async function loadMessagesForContact(contactAddress) {
             const isSent = tx.from.toLowerCase() === userAddress.toLowerCase();
             msg.className = isSent ? 'message sent' : 'message received';
             
-            const messageTime = new Date(parseInt(messageData.timestamp)).toLocaleTimeString('en-US', { 
-              hour: '2-digit', 
-              minute: '2-digit',
-              hour12: true 
-            });
+            const { timeString, dateString } = formatMessageDateTime(parseInt(messageData.timestamp));
             
             msg.innerHTML = `
               ${messageData.message}
-              <span class="message-time">${messageTime}</span>
-              <span class="message-status">${isSent ? 'Sent ✓' : 'Received ✓'}</span>
+              <div class="message-time">
+                ${dateString ? `<div class="message-date">${dateString}</div>` : ''}
+                <div>${timeString}</div>
+                <div class="message-status">${isSent ? 'Sent' : 'Received'}</div>
+              </div>
             `;
             
             messages.appendChild(msg);
@@ -1031,6 +1029,57 @@ function updateContactsList() {
     
     chatList.appendChild(contactElement);
   });
+}
+
+// Helper function to format date and time
+function formatMessageDateTime(timestamp) {
+  const messageDate = new Date(timestamp);
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const messageDay = new Date(messageDate.getFullYear(), messageDate.getMonth(), messageDate.getDate());
+  
+  // Format time
+  const timeString = messageDate.toLocaleTimeString('en-US', { 
+    hour: '2-digit', 
+    minute: '2-digit',
+    hour12: true 
+  });
+  
+  // Determine date display
+  let dateString = '';
+  if (messageDay.getTime() === today.getTime()) {
+    // Today - no date needed
+    dateString = '';
+  } else if (messageDay.getTime() === yesterday.getTime()) {
+    // Yesterday
+    dateString = 'دیروز';
+  } else {
+    // Other days - show full date
+    const persianMonths = [
+      'فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور',
+      'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'
+    ];
+    
+    const englishMonths = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    
+    const month = englishMonths[messageDate.getMonth()];
+    const day = messageDate.getDate();
+    const year = messageDate.getFullYear();
+    
+    // Show year only if not current year
+    if (year === now.getFullYear()) {
+      dateString = `${month} ${day}`;
+    } else {
+      dateString = `${month} ${day}, ${year}`;
+    }
+  }
+  
+  return { timeString, dateString };
 }
 
 
