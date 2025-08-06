@@ -273,6 +273,14 @@ body {
   font-family: 'Comfortaa', 'Segoe UI', sans-serif;
 }
 
+.contact-address-text {
+  margin: 0.3rem 0 0 0 !important;
+  font-size: 0.8rem !important;
+  color: var(--text-secondary) !important;
+  font-family: 'Comfortaa', 'Segoe UI', monospace !important;
+  opacity: 0.8;
+}
+
 /* ===== Chat Area ===== */
 .chat-area {
   flex: 1;
@@ -357,6 +365,39 @@ body {
   margin-top: 0.2rem;
   word-break: break-all;
   max-width: 200px;
+}
+
+.contact-address-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.2rem;
+}
+
+.copy-contact-address-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0;
+  opacity: 0.7;
+}
+
+.copy-contact-address-btn:hover {
+  color: var(--main-orange);
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.copy-contact-address-btn svg {
+  width: 10px;
+  height: 10px;
 }
 
 /* ===== Chat Messages ===== */
@@ -1289,4 +1330,104 @@ body {
 
 .theme-toggle:hover {
   transform: scale(1.05);
+}
+
+/* ===== Current User Box ===== */
+.current-user-box {
+  display: flex;
+  padding: 1rem;
+  border-bottom: 2px solid var(--main-orange);
+  align-items: center;
+  transition: all 0.3s ease;
+  background: linear-gradient(135deg, rgba(247, 147, 26, 0.1) 0%, rgba(247, 147, 26, 0.05) 100%);
+  position: relative;
+  overflow: hidden;
+  animation: currentUserSlideIn 0.5s ease-out;
+  margin-bottom: 0.5rem;
+}
+
+.current-user-box::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--main-orange);
+  transform: scaleY(1);
+}
+
+.current-user-avatar {
+  background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%) !important;
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3) !important;
+}
+
+.current-user-avatar:hover {
+  box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4) !important;
+}
+
+.wallet-address-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.2rem;
+}
+
+.wallet-address {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-family: 'Comfortaa', 'Segoe UI', monospace;
+  word-break: break-all;
+  max-width: 200px;
+}
+
+.copy-address-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0;
+  opacity: 0.7;
+}
+
+.copy-address-btn:hover {
+  color: var(--main-orange);
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.copy-address-btn svg {
+  width: 12px;
+  height: 12px;
+}
+
+@keyframes currentUserSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Light mode adjustments for current user box */
+[data-theme="light"] .current-user-box {
+  background: linear-gradient(135deg, rgba(247, 147, 26, 0.08) 0%, rgba(247, 147, 26, 0.03) 100%);
+  border-bottom: 2px solid var(--main-orange);
+}
+
+[data-theme="light"] .current-user-avatar {
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.4) !important;
+}
+
+[data-theme="light"] .current-user-avatar:hover {
+  box-shadow: 0 6px 20px rgba(39, 174, 96, 0.5) !important;
 }
