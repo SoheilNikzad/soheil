@@ -134,14 +134,12 @@ button.addEventListener('click', async () => {
     const msg = document.createElement('div');
     msg.className = 'message sent';
     
-    const { timeString, dateString } = formatMessageDateTime(Date.now());
+    const { combinedDateTime } = formatMessageDateTime(Date.now());
     
     msg.innerHTML = `
       ${text}
       <div class="message-time">
-        ${dateString ? `<div class="message-date">${dateString}</div>` : ''}
-        <div>${timeString}</div>
-        <div class="message-status">Sending...</div>
+        ${combinedDateTime}
       </div>
     `;
     
@@ -254,9 +252,7 @@ button.addEventListener('click', async () => {
       gasLimit: gasEstimate.mul(120).div(100) // Add 20% buffer
     });
 
-    // Update message status
-    const statusSpan = msg.querySelector('.message-status');
-    statusSpan.textContent = 'Sent';
+    // Message sent successfully - no status update needed
 
     showWalletAlert('Message sent successfully!', 'success');
 
@@ -1157,14 +1153,12 @@ async function loadMessagesForContact(contactAddress) {
       const messageElement = document.createElement('div');
       messageElement.className = `message ${msg.sender === userAddress ? 'sent' : 'received'}`;
       
-      const { timeString, dateString } = formatMessageDateTime(msg.timestamp);
+      const { combinedDateTime } = formatMessageDateTime(msg.timestamp);
       
       messageElement.innerHTML = `
         ${msg.text}
         <div class="message-time">
-          ${dateString ? `<div class="message-date">${dateString}</div>` : ''}
-          <div>${timeString}</div>
-          <div class="message-status">${msg.sender === userAddress ? '✓ Sent' : '✓ Received'}</div>
+          ${combinedDateTime}
         </div>
       `;
       
@@ -1377,7 +1371,7 @@ function formatMessageDateTime(timestamp) {
     // Yesterday
     dateString = 'Yesterday';
   } else {
-    // Other days - show full date
+    // Other days - show month and day
     const englishMonths = [
       'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
@@ -1395,7 +1389,10 @@ function formatMessageDateTime(timestamp) {
     }
   }
   
-  return { timeString, dateString };
+  // Combine time and date in one line
+  const combinedDateTime = `${timeString} • ${dateString}`;
+  
+  return { combinedDateTime };
 }
 
 // Helper function to format wallet address (shorten with dots)
