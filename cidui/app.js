@@ -51,6 +51,16 @@ refreshBtn.addEventListener('click', async () => {
   }
 });
 
+// Decrypt messages button
+const decryptBtn = document.getElementById('decrypt-messages-btn');
+decryptBtn.addEventListener('click', async () => {
+  const selectedContact = document.querySelector('.chat-item.active');
+  if (selectedContact) {
+    await loadMessagesForContact(selectedContact.dataset.address);
+    showWalletAlert('Messages decrypted!', 'success');
+  }
+});
+
 // هندل ارسال پیام
 button.addEventListener('click', async () => {
   const text = input.value.trim();
@@ -106,14 +116,58 @@ button.addEventListener('click', async () => {
       throw new Error('Wallet not connected');
     }
 
-    // Prepare transaction data
+    // Prepare encrypted message data
     const messageData = {
-      to: selectedContact.dataset.name,
-      message: text,
+      text: text,
+      timestamp: Date.now(),
+      sender: accounts[0],
+      recipient: selectedContact.dataset.address
+    };
+
+    // Convert message to bytes
+    const messageBytes = nacl.util.decodeUTF8(JSON.stringify(messageData));
+    
+    // Get recipient's public key from contact data
+    const recipientPublicKey = nacl.util.decodeBase64(selectedContact.dataset.pubkey);
+    
+    // Create ephemeral key pair for self-encryption
+    const ephemeralKeyPair = nacl.box.keyPair();
+    
+    // Encrypt for recipient (asymmetric)
+    const nonce1 = nacl.randomBytes(24);
+    const encryptedForRecipient = nacl.box(
+      messageBytes, 
+      nonce1, 
+      recipientPublicKey, 
+      nacl.util.decodeBase64(cachedPrivateKey)
+    );
+    
+    // Encrypt for self (ephemeral like contacts)
+    const nonce2 = nacl.randomBytes(24);
+    const encryptedForSelf = nacl.box(
+      messageBytes, 
+      nonce2, 
+      nacl.util.decodeBase64(cachedPublicKey), 
+      ephemeralKeyPair.secretKey
+    );
+    
+    // Prepare payload
+    const payload = {
+      // For recipient
+      recipientEncrypted: nacl.util.encodeBase64(encryptedForRecipient),
+      recipientNonce: nacl.util.encodeBase64(nonce1),
+      
+      // For self
+      selfEphPub: nacl.util.encodeBase64(ephemeralKeyPair.publicKey),
+      selfNonce: nacl.util.encodeBase64(nonce2),
+      selfBox: nacl.util.encodeBase64(encryptedForSelf),
+      
+      sender: accounts[0],
+      recipient: selectedContact.dataset.address,
       timestamp: Date.now()
     };
 
-    const dataField = 'MSG' + btoa(unescape(encodeURIComponent(JSON.stringify(messageData))));
+    const dataField = 'MSG' + btoa(JSON.stringify(payload));
 
     // Send transaction to recipient
     const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -125,7 +179,7 @@ button.addEventListener('click', async () => {
     // Get current network
     const network = await provider.getNetwork();
     console.log('Current network:', network);
-    console.log('Sending message to:', recipientAddress);
+    console.log('Sending encrypted message to:', recipientAddress);
     
     // Estimate gas
     const gasEstimate = await provider.estimateGas({
@@ -792,6 +846,97 @@ async function decryptContactData(payload) {
   }
 }
 
+// Decrypt received message (as recipient)
+async function decryptReceivedMessage(payload) {
+  try {
+    // Decode base64 data
+    const encryptedMessage = nacl.util.decodeBase64(payload.recipientEncrypted);
+    const nonce = nacl.util.decodeBase64(payload.recipientNonce);
+    
+    // Get sender's public key from contacts
+    const selectedContact = document.querySelector('.chat-item.active');
+    if (!selectedContact) return null;
+    
+    const senderPublicKey = nacl.util.decodeBase64(selectedContact.dataset.pubkey);
+    
+    // Create keypair from user's private key
+    let privateKeyHex = cachedPrivateKey;
+    if (privateKeyHex && !privateKeyHex.startsWith('0x')) {
+      privateKeyHex = '0x' + privateKeyHex;
+    }
+    if (privateKeyHex.length === 67) {
+      privateKeyHex = privateKeyHex.slice(0, 66);
+    }
+    
+    const userPrivateKey = ethers.utils.arrayify(privateKeyHex);
+    const userKeyPair = nacl.box.keyPair.fromSecretKey(userPrivateKey);
+    
+    // Decrypt the message
+    const decryptedBytes = nacl.box.open(encryptedMessage, nonce, senderPublicKey, userKeyPair.secretKey);
+    
+    if (!decryptedBytes) {
+      return null; // Decryption failed
+    }
+    
+    // Convert to string and parse
+    const decryptedString = nacl.util.encodeUTF8(decryptedBytes);
+    const messageData = JSON.parse(decryptedString);
+    
+    return {
+      text: messageData.text,
+      sender: messageData.sender,
+      recipient: messageData.recipient,
+      timestamp: messageData.timestamp
+    };
+  } catch (error) {
+    console.log('Error decrypting received message:', error);
+    return null;
+  }
+}
+
+// Decrypt sent message (as sender)
+async function decryptSentMessage(payload) {
+  try {
+    // Decode base64 data
+    const ephemeralPubKey = nacl.util.decodeBase64(payload.selfEphPub);
+    const nonce = nacl.util.decodeBase64(payload.selfNonce);
+    const encryptedBox = nacl.util.decodeBase64(payload.selfBox);
+    
+    // Create keypair from user's private key
+    let privateKeyHex = cachedPrivateKey;
+    if (privateKeyHex && !privateKeyHex.startsWith('0x')) {
+      privateKeyHex = '0x' + privateKeyHex;
+    }
+    if (privateKeyHex.length === 67) {
+      privateKeyHex = privateKeyHex.slice(0, 66);
+    }
+    
+    const userPrivateKey = ethers.utils.arrayify(privateKeyHex);
+    const userKeyPair = nacl.box.keyPair.fromSecretKey(userPrivateKey);
+    
+    // Decrypt the message
+    const decryptedBytes = nacl.box.open(encryptedBox, nonce, ephemeralPubKey, userKeyPair.secretKey);
+    
+    if (!decryptedBytes) {
+      return null; // Decryption failed
+    }
+    
+    // Convert to string and parse
+    const decryptedString = nacl.util.encodeUTF8(decryptedBytes);
+    const messageData = JSON.parse(decryptedString);
+    
+    return {
+      text: messageData.text,
+      sender: messageData.sender,
+      recipient: messageData.recipient,
+      timestamp: messageData.timestamp
+    };
+  } catch (error) {
+    console.log('Error decrypting sent message:', error);
+    return null;
+  }
+}
+
 async function loadMessagesForContact(contactAddress) {
   try {
     const messages = document.querySelector('.chat-messages');
@@ -852,7 +997,84 @@ async function loadMessagesForContact(contactAddress) {
           </div>
         `;
         return;
+    }
+    
+    // Decrypt and display messages
+    const decryptedMessages = [];
+    
+    for (const tx of allMessageTransactions) {
+      try {
+        // Parse transaction data
+        const inputData = tx.input;
+        if (!inputData || inputData === '0x') continue;
+        
+        // Extract message data
+        const hexData = inputData.slice(2); // Remove '0x'
+        const base64Data = atob(hexData);
+        const messagePayload = JSON.parse(base64Data);
+        
+        let decryptedMessage = null;
+        
+        // Check if this is a received message (from contact to user)
+        if (tx.from.toLowerCase() === contactAddress.toLowerCase() && 
+            tx.to.toLowerCase() === userAddress.toLowerCase()) {
+          // Decrypt as recipient
+          decryptedMessage = await decryptReceivedMessage(messagePayload);
+        }
+        // Check if this is a sent message (from user to contact)
+        else if (tx.from.toLowerCase() === userAddress.toLowerCase() && 
+                 tx.to.toLowerCase() === contactAddress.toLowerCase()) {
+          // Decrypt as sender
+          decryptedMessage = await decryptSentMessage(messagePayload);
+        }
+        
+        if (decryptedMessage) {
+          decryptedMessages.push({
+            ...decryptedMessage,
+            timestamp: tx.timeStamp * 1000,
+            hash: tx.hash
+          });
+        }
+      } catch (error) {
+        console.log('Error processing message:', error);
       }
+    }
+    
+    // Sort messages by timestamp
+    decryptedMessages.sort((a, b) => a.timestamp - b.timestamp);
+    
+    // Display messages
+    if (decryptedMessages.length === 0) {
+      messages.innerHTML = `
+        <div class="chat-overlay">
+          <div class="chat-overlay-message">
+            No messages found or unable to decrypt
+          </div>
+        </div>
+      `;
+      return;
+    }
+    
+    messages.innerHTML = '';
+    decryptedMessages.forEach(msg => {
+      const messageElement = document.createElement('div');
+      messageElement.className = `message ${msg.sender === userAddress ? 'sent' : 'received'}`;
+      
+      const { timeString, dateString } = formatMessageDateTime(msg.timestamp);
+      
+      messageElement.innerHTML = `
+        ${msg.text}
+        <div class="message-time">
+          ${dateString ? `<div class="message-date">${dateString}</div>` : ''}
+          <div>${timeString}</div>
+          <div class="message-status">${msg.sender === userAddress ? '✓ Sent' : '✓ Received'}</div>
+        </div>
+      `;
+      
+      messages.appendChild(messageElement);
+    });
+    
+    messages.scrollTop = messages.scrollHeight;
       
       // Clear overlay and display messages
       messages.innerHTML = '';
@@ -960,13 +1182,15 @@ function updateContactsList() {
               chatOverlay.remove();
             }
             
-            // Enable chat input and refresh button
+            // Enable chat input and buttons
             const chatInput = document.querySelector('.chat-input input');
             const sendButton = document.querySelector('.chat-input button');
             const refreshButton = document.getElementById('refresh-messages-btn');
+            const decryptButton = document.getElementById('decrypt-messages-btn');
             if (chatInput) chatInput.disabled = false;
             if (sendButton) sendButton.disabled = false;
             if (refreshButton) refreshButton.disabled = false;
+            if (decryptButton) decryptButton.disabled = false;
           }
           
           showWalletAlert('Contacts decrypted successfully!', 'success');
@@ -1019,11 +1243,15 @@ function updateContactsList() {
       // Load messages for this contact
       await loadMessagesForContact(contact.address);
       
-      // Enable chat input
+      // Enable chat input and buttons
       const chatInput = document.querySelector('.chat-input input');
       const sendButton = document.querySelector('.chat-input button');
+      const refreshButton = document.getElementById('refresh-messages-btn');
+      const decryptButton = document.getElementById('decrypt-messages-btn');
       if (chatInput) chatInput.disabled = false;
       if (sendButton) sendButton.disabled = false;
+      if (refreshButton) refreshButton.disabled = false;
+      if (decryptButton) decryptButton.disabled = false;
     });
     
     chatList.appendChild(contactElement);
