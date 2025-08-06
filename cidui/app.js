@@ -146,7 +146,6 @@ button.addEventListener('click', async () => {
     // Update message status
     const statusSpan = msg.querySelector('.message-status');
     statusSpan.textContent = 'Sent';
-    statusSpan.style.color = '#27ae60';
 
     showWalletAlert('Message sent successfully!', 'success');
 
@@ -1050,18 +1049,13 @@ function formatMessageDateTime(timestamp) {
   // Determine date display
   let dateString = '';
   if (messageDay.getTime() === today.getTime()) {
-    // Today - no date needed
-    dateString = '';
+    // Today
+    dateString = 'Today';
   } else if (messageDay.getTime() === yesterday.getTime()) {
     // Yesterday
-    dateString = 'دیروز';
+    dateString = 'Yesterday';
   } else {
     // Other days - show full date
-    const persianMonths = [
-      'فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور',
-      'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'
-    ];
-    
     const englishMonths = [
       'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
