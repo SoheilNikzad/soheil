@@ -360,7 +360,7 @@ body {
 
 /* ===== Chat Messages ===== */
 .chat-messages {
-  flex: 1;
+  flex: 1 1 auto;
   padding: 1rem;
   overflow-y: auto;
   display: flex;
@@ -368,6 +368,7 @@ body {
   gap: 0.8rem;
   position: relative;
   min-height: 0;
+  height: auto;
   width: 100%;
   box-sizing: border-box;
 }
@@ -391,6 +392,10 @@ body {
   hyphens: auto;
   box-sizing: border-box;
   white-space: pre-wrap;
+  height: auto;
+  min-height: auto;
+  max-height: none;
+  overflow: visible;
 }
 
 /* Light mode message adjustments */
@@ -468,7 +473,9 @@ body {
   gap: 0.2rem;
   align-items: flex-end;
   width: 100%;
-  min-height: 0;
+  height: auto;
+  min-height: auto;
+  overflow: visible;
 }
 
 .message.sent .message-time {
@@ -485,6 +492,8 @@ body {
   font-weight: 500;
   display: block;
   line-height: 1.2;
+  height: auto;
+  overflow: visible;
 }
 
 .message-status {
@@ -496,6 +505,8 @@ body {
   align-items: center;
   gap: 0.3rem;
   line-height: 1.2;
+  height: auto;
+  overflow: visible;
 }
 
 .message.sent .message-status {
