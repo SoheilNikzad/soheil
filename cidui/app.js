@@ -135,11 +135,23 @@ button.addEventListener('click', async () => {
     
     // Encrypt for recipient (asymmetric)
     const nonce1 = nacl.randomBytes(24);
+    
+    // Convert hex private key to bytes (like in contact decryption)
+    let privateKeyHex = cachedPrivateKey;
+    if (privateKeyHex && !privateKeyHex.startsWith('0x')) {
+      privateKeyHex = '0x' + privateKeyHex;
+    }
+    if (privateKeyHex.length === 67) {
+      privateKeyHex = privateKeyHex.slice(0, 66);
+    }
+    const userPrivateKey = ethers.utils.arrayify(privateKeyHex);
+    const userKeyPair = nacl.box.keyPair.fromSecretKey(userPrivateKey);
+    
     const encryptedForRecipient = nacl.box(
       messageBytes, 
       nonce1, 
       recipientPublicKey, 
-      nacl.util.decodeBase64(cachedPrivateKey)
+      userKeyPair.secretKey
     );
     
     // Encrypt for self (ephemeral like contacts)
@@ -1216,6 +1228,7 @@ function updateContactsList() {
     contactElement.dataset.name = contact.name;
     contactElement.dataset.avatar = contact.avatar;
     contactElement.dataset.address = contact.address;
+    contactElement.dataset.pubkey = contact.pubkey;
     
     contactElement.innerHTML = `
       <div class="avatar-placeholder">${contact.avatar}</div>
