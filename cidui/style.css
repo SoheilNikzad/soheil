@@ -69,11 +69,13 @@ body {
   align-items: center;
   justify-content: center;
   height: 64px;
+  min-height: 64px;
   padding: 0 1rem;
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border-color);
   box-sizing: border-box;
   transition: all 0.3s ease;
+  flex-shrink: 0;
 }
 
 .sidebar-title {
@@ -99,12 +101,14 @@ body {
   display: flex;
   align-items: center;
   height: 64px;
+  min-height: 64px;
   padding: 0 1rem;
   position: relative;
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border-color);
   box-sizing: border-box;
   transition: all 0.3s ease;
+  flex-shrink: 0;
 }
 
 /* ===== Chat List ===== */
@@ -577,7 +581,7 @@ body {
 
 /* Status icons */
 .message-status::before {
-  content: '✓';
+  content: '';
   font-weight: bold;
   margin-right: 4px;
 }
@@ -1335,15 +1339,17 @@ body {
 /* ===== Current User Box ===== */
 .current-user-box {
   display: flex;
-  padding: 1rem;
-  border-bottom: 2px solid var(--main-orange);
+  padding: 1.2rem;
   align-items: center;
   transition: all 0.3s ease;
-  background: linear-gradient(135deg, rgba(247, 147, 26, 0.1) 0%, rgba(247, 147, 26, 0.05) 100%);
+  background: linear-gradient(135deg, rgba(39, 174, 96, 0.15) 0%, rgba(46, 204, 113, 0.08) 100%);
   position: relative;
   overflow: hidden;
   animation: currentUserSlideIn 0.5s ease-out;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.8rem;
+  border-radius: 12px;
+  border: 1px solid rgba(39, 174, 96, 0.2);
+  box-shadow: 0 4px 16px rgba(39, 174, 96, 0.15);
 }
 
 .current-user-box::before {
@@ -1353,17 +1359,26 @@ body {
   top: 0;
   width: 4px;
   height: 100%;
-  background: var(--main-orange);
+  background: linear-gradient(180deg, #27ae60 0%, #2ecc71 100%);
   transform: scaleY(1);
+  border-radius: 0 2px 2px 0;
+}
+
+.current-user-box:hover {
+  background: linear-gradient(135deg, rgba(39, 174, 96, 0.2) 0%, rgba(46, 204, 113, 0.12) 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(39, 174, 96, 0.25);
 }
 
 .current-user-avatar {
   background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%) !important;
-  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3) !important;
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.4) !important;
+  border: 2px solid rgba(255, 255, 255, 0.1);
 }
 
 .current-user-avatar:hover {
-  box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4) !important;
+  box-shadow: 0 6px 20px rgba(39, 174, 96, 0.5) !important;
+  transform: scale(1.05);
 }
 
 .wallet-address-container {
@@ -1420,14 +1435,21 @@ body {
 
 /* Light mode adjustments for current user box */
 [data-theme="light"] .current-user-box {
-  background: linear-gradient(135deg, rgba(247, 147, 26, 0.08) 0%, rgba(247, 147, 26, 0.03) 100%);
-  border-bottom: 2px solid var(--main-orange);
+  background: linear-gradient(135deg, rgba(39, 174, 96, 0.12) 0%, rgba(46, 204, 113, 0.06) 100%);
+  border: 1px solid rgba(39, 174, 96, 0.25);
+  box-shadow: 0 4px 16px rgba(39, 174, 96, 0.2);
+}
+
+[data-theme="light"] .current-user-box:hover {
+  background: linear-gradient(135deg, rgba(39, 174, 96, 0.18) 0%, rgba(46, 204, 113, 0.1) 100%);
+  box-shadow: 0 6px 20px rgba(39, 174, 96, 0.3);
 }
 
 [data-theme="light"] .current-user-avatar {
-  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.4) !important;
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.5) !important;
+  border: 2px solid rgba(0, 0, 0, 0.1);
 }
 
 [data-theme="light"] .current-user-avatar:hover {
-  box-shadow: 0 6px 20px rgba(39, 174, 96, 0.5) !important;
+  box-shadow: 0 6px 20px rgba(39, 174, 96, 0.6) !important;
 }
