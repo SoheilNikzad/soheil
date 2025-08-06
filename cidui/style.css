@@ -468,10 +468,12 @@ body {
 
 .message.sent .message-time {
   color: rgba(255, 255, 255, 0.9);
+  text-align: right;
 }
 
 .message.received .message-time {
   color: var(--text-secondary);
+  text-align: left;
 }
 
 .message-date {
@@ -480,6 +482,14 @@ body {
   font-weight: 500;
   display: block;
   margin-bottom: 0.2rem;
+}
+
+.message.sent .message-date {
+  text-align: right;
+}
+
+.message.received .message-date {
+  text-align: left;
 }
 
 .message-status {
@@ -492,10 +502,12 @@ body {
 
 .message.sent .message-status {
   color: rgba(255, 255, 255, 0.9);
+  text-align: right;
 }
 
 .message.received .message-status {
   color: var(--text-secondary);
+  text-align: left;
 }
 
 /* Status icons */
