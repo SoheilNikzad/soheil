@@ -51,6 +51,18 @@ decryptBtn.addEventListener('click', async () => {
   }
 });
 
+// Function to show decrypt overlay
+function showDecryptOverlay() {
+  const messages = document.querySelector('.chat-messages');
+  messages.innerHTML = `
+    <div class="chat-overlay">
+      <div class="chat-overlay-message">
+        Click Decrypt button to load messages
+      </div>
+    </div>
+  `;
+}
+
 // Custom tooltip for decrypt button
 const decryptTooltipText = 'Decrypt Messages';
 let decryptTooltip;
@@ -63,8 +75,28 @@ decryptBtn.addEventListener('mouseenter', (e) => {
   document.body.appendChild(decryptTooltip);
   
   const rect = e.target.getBoundingClientRect();
-  decryptTooltip.style.left = rect.left + (rect.width / 2) - (decryptTooltip.offsetWidth / 2) + 'px';
-  decryptTooltip.style.top = rect.top - decryptTooltip.offsetHeight - 8 + 'px';
+  const tooltipWidth = decryptTooltip.offsetWidth;
+  const tooltipHeight = decryptTooltip.offsetHeight;
+  
+  // Calculate position
+  let left = rect.left + (rect.width / 2) - (tooltipWidth / 2);
+  let top = rect.top - tooltipHeight - 8;
+  
+  // Check if tooltip goes off screen
+  if (top < 10) {
+    // Show below the button instead
+    top = rect.bottom + 8;
+  }
+  
+  // Ensure tooltip doesn't go off left or right
+  if (left < 10) {
+    left = 10;
+  } else if (left + tooltipWidth > window.innerWidth - 10) {
+    left = window.innerWidth - tooltipWidth - 10;
+  }
+  
+  decryptTooltip.style.left = left + 'px';
+  decryptTooltip.style.top = top + 'px';
 });
 
 decryptBtn.addEventListener('mouseleave', () => {
@@ -1171,12 +1203,16 @@ function updateContactsList() {
           // Update UI
           updateContactsList();
           
-          // Remove chat overlay if contacts found
+          // Show select contact overlay if contacts found
           if (contacts.length > 0) {
-            const chatOverlay = document.querySelector('.chat-overlay');
-            if (chatOverlay) {
-              chatOverlay.remove();
-            }
+            const messages = document.querySelector('.chat-messages');
+            messages.innerHTML = `
+              <div class="chat-overlay">
+                <div class="chat-overlay-message">
+                  Select a contact to start chatting
+                </div>
+              </div>
+            `;
             
             // Enable chat input and buttons
             const chatInput = document.querySelector('.chat-input input');
@@ -1206,7 +1242,7 @@ function updateContactsList() {
   // Add each contact
   contacts.forEach((contact, index) => {
     const contactElement = document.createElement('div');
-    contactElement.className = 'chat-item' + (index === 0 ? ' active' : '');
+    contactElement.className = 'chat-item'; // No auto-selection
     contactElement.dataset.name = contact.name;
     contactElement.dataset.avatar = contact.avatar;
     contactElement.dataset.address = contact.address;
@@ -1235,8 +1271,8 @@ function updateContactsList() {
       headerAvatar.textContent = contact.avatar;
       headerAddress.textContent = contact.address;
       
-      // Load messages for this contact
-      await loadMessagesForContact(contact.address);
+      // Show decrypt overlay
+      showDecryptOverlay();
       
       // Enable chat input and buttons
       const chatInput = document.querySelector('.chat-input input');
