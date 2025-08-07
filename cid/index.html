@@ -3,76 +3,100 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Web3 Messenger</title>
+  <title>CID CHAT</title>
   <link rel="stylesheet" href="style.css"/>
-  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300..700&family=Inter:wght@100..900&display=swap" rel="stylesheet">
 </head>
 <body>
-  <div class="container">
+  <div class="app">
+    <!-- Sidebar -->
     <aside class="sidebar">
-      <div class="sidebar-header">
-        <h2>Contacts</h2>
-        <button id="connectWalletBtn" class="glow-button">Connect Wallet</button>
-        <button id="registerKeyBtn" class="glow-button-small">Register Public Key</button>
-
-        <!-- ✅ Public Key Display Box -->
-        <div id="publicKeyBox" class="user-info" style="display: none;">
-          <p><strong>Your Public Key:</strong></p>
-          <textarea id="publicKeyDisplay" readonly></textarea>
-        </div>
-      </div>
-
-      <div id="userInfo" class="user-info" style="display: none;">
-        <p><strong>Address:</strong> <span id="userAddress"></span></p>
-        <p><strong>Network:</strong> <span id="networkName"></span> (<span id="chainId"></span>)</p>
-      </div>
-
-      <div id="contactList" class="contact-list"></div>
-    </aside>
-
-    <main class="chat-area">
-      <header class="chat-header">
-        <h3 id="chattingWith">Select a chat</h3>
-        <button id="clearCacheBtn" class="glow-button-small" style="display: none;">Clear Cache</button>
+      <header class="sidebar-header">
+        <div class="sidebar-title">CID CHAT</div>
       </header>
 
-      <div id="messageList" class="message-list"></div>
+      <div class="chat-list">
+        <!-- Current User Box (appears when wallet is connected) -->
+        <div id="current-user-box" class="current-user-box" style="display: none;">
+          <div class="avatar-placeholder current-user-avatar">Y</div>
+          <div class="chat-details">
+            <h4>YOU</h4>
+            <div class="wallet-address-container">
+              <span class="wallet-address" id="current-wallet-address"></span>
+              <button class="copy-address-btn" id="copy-address-btn" title="Copy Address">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Contacts will be loaded dynamically after decryption -->
+        <div class="empty-contacts">
+          <p>No contacts found</p>
+          <p>Connect wallet and decrypt to see your contacts</p>
+          <button id="decrypt-contacts-btn" class="decrypt-btn">Decrypt Contacts</button>
+        </div>
+      </div>
+      <div class="sidebar-footer">
+        <div class="sidebar-actions">
+          <button id="wallet-connect-btn" class="action-btn" title="Wallet Connect"><svg id="wallet-connect-icon" class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.59 13.41a5 5 0 0 1 0-7.07l1.34-1.34a5 5 0 0 1 7.07 7.07l-2.12 2.12m-5.66 5.66a5 5 0 0 1-7.07-7.07l2.12-2.12"/></svg></button>
+          <button id="show-public-key-btn" class="action-btn" title="Show Public Key"><svg class="sidebar-icon" viewBox="0 0 24 24" fill="none"><path d="M6 2a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6H6zm7 1.5V8a1 1 0 0 0 1 1h4.5" stroke="#bbb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button id="show-private-key-btn" class="action-btn" title="Enter Private Key"><svg class="sidebar-icon" viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="8" rx="2" stroke="#bbb" stroke-width="2"/><path d="M7 11V7a5 5 0 0 1 10 0" stroke="#bbb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="15" r="1.5" fill="none" stroke="#bbb" stroke-width="2"/></svg></button>
+          <button id="add-contact-btn" class="action-btn" title="Add Contact"><svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg></button>
+          <button class="action-btn" title="Settings"><svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.61-.22l-2.39.96a7.03 7.03 0 0 0-1.62-.94l-.36-2.53A.5.5 0 0 0 14 2h-4a.5.5 0 0 0-.5.42l-.36 2.53c-.59.24-1.15.56-1.67.94l-2.39-.96a.5.5 0 0 0-.61.22l-1.92 3.32a.5.5 0 0 0 .12.64l2.03 1.58c-.04.3-.06.61-.06.94s.02.64.06.94l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .61.22l2.39-.96c.52.38 1.08.7 1.67.94l.36 2.53A.5.5 0 0 0 10 22h4a.5.5 0 0 0 .5-.42l.36-2.53c.59-.24 1.15-.56 1.67-.94l2.39.96a.5.5 0 0 0 .61-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z"/></svg></button>
+        </div>
+      </div>
+    </aside>
 
-      <!-- 🧪 Manual Decryption Section -->
-      <section id="manualDecryptSection" class="message-list">
-        <h3 style="color: #ffa500;">Manual Message Decryption</h3>
+    <!-- Chat Area -->
+    <main class="chat-area">
+      <header class="chat-header">
+        <div class="avatar-placeholder">A</div>
+        <div class="contact-info">
+          <h3>Select a contact</h3>
+          <div class="contact-address-container">
+            <span class="contact-address"></span>
+            <button class="copy-contact-address-btn" id="copy-contact-address-btn" title="Copy Address" style="display: none;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <button id="decrypt-messages-btn" class="refresh-btn" title="Decrypt Messages" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 15v2m-6 4h12a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2zm10-10V7a4 4 0 0 0-8 0v4h8z"/>
+          </svg>
+        </button>
+      </header>
 
-        <textarea id="rawInputData" placeholder="Paste raw hex data from transaction (e.g. 0x7b226e6f6e636522...)" rows="3"></textarea>
-        <input type="text" id="manualSenderPubKey" placeholder="Sender's Public Key (base64)">
-        <input type="text" id="manualReceiverPrivKey" placeholder="Your Private Key (hex)">
-        <button id="manualDecryptBtn" class="glow-button-small">Decrypt</button>
-        <pre id="manualDecryptedOutput" style="white-space: pre-wrap; color: lime; margin-top: 10px;"></pre>
+      <section class="chat-messages">
+        <!-- Messages will be loaded dynamically after contact selection -->
+        <div class="chat-overlay">
+          <div class="chat-overlay-message">
+            Please decrypt contacts first
+          </div>
+        </div>
       </section>
 
-      <footer class="chat-footer">
-        <input type="text" id="recipientAddressInput" placeholder="Recipient Address"/>
-        <input type="text" id="recipientPublicKeyInput" placeholder="Recipient Public Key"/>
-        <input type="text" id="senderPrivateKeyInput" placeholder="Your Private Key (hex)"/>
-        <textarea id="messageInput" placeholder="Type your message..."></textarea>
-        <button id="sendMessageBtn" class="glow-button">Send</button>
-        <button id="encryptOnlyBtn" class="glow-button-small">Encrypt Message</button>
-        <pre id="encryptedOutputBox" style="white-space: pre-wrap; color: lime; margin-top: 10px;"></pre>
+      <footer class="chat-input">
+        <input type="text" placeholder="Type a message..." disabled />
+        <button disabled>Send</button>
       </footer>
     </main>
   </div>
+  <!-- Public Key Modal -->
+  <div id="public-key-modal" style="display:none;"></div>
+  
+  <!-- Settings Modal -->
+  <div id="settings-modal" style="display:none;"></div>
 
-  <!-- QR Modal -->
-  <div id="qrCodeModal" class="modal" style="display:none;">
-    <div class="modal-content">
-      <span class="close-button">&times;</span>
-      <p>Scan QR Code to connect mobile wallet (placeholder)</p>
-      <div id="qrCodeContainer"></div>
-    </div>
-  </div>
-
-  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl.min.js"></script>
-  <script src="app.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/tweetnacl-util@0.15.1/nacl-util.min.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
