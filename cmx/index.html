@@ -2,62 +2,46 @@
 <html lang="fa" dir="rtl">
 <head>
   <meta charset="utf-8" />
-  <title>cmx — mini editor (static, no-build)</title>
+  <title>cmx — interactive mini editor (static)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-  <!-- Comfortaa (English) & Vazirmatn (Persian/Arabic) — weight 300 -->
+  <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300&family=Vazirmatn:wght@300&display=swap" rel="stylesheet">
-
   <style>
-    :root {
-      --bg:#0b0c0f; --panel:#11131a; --fg:#e7e7e7; --muted:#9fb0c8;
-      --border:#1c2030; --btn:#1e2436; --btn2:#262d47;
-    }
-    * { box-sizing:border-box; }
-    html, body {
-      height:100%; margin:0; background:var(--bg); color:var(--fg);
-      font-family:'Vazirmatn',sans-serif; font-weight:300;
-    }
-    .en, code, .kbd, .brand, button {
-      font-family:'Comfortaa',sans-serif !important; font-weight:300;
-    }
-
-    .wrap { display:grid; grid-template-columns:1fr 420px; gap:16px; min-height:100vh; padding:16px; }
-    header { grid-column:1/-1; display:flex; align-items:center; justify-content:space-between; padding:4px 0 12px; border-bottom:1px solid var(--border); }
-    .title { font-weight:700; letter-spacing:.3px; }
-    .brand { opacity:.8; font-size:12px; }
-    .brand a { color:var(--muted); text-decoration:none; }
-    .brand a:hover { text-decoration:underline; }
-
-    .pane { background:var(--panel); border:1px solid var(--border); border-radius:12px; overflow:hidden; display:flex; flex-direction:column; }
-    .pane h3 { margin:0; padding:12px 14px; border-bottom:1px solid var(--border); color:#cbd3df; font-size:14px; }
-
-    .preview { padding:12px; flex:1; overflow:auto; }
-    .preview .host { display:flex; align-items:center; justify-content:center; min-height:380px; }
-
-    .editor { position:relative; min-height:420px; }
-    #editor { position:absolute; inset:0; font-size:13px; }
-
-    .toolbar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; padding:10px 12px; border-top:1px solid var(--border); background:#0f1220; }
-    .toolbar button { background:var(--btn); color:#cbd3df; border:1px solid #2a3350; border-radius:8px; padding:8px 12px; cursor:pointer; }
-    .toolbar button:hover { background:var(--btn2); }
-    .kbd { display:inline-block; background:#1a1f33; border:1px solid #2f3a5d; border-radius:6px; padding:0 6px; margin:0 2px; }
-    .hint { padding:8px 12px; color:var(--muted); font-size:12px; border-top:1px dashed #24304d; background:#0f1324; }
-
-    @media (max-width:1100px) { .wrap { grid-template-columns:1fr; } }
+    :root{--bg:#0b0c0f;--panel:#11131a;--fg:#e7e7e7;--muted:#9fb0c8;--border:#1c2030;--btn:#1e2436;--btn2:#262d47}
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font-family:'Vazirmatn',sans-serif;font-weight:300}
+    .en, .kbd, button, .brand{font-family:'Comfortaa',sans-serif!important;font-weight:300}
+    .wrap{display:grid;grid-template-columns:1fr 420px;gap:16px;min-height:100vh;padding:16px}
+    header{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;padding:4px 0 12px;border-bottom:1px solid var(--border)}
+    .title{font-weight:700;letter-spacing:.3px}
+    .brand{opacity:.85;font-size:12px}
+    .brand a{color:var(--muted);text-decoration:none}.brand a:hover{text-decoration:underline}
+    .pane{background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+    .pane h3{margin:0;padding:12px 14px;border-bottom:1px solid var(--border);color:#cbd3df;font-size:14px}
+    .preview{padding:12px;flex:1;overflow:auto}
+    .preview .host{display:flex;align-items:center;justify-content:center;min-height:380px}
+    .editor{position:relative;min-height:420px}
+    #editor{position:absolute;inset:0;font-size:13px}
+    .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 12px;border-top:1px solid var(--border);background:#0f1220}
+    .toolbar button{background:var(--btn);color:#cbd3df;border:1px solid #2a3350;border-radius:8px;padding:8px 12px;cursor:pointer}
+    .toolbar button:hover{background:var(--btn2)}
+    .kbd{display:inline-block;background:#1a1f33;border:1px solid #2f3a5d;border-radius:6px;padding:0 6px;margin:0 2px}
+    .hint{padding:8px 12px;color:var(--muted);font-size:12px;border-top:1px dashed #24304d;background:#0f1324}
+    .ghost{pointer-events:none;position:fixed;left:8px;bottom:8px;background:#111a;border:1px solid #333;padding:6px 8px;border-radius:8px;font-size:12px}
+    @media(max-width:1100px){.wrap{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
   <div class="wrap">
     <header>
       <div class="brand">Inspired by <a href="https://github.com/darwin/cmx.js" target="_blank" rel="noopener">cmx.js</a></div>
-      <div class="title en">cmx — mini editor (static, no-build)</div>
+      <div class="title en">cmx — interactive mini editor</div>
     </header>
 
     <section class="pane">
-      <h3>پیش‌نمایش</h3>
+      <h3>پیش‌نمایش (عناصر قابل‌کشیدن هستند)</h3>
       <div id="preview" class="preview">
-        <div class="host" id="host"></div>
+        <div id="host" class="host"></div>
       </div>
     </section>
 
@@ -75,159 +59,237 @@
       <div class="hint">
         دستورات: <span class="kbd">panel &lt;W&gt;x&lt;H&gt;</span>،
         <span class="kbd">stick x=… y=… [arms=up|down]</span>،
-        <span class="kbd">say x=… y=… "متن"</span>
+        <span class="kbd">say x=… y=… "متن"</span> — با موس/لمس بکشید؛ مختصات در ادیتور آپدیت می‌شود.
       </div>
     </section>
   </div>
 
-  <!-- Ace Editor (CDN) -->
+  <div id="ghost" class="ghost en" style="display:none;"></div>
+
+  <!-- Ace Editor -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.6/ace.js" crossorigin="anonymous"></script>
 
   <script>
     const $ = s => document.querySelector(s);
     const svgNS = 'http://www.w3.org/2000/svg';
+    let currentParse = null;   // آخرین ساختار پارس‌شده (برای نگهداشت شماره خطوط)
+    let dragging = null;       // وضعیت درگ جاری
+    const ghost = $("#ghost");
 
+    // ---------- پایه‌ی SVG ----------
     function createSVG(w=800,h=400){
       const svg=document.createElementNS(svgNS,'svg');
       svg.setAttribute('viewBox',`0 0 ${w} ${h}`);
       svg.setAttribute('width',w); svg.setAttribute('height',h);
-      svg.style.background='#fff';
-      svg.style.border='2px solid #000';
-      svg.style.borderRadius='8px';
+      svg.style.background='#fff'; svg.style.border='2px solid #000'; svg.style.borderRadius='8px';
+      // eventi برای درگ
+      svg.addEventListener('mousemove',onDragMove);
+      svg.addEventListener('touchmove',onDragMove,{passive:false});
+      svg.addEventListener('mouseup',onDragEnd);
+      svg.addEventListener('mouseleave',onDragEnd);
+      svg.addEventListener('touchend',onDragEnd);
       return svg;
     }
-    function line(svg,x1,y1,x2,y2,sw=6){
-      const ln=document.createElementNS(svgNS,'line');
+    function line(svg,x1,y1,x2,y2,sw=6){ const ln=document.createElementNS(svgNS,'line');
       ln.setAttribute('x1',x1); ln.setAttribute('y1',y1);
       ln.setAttribute('x2',x2); ln.setAttribute('y2',y2);
       ln.setAttribute('stroke','#000'); ln.setAttribute('stroke-width',sw);
-      ln.setAttribute('stroke-linecap','round'); svg.appendChild(ln);
-    }
-    function circle(svg,cx,cy,r,fill='#000'){
-      const c=document.createElementNS(svgNS,'circle');
+      ln.setAttribute('stroke-linecap','round'); svg.appendChild(ln); }
+    function circle(svg,cx,cy,r,fill='#000'){ const c=document.createElementNS(svgNS,'circle');
       c.setAttribute('cx',cx); c.setAttribute('cy',cy); c.setAttribute('r',r);
-      c.setAttribute('fill',fill); svg.appendChild(c);
+      c.setAttribute('fill',fill); svg.appendChild(c); }
+
+    // ---------- گروه‌های درَگ‌پذیر ----------
+    function makeDraggableGroup(svg, op, drawFn){
+      const g=document.createElementNS(svgNS,'g');
+      g.dataset.opIndex = op._index;   // شماره عمل در آرایه
+      g.dataset.line = op._line;       // شماره خط ادیتور
+      g.dataset.type = op.t;           // stick | say
+      drawFn(g);                       // اجزای داخلی را بساز
+      svg.appendChild(g);
+
+      // هندل‌های درگ
+      g.style.cursor = 'move';
+      g.addEventListener('mousedown', ev => startDrag(ev, g, op));
+      g.addEventListener('touchstart', ev => startDrag(ev, g, op), {passive:false});
+      return g;
     }
-    function say(svg,x,y,text){
+
+    function startDrag(ev, g, op){
+      ev.preventDefault();
+      const pt = getPoint(ev);
+      dragging = {
+        g, op,
+        start: pt,
+        origin: {x: op.x, y: op.y}
+      };
+      ghost.style.display='block';
+      ghost.textContent = `${op.t}  x=${op.x}  y=${op.y}`;
+    }
+    function onDragMove(ev){
+      if(!dragging) return;
+      ev.preventDefault();
+      const pt = getPoint(ev);
+      const dx = pt.x - dragging.start.x;
+      const dy = pt.y - dragging.start.y;
+      // مختصات جدید
+      const nx = Math.round(dragging.origin.x + dx);
+      const ny = Math.round(dragging.origin.y + dy);
+      // نمایش لحظه‌ای
+      dragging.g.setAttribute('transform', `translate(${nx - dragging.op.x}, ${ny - dragging.op.y})`);
+      ghost.textContent = `${dragging.op.t}  x=${nx}  y=${ny}`;
+      dragging.newXY = {x:nx, y:ny};
+    }
+    function onDragEnd(){
+      if(!dragging) return;
+      // سند ادیتور را آپدیت کن و رندر مجدد
+      const nx = dragging.newXY?.x ?? dragging.op.x;
+      const ny = dragging.newXY?.y ?? dragging.op.y;
+      applyXYToEditorLine(dragging.op._line, nx, ny);
+      dragging = null;
+      ghost.style.display='none';
+      run(); // رندر مجدد با داده‌های جدید
+    }
+    function getPoint(ev){
+      const svg = ev.currentTarget?.closest('svg') || $('#host svg');
+      const pt = svg.createSVGPoint();
+      const src = ev.touches ? ev.touches[0] : ev;
+      pt.x = src.clientX; pt.y = src.clientY;
+      const m = svg.getScreenCTM().inverse();
+      return pt.matrixTransform(m);
+    }
+
+    // ---------- اجزای گرافیکی ----------
+    function drawSayGroup(g, op){
+      // کل حباب را نسبت به x,y رسم می‌کنیم (بدون transform اولیه)
       const padding=10, rx=12, ry=12;
-      const lines=text.split(/\n/);
+      const lines=op.text.split(/\n/);
       const charW=7.5, lh=18;
       const maxLen=Math.max(...lines.map(s=>s.length));
       const w=padding*2 + maxLen*charW;
       const h=padding*2 + lines.length*lh;
-      const g=document.createElementNS(svgNS,'g');
 
       const r=document.createElementNS(svgNS,'rect');
-      r.setAttribute('x',x); r.setAttribute('y',y);
+      r.setAttribute('x',op.x); r.setAttribute('y',op.y);
       r.setAttribute('width',w); r.setAttribute('height',h);
       r.setAttribute('rx',rx); r.setAttribute('ry',ry);
       r.setAttribute('fill','#fff'); r.setAttribute('stroke','#000'); r.setAttribute('stroke-width','2');
       g.appendChild(r);
 
       const tail=document.createElementNS(svgNS,'path');
-      tail.setAttribute('d',`M ${x+24} ${y+h} l 14 18 l 6 -22 Z`);
+      tail.setAttribute('d',`M ${op.x+24} ${op.y+h} l 14 18 l 6 -22 Z`);
       tail.setAttribute('fill','#fff'); tail.setAttribute('stroke','#000'); tail.setAttribute('stroke-width','2');
       g.appendChild(tail);
 
+      const paddingX = op.x + padding, baseY = op.y + padding;
       lines.forEach((ln,i)=>{
         const t=document.createElementNS(svgNS,'text');
-        t.setAttribute('x', x+padding);
-        t.setAttribute('y', y+padding + (i+1)*lh - 6);
+        t.setAttribute('x', paddingX);
+        t.setAttribute('y', baseY + (i+1)*lh - 6);
         t.setAttribute('font-size','16');
-        // Persian/Arabic range → Vazirmatn, else Comfortaa
         t.setAttribute('font-family', /[\u0600-\u06FF]/.test(ln) ? 'Vazirmatn' : 'Comfortaa');
         t.setAttribute('font-weight','300');
         t.setAttribute('fill','#000');
         t.textContent=ln;
         g.appendChild(t);
       });
-      svg.appendChild(g);
     }
-    function stick(svg,x,y,arms='down'){
+    function drawStickGroup(g, op){
+      // y محور لگن؛ سر، تنه، دست، پا نسبت به x,y
       const headR=16, neck=18, body=56;
-      circle(svg,x, y-(neck+headR), headR);               // head
-      line(svg, x, y-neck, x, y+(body- neck));            // spine
-      const chestY = y - 8;
-      if(arms==='up'){
-        line(svg, x, chestY, x-32, chestY-22);
-        line(svg, x, chestY, x+32, chestY-22);
+      circle(g, op.x, op.y-(neck+headR), headR);
+      line(g, op.x, op.y-neck, op.x, op.y+(body- neck));
+      const chestY = op.y - 8;
+      if(op.arms==='up'){
+        line(g, op.x, chestY, op.x-32, chestY-22);
+        line(g, op.x, chestY, op.x+32, chestY-22);
       } else {
-        line(svg, x, chestY, x-34, chestY+16);
-        line(svg, x, chestY, x+34, chestY+16);
+        line(g, op.x, chestY, op.x-34, chestY+16);
+        line(g, op.x, chestY, op.x+34, chestY+16);
       }
-      const legsY = y+(body-10);
-      line(svg, x, legsY, x-28, legsY+42);
-      line(svg, x, legsY, x+28, legsY+42);
+      const legsY = op.y+(body-10);
+      line(g, op.x, legsY, op.x-28, legsY+42);
+      line(g, op.x, legsY, op.x+28, legsY+42);
     }
 
+    // ---------- Parser ----------
     function parse(src){
-      const lines=src.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+      const lines=src.split(/\r?\n/);
       let W=820,H=420; const ops=[];
-      for(const s of lines){
-        if(s.startsWith('#')) continue;
-        const cmd = s.split(/\s+/)[0];
-        const rest = s.slice(cmd.length).trim();
+      lines.forEach((raw,idx)=>{
+        const s = raw.trim();
+        if(!s || s.startsWith('#')) return;
+        const cmd=s.split(/\s+/)[0], rest=s.slice(cmd.length).trim();
         if(cmd==='panel'){
           const m=rest.match(/(\d+)\s*x\s*(\d+)/i);
-          if(m){ W=parseInt(m[1],10); H=parseInt(m[2],10); }
+          if(m){ W=+m[1]; H=+m[2]; }
         } else if(cmd==='stick'){
           const m = Object.fromEntries([...rest.matchAll(/(\w+)\s*=\s*("[^"]*"|\S+)/g)].map(([_,k,v])=>[k,v.replace(/^"|"$/g,'')]));
-          ops.push({t:'stick', x:+m.x||100, y:+m.y||160, arms:(m.arms||'down')});
+          ops.push({_line:idx,_index:ops.length,t:'stick', x:+m.x||100, y:+m.y||160, arms:(m.arms||'down')});
         } else if(cmd==='say'){
           const m = Object.fromEntries([...rest.matchAll(/(\w+)\s*=\s*("[^"]*"|\S+)/g)].map(([_,k,v])=>[k,v.replace(/^"|"$/g,'')]));
           const mtext = rest.match(/"([^"]*)"/);
           const text = mtext ? mtext[1] : (m.text||'');
-          ops.push({t:'say', x:+m.x||60, y:+m.y||60, text});
+          ops.push({_line:idx,_index:ops.length,t:'say', x:+m.x||60, y:+m.y||60, text});
         }
-      }
-      return {W,H,ops};
-    }
-    function render(src){
-      const {W,H,ops}=parse(src);
-      const host=$("#host"); host.innerHTML='';
-      const svg=createSVG(W,H); host.appendChild(svg);
-      for(const op of ops){
-        if(op.t==='stick') stick(svg, op.x, op.y, op.arms);
-        else if(op.t==='say') say(svg, op.x, op.y, op.text);
-      }
+      });
+      return {W,H,ops,lines};
     }
 
-    // --- Editor boot + samples ---
+    // ---------- Render ----------
+    function render(src){
+      currentParse = parse(src);
+      const {W,H,ops} = currentParse;
+      const host=$("#host"); host.innerHTML='';
+      const svg=createSVG(W,H); host.appendChild(svg);
+
+      // هر op را به یک گروه درگ‌پذیر تبدیل کن
+      ops.forEach(op=>{
+        if(op.t==='stick') makeDraggableGroup(svg, op, g=>drawStickGroup(g,op));
+        else if(op.t==='say') makeDraggableGroup(svg, op, g=>drawSayGroup(g,op));
+      });
+    }
+
+    // ---------- Editor helpers ----------
     const editor = ace.edit("editor");
     editor.setTheme("ace/theme/one_dark");
     editor.session.setMode("ace/mode/text");
     editor.session.setUseWrapMode(true);
 
-    const samples = {
-s1: `# نمونه A — 4 آدمک + 2 دیالوگ
-panel 860x420
+    function applyXYToEditorLine(lineIndex, x, y){
+      const session = editor.session;
+      let line = session.getLine(lineIndex);
+      // تضمین وجود x= و y= (اگر نبود، اضافه می‌کنیم)
+      if(!/x\s*=/.test(line)) line += ` x=${x}`;
+      if(!/y\s*=/.test(line)) line += ` y=${y}`;
+      line = line.replace(/x\s*=\s*("[^"]*"|-?\d+(\.\d+)?)/, `x=${x}`);
+      line = line.replace(/y\s*=\s*("[^"]*"|-?\d+(\.\d+)?)/, `y=${y}`);
+      session.replace({start:{row:lineIndex,column:0}, end:{row:lineIndex,column:session.getLine(lineIndex).length}}, line);
+    }
 
-# چپ: خوش‌آمد
+    function run(){ render(editor.getValue()); }
+
+    // ---------- Samples ----------
+    const samples = {
+s1: `# Sample A — 4 sticks + 2 bubbles
+panel 860x420
 stick x=140 y=230 arms=up
 say   x=60  y=120 "سلام!\\nبه cmx خوش اومدی :)"
-
-# کنارِ چپ
 stick x=280 y=230
 say   x=220 y=140 "اینجا همه‌چیز استاتیکه.\\nفقط همین فایل رو منتشر کن!"
-
-# راست: پیام انگلیسی
 stick x=580 y=230 arms=up
 say   x=500 y=120 "Welcome to cmx!\\nMinimal, static, fun."
-
-# کنارِ راست: آدرس
 stick x=720 y=230
 say   x=640 y=140 "soheil.info/cmx"
 `,
-s2: `# نمونه B — گفت‌وگوی دو نفره
+s2: `# Sample B — Two people talk
 panel 800x420
-
 stick x=200 y=220 arms=up
 say   x=120 y=120 "سلام Soheil!\\nاین پیش‌فرض آماده‌ست."
-
 stick x=520 y=220
 say   x=440 y=130 "اوکی، Enter رو بزن تا رندر شه یا متن رو تغییر بده."
 `,
-s3: `# نمونه C — ساده و مینیمال
+s3: `# Sample C — Minimal
 panel 800x420
 stick x=160 y=210 arms=up
 stick x=300 y=210
@@ -236,13 +298,11 @@ say x=240 y=130 "و من هم همین‌طور ✅"
 `
     };
 
-    function run(){ render(editor.getValue()); }
-
-    // load default sample and render
+    // load default
     editor.setValue(samples.s1, -1);
     run();
 
-    // buttons
+    // UI actions
     $("#btn-run").onclick = run;
     $("#btn-reset").onclick = ()=>{ editor.setValue(samples.s2, -1); run(); };
     document.querySelectorAll('[data-sample]').forEach(b=>{
@@ -252,8 +312,7 @@ say x=240 y=130 "و من هم همین‌طور ✅"
         run();
       });
     });
-    // Enter = render
-    editor.commands.addCommand({ name:'render', bindKey:{win:'Enter',mac:'Enter'}, exec:run });
+    editor.commands.addCommand({name:'render',bindKey:{win:'Enter',mac:'Enter'},exec:run});
   </script>
 </body>
 </html>
