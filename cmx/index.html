@@ -2,84 +2,64 @@
 <html lang="fa" dir="rtl">
 <head>
   <meta charset="utf-8" />
-  <title>cmx – Minimal XKCD-style editor</title>
+  <title>cmx — mini editor (static, no-build)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- Comfortaa (for English) & Vazirmatn (for Persian/Arabic) -->
+  <!-- Comfortaa (English) & Vazirmatn (Persian/Arabic) — weight 300 -->
   <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300&family=Vazirmatn:wght@300&display=swap" rel="stylesheet">
 
   <style>
     :root {
-      --bg:#0b0c0f; --panel:#11131a; --ink:#111; --ink2:#222;
-      --fg:#e7e7e7; --muted:#9aa1ac;
+      --bg:#0b0c0f; --panel:#11131a; --fg:#e7e7e7; --muted:#9fb0c8;
+      --border:#1c2030; --btn:#1e2436; --btn2:#262d47;
     }
     * { box-sizing:border-box; }
-
     html, body {
       height:100%; margin:0; background:var(--bg); color:var(--fg);
-      font-family: 'Vazirmatn', sans-serif; /* پیش‌فرض فارسی */
-      font-weight:300;
+      font-family:'Vazirmatn',sans-serif; font-weight:300;
     }
-
-    /* برای متون انگلیسی */
     .en, code, .kbd, .brand, button {
-      font-family: 'Comfortaa', sans-serif !important;
-      font-weight:300;
+      font-family:'Comfortaa',sans-serif !important; font-weight:300;
     }
 
-    .wrap {
-      display:grid; grid-template-columns:minmax(280px,480px) 1fr;
-      grid-gap:16px; height:100%; padding:16px;
-    }
-    header {
-      grid-column:1/-1; display:flex; align-items:center;
-      justify-content:space-between; padding:4px 0 12px;
-      border-bottom:1px solid #1c2030;
-    }
-    header .title { font-weight:700; letter-spacing:.3px; }
-    .pane {
-      background:var(--panel); border:1px solid #1c2030;
-      border-radius:12px; overflow:hidden; display:flex; flex-direction:column;
-    }
-    .pane h3 {
-      margin:0; padding:12px 14px; border-bottom:1px solid #1c2030;
-      color:#cbd3df; font-size:14px;
-    }
-    .editor { position:relative; flex:1; min-height:360px; }
-    #editor { position:absolute; inset:0; font-size:13px; }
-    .toolbar {
-      display:flex; gap:8px; align-items:center; padding:10px 12px;
-      border-top:1px solid #1c2030; background:#0f1220;
-    }
-    .toolbar button {
-      background:#1e2436; color:#cbd3df; border:1px solid #2a3350;
-      border-radius:8px; padding:8px 12px; cursor:pointer;
-    }
-    .toolbar button:hover { background:#262d47; }
-    .preview { padding:12px; overflow:auto; flex:1; }
-    .hint {
-      padding:8px 12px; color:#9fb0c8; font-size:12px;
-      border-top:1px dashed #24304d; background:#0f1324;
-    }
-    .kbd {
-      display:inline-block; background:#1a1f33;
-      border:1px solid #2f3a5d; border-radius:6px;
-      padding:0 6px; margin:0 2px;
-    }
-    .brand { opacity:.75; font-size:12px; }
-    .brand a { color:#9fb0c8; text-decoration:none; }
+    .wrap { display:grid; grid-template-columns:1fr 420px; gap:16px; min-height:100vh; padding:16px; }
+    header { grid-column:1/-1; display:flex; align-items:center; justify-content:space-between; padding:4px 0 12px; border-bottom:1px solid var(--border); }
+    .title { font-weight:700; letter-spacing:.3px; }
+    .brand { opacity:.8; font-size:12px; }
+    .brand a { color:var(--muted); text-decoration:none; }
     .brand a:hover { text-decoration:underline; }
-    @media(max-width:900px){
-      .wrap{grid-template-columns:1fr;grid-auto-rows:minmax(200px,auto)}
-    }
+
+    .pane { background:var(--panel); border:1px solid var(--border); border-radius:12px; overflow:hidden; display:flex; flex-direction:column; }
+    .pane h3 { margin:0; padding:12px 14px; border-bottom:1px solid var(--border); color:#cbd3df; font-size:14px; }
+
+    .preview { padding:12px; flex:1; overflow:auto; }
+    .preview .host { display:flex; align-items:center; justify-content:center; min-height:380px; }
+
+    .editor { position:relative; min-height:420px; }
+    #editor { position:absolute; inset:0; font-size:13px; }
+
+    .toolbar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; padding:10px 12px; border-top:1px solid var(--border); background:#0f1220; }
+    .toolbar button { background:var(--btn); color:#cbd3df; border:1px solid #2a3350; border-radius:8px; padding:8px 12px; cursor:pointer; }
+    .toolbar button:hover { background:var(--btn2); }
+    .kbd { display:inline-block; background:#1a1f33; border:1px solid #2f3a5d; border-radius:6px; padding:0 6px; margin:0 2px; }
+    .hint { padding:8px 12px; color:var(--muted); font-size:12px; border-top:1px dashed #24304d; background:#0f1324; }
+
+    @media (max-width:1100px) { .wrap { grid-template-columns:1fr; } }
   </style>
 </head>
 <body>
   <div class="wrap">
     <header>
-      <div class="title">cmx — <span class="en">mini editor</span> (static, no-build)</div>
       <div class="brand">Inspired by <a href="https://github.com/darwin/cmx.js" target="_blank" rel="noopener">cmx.js</a></div>
+      <div class="title en">cmx — mini editor (static, no-build)</div>
     </header>
+
+    <section class="pane">
+      <h3>پیش‌نمایش</h3>
+      <div id="preview" class="preview">
+        <div class="host" id="host"></div>
+      </div>
+    </section>
 
     <section class="pane">
       <h3>ویرایشگر</h3>
@@ -87,19 +67,16 @@
       <div class="toolbar">
         <button id="btn-run" class="en">Render (⏎)</button>
         <button id="btn-reset" class="en">Reset</button>
-        <span class="brand">DSL: <span class="kbd">panel</span> <span class="kbd">stick</span> <span class="kbd">say</span></span>
+        <span class="brand">Samples:</span>
+        <button class="en" data-sample="s1">Sample A</button>
+        <button class="en" data-sample="s2">Sample B</button>
+        <button class="en" data-sample="s3">Sample C</button>
       </div>
       <div class="hint">
-        نمونه دستورها:
-        <span class="kbd">panel 800x420</span>،
-        <span class="kbd">stick x=120 y=200 arms=up</span>،
-        <span class="kbd">say x=120 y=150 "سلام سکه‌خوان!"</span>
+        دستورات: <span class="kbd">panel &lt;W&gt;x&lt;H&gt;</span>،
+        <span class="kbd">stick x=… y=… [arms=up|down]</span>،
+        <span class="kbd">say x=… y=… "متن"</span>
       </div>
-    </section>
-
-    <section class="pane">
-      <h3>پیش‌نمایش</h3>
-      <div id="preview" class="preview"></div>
     </section>
   </div>
 
@@ -107,17 +84,18 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.6/ace.js" crossorigin="anonymous"></script>
 
   <script>
-    const $ = sel => document.querySelector(sel);
+    const $ = s => document.querySelector(s);
     const svgNS = 'http://www.w3.org/2000/svg';
 
     function createSVG(w=800,h=400){
       const svg=document.createElementNS(svgNS,'svg');
       svg.setAttribute('viewBox',`0 0 ${w} ${h}`);
       svg.setAttribute('width',w); svg.setAttribute('height',h);
-      svg.style.background='#fff'; svg.style.border='2px solid #000'; svg.style.borderRadius='8px';
+      svg.style.background='#fff';
+      svg.style.border='2px solid #000';
+      svg.style.borderRadius='8px';
       return svg;
     }
-
     function line(svg,x1,y1,x2,y2,sw=6){
       const ln=document.createElementNS(svgNS,'line');
       ln.setAttribute('x1',x1); ln.setAttribute('y1',y1);
@@ -130,29 +108,34 @@
       c.setAttribute('cx',cx); c.setAttribute('cy',cy); c.setAttribute('r',r);
       c.setAttribute('fill',fill); svg.appendChild(c);
     }
-
     function say(svg,x,y,text){
       const padding=10, rx=12, ry=12;
-      const charW=7.5, lines=text.split(/\\n/);
+      const lines=text.split(/\n/);
+      const charW=7.5, lh=18;
       const maxLen=Math.max(...lines.map(s=>s.length));
-      const w=padding*2 + maxLen*charW, lh=18, h=padding*2 + lines.length*lh;
+      const w=padding*2 + maxLen*charW;
+      const h=padding*2 + lines.length*lh;
       const g=document.createElementNS(svgNS,'g');
+
       const r=document.createElementNS(svgNS,'rect');
       r.setAttribute('x',x); r.setAttribute('y',y);
       r.setAttribute('width',w); r.setAttribute('height',h);
       r.setAttribute('rx',rx); r.setAttribute('ry',ry);
       r.setAttribute('fill','#fff'); r.setAttribute('stroke','#000'); r.setAttribute('stroke-width','2');
       g.appendChild(r);
+
       const tail=document.createElementNS(svgNS,'path');
       tail.setAttribute('d',`M ${x+24} ${y+h} l 14 18 l 6 -22 Z`);
       tail.setAttribute('fill','#fff'); tail.setAttribute('stroke','#000'); tail.setAttribute('stroke-width','2');
       g.appendChild(tail);
+
       lines.forEach((ln,i)=>{
         const t=document.createElementNS(svgNS,'text');
         t.setAttribute('x', x+padding);
         t.setAttribute('y', y+padding + (i+1)*lh - 6);
         t.setAttribute('font-size','16');
-        t.setAttribute('font-family', /[\\u0600-\\u06FF]/.test(ln) ? 'Vazirmatn' : 'Comfortaa');
+        // Persian/Arabic range → Vazirmatn, else Comfortaa
+        t.setAttribute('font-family', /[\u0600-\u06FF]/.test(ln) ? 'Vazirmatn' : 'Comfortaa');
         t.setAttribute('font-weight','300');
         t.setAttribute('fill','#000');
         t.textContent=ln;
@@ -160,16 +143,15 @@
       });
       svg.appendChild(g);
     }
-
     function stick(svg,x,y,arms='down'){
       const headR=16, neck=18, body=56;
-      circle(svg,x, y-(neck+headR), headR);
-      line(svg, x, y-neck, x, y+(body- neck));
+      circle(svg,x, y-(neck+headR), headR);               // head
+      line(svg, x, y-neck, x, y+(body- neck));            // spine
       const chestY = y - 8;
       if(arms==='up'){
         line(svg, x, chestY, x-32, chestY-22);
         line(svg, x, chestY, x+32, chestY-22);
-      }else{
+      } else {
         line(svg, x, chestY, x-34, chestY+16);
         line(svg, x, chestY, x+34, chestY+16);
       }
@@ -179,30 +161,30 @@
     }
 
     function parse(src){
-      const lines=src.split(/\\r?\\n/).map(s=>s.trim()).filter(Boolean);
+      const lines=src.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
       let W=820,H=420; const ops=[];
       for(const s of lines){
         if(s.startsWith('#')) continue;
-        const [cmd,restRaw] = [s.split(/\\s+/)[0], s.slice(s.split(/\\s+/)[0].length).trim()];
+        const cmd = s.split(/\s+/)[0];
+        const rest = s.slice(cmd.length).trim();
         if(cmd==='panel'){
-          const m=restRaw.match(/(\\d+)\\s*x\\s*(\\d+)/i);
+          const m=rest.match(/(\d+)\s*x\s*(\d+)/i);
           if(m){ W=parseInt(m[1],10); H=parseInt(m[2],10); }
-        }else if(cmd==='stick'){
-          const m = Object.fromEntries([...restRaw.matchAll(/(\\w+)\\s*=\\s*("[^"]*"|\\S+)/g)].map(([_,k,v])=>[k, v.replace(/^"|"$/g,'')]));
+        } else if(cmd==='stick'){
+          const m = Object.fromEntries([...rest.matchAll(/(\w+)\s*=\s*("[^"]*"|\S+)/g)].map(([_,k,v])=>[k,v.replace(/^"|"$/g,'')]));
           ops.push({t:'stick', x:+m.x||100, y:+m.y||160, arms:(m.arms||'down')});
-        }else if(cmd==='say'){
-          const m = Object.fromEntries([...restRaw.matchAll(/(\\w+)\\s*=\\s*("[^"]*"|\\S+)/g)].map(([_,k,v])=>[k, v.replace(/^"|"$/g,'')]));
-          const mtext = restRaw.match(/"([^"]*)"/);
-          const text = mtext? mtext[1] : (m.text||'');
+        } else if(cmd==='say'){
+          const m = Object.fromEntries([...rest.matchAll(/(\w+)\s*=\s*("[^"]*"|\S+)/g)].map(([_,k,v])=>[k,v.replace(/^"|"$/g,'')]));
+          const mtext = rest.match(/"([^"]*)"/);
+          const text = mtext ? mtext[1] : (m.text||'');
           ops.push({t:'say', x:+m.x||60, y:+m.y||60, text});
         }
       }
       return {W,H,ops};
     }
-
     function render(src){
       const {W,H,ops}=parse(src);
-      const host=$("#preview"); host.innerHTML='';
+      const host=$("#host"); host.innerHTML='';
       const svg=createSVG(W,H); host.appendChild(svg);
       for(const op of ops){
         if(op.t==='stick') stick(svg, op.x, op.y, op.arms);
@@ -210,32 +192,68 @@
       }
     }
 
+    // --- Editor boot + samples ---
     const editor = ace.edit("editor");
     editor.setTheme("ace/theme/one_dark");
     editor.session.setMode("ace/mode/text");
     editor.session.setUseWrapMode(true);
-    editor.setValue(
-`# cmx mini DSL — نمونه
-panel 820x420
 
-stick x=160 y=210 arms=up
-say   x=80  y=120 "سلام Soheil!\\nنسخه‌ی ساده آماده‌ست."
+    const samples = {
+s1: `# نمونه A — 4 آدمک + 2 دیالوگ
+panel 860x420
+
+# چپ: خوش‌آمد
+stick x=140 y=230 arms=up
+say   x=60  y=120 "سلام!\\nبه cmx خوش اومدی :)"
+
+# کنارِ چپ
+stick x=280 y=230
+say   x=220 y=140 "اینجا همه‌چیز استاتیکه.\\nفقط همین فایل رو منتشر کن!"
+
+# راست: پیام انگلیسی
+stick x=580 y=230 arms=up
+say   x=500 y=120 "Welcome to cmx!\\nMinimal, static, fun."
+
+# کنارِ راست: آدرس
+stick x=720 y=230
+say   x=640 y=140 "soheil.info/cmx"
+`,
+s2: `# نمونه B — گفت‌وگوی دو نفره
+panel 800x420
+
+stick x=200 y=220 arms=up
+say   x=120 y=120 "سلام Soheil!\\nاین پیش‌فرض آماده‌ست."
 
 stick x=520 y=220
-say   x=440 y=130 "همه‌چیز استاتیکه، فقط آپلود کن روی soheil.info/cmx"
-`, -1);
+say   x=440 y=130 "اوکی، Enter رو بزن تا رندر شه یا متن رو تغییر بده."
+`,
+s3: `# نمونه C — ساده و مینیمال
+panel 800x420
+stick x=160 y=210 arms=up
+stick x=300 y=210
+say x=80  y=120 "من یک آدمکم!"
+say x=240 y=130 "و من هم همین‌طور ✅"
+`
+    };
 
     function run(){ render(editor.getValue()); }
-    $("#btn-run").onclick=run;
-    $("#btn-reset").onclick=()=>editor.setValue(
-`panel 800x420
-stick x=120 y=210 arms=up
-stick x=300 y=210
-say x=60  y=120 "سلام!"
-say x=260 y=120 "سلام ❤️"
-`, -1);
-    editor.commands.addCommand({ name:'render', bindKey:{win:'Enter',mac:'Enter'}, exec:run });
+
+    // load default sample and render
+    editor.setValue(samples.s1, -1);
     run();
+
+    // buttons
+    $("#btn-run").onclick = run;
+    $("#btn-reset").onclick = ()=>{ editor.setValue(samples.s2, -1); run(); };
+    document.querySelectorAll('[data-sample]').forEach(b=>{
+      b.addEventListener('click',()=>{
+        const key=b.getAttribute('data-sample');
+        editor.setValue(samples[key]||samples.s1, -1);
+        run();
+      });
+    });
+    // Enter = render
+    editor.commands.addCommand({ name:'render', bindKey:{win:'Enter',mac:'Enter'}, exec:run });
   </script>
 </body>
 </html>
