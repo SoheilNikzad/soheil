@@ -30,7 +30,8 @@
       background:#0f1220;border:1px solid #2a3350;border-radius:10px;padding:8px 10px;color:#cbd3df}
     .connect{background:linear-gradient(180deg,var(--accent),var(--accent2)); color:#1b1106;
       border:none;border-radius:10px;padding:10px 14px;cursor:pointer}
-    .connect:hover{filter:brightness(1.05)}
+    .connect[disabled]{opacity:.8;cursor:default}
+    .connect:hover:not([disabled]){filter:brightness(1.05)}
     .pill{border:1px solid #2a3350;border-radius:999px;padding:6px 10px;color:#cbd3df;font-size:12px}
     .addr{background:#151b2a}
 
@@ -52,6 +53,7 @@
       padding:6px 8px;border-radius:8px;font-size:12px}
     .handle{fill:#4ad;stroke:#024;stroke-width:1.5;cursor:grab}
     .handle:active{cursor:grabbing}
+
     @media(max-width:1100px){.wrap{grid-template-columns:1fr}}
   </style>
 </head>
@@ -71,7 +73,6 @@
         </select>
         <button id="btn-switch" class="btn en">Switch</button>
         <button id="btn-connect" class="connect en">Connect Wallet</button>
-        <span id="who" class="pill addr en" style="display:none"></span>
       </div>
     </header>
 
@@ -96,7 +97,7 @@
 
       <div class="toolbar">
         <input id="comicName" type="text" class="en" placeholder="comic name (optional)" style="min-width:180px">
-        <button id="btn-save" class="btn-accent en">Save to Chain</button>
+        <button id="btn-save" class="btn-accent en">Save on-chain</button>
         <input id="txhash" type="text" class="en" placeholder="0x… transaction hash" style="flex:1;min-width:240px">
         <button id="btn-load" class="btn en">Load by Tx Hash</button>
       </div>
@@ -105,7 +106,7 @@
         دستورات: <span class="kbd">panel &lt;W&gt;x&lt;H&gt;</span>،
         <span class="kbd">stick x=… y=…</span>،
         <span class="kbd">say x=… y=… "متن"</span> — با کشیدن اشیاء، مختصات در ادیتور آپدیت می‌شود.  
-        ذخیره‌سازی روی زنجیره هزینه‌ی گس دارد؛ بهتره روی تست‌نت‌ها تست کنی.
+        برای ذخیره روی زنجیره روی همان شبکه‌ای باش که می‌خواهی بخوانی.
       </div>
     </section>
   </div>
@@ -115,21 +116,18 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.6/ace.js" crossorigin="anonymous"></script>
 
   <script>
-    /*********** Constants & helpers ***********/
-    const STROKE = 4; // ضخامت خطوط (کمتر از قبل)
+    /*********** setup ***********/
+    const STROKE = 4; // خط باریک‌تر
     const $ = s => document.querySelector(s);
     const svgNS = 'http://www.w3.org/2000/svg';
-    const ghost = $("#ghost");
-    const log = $("#log");
-    let currentParse = null;
-    let dragging = null;
-    const poses = new Map(); // lineIndex -> pose object
-    let account = null;
-    const ethereum = window.ethereum;
+    const ghost = $("#ghost"), log=$("#log");
+    let currentParse=null, dragging=null, account=null;
+    const poses = new Map(); // lineIndex -> pose
 
+    const ethereum = window.ethereum;
     const toHex = (str) => '0x' + [...new TextEncoder().encode(str)].map(b=>b.toString(16).padStart(2,'0')).join('');
     const fromHex = (hex) => {
-      hex = (hex||'').replace(/^0x/,'');
+      hex = (hex||'').replace(/^0x/, '');
       return new TextDecoder().decode(new Uint8Array(hex?hex.match(/.{1,2}/g).map(h=>parseInt(h,16)):[]));
     };
     const short = a => a ? a.slice(0,6)+'…'+a.slice(-4) : '';
@@ -138,7 +136,7 @@
       log.innerHTML = `<span style="color:${color}">${msg}</span>`;
     };
 
-    /*********** SVG ***********/
+    /*********** SVG primitives ***********/
     function createSVG(w=800,h=400){
       const svg=document.createElementNS(svgNS,'svg');
       svg.setAttribute('viewBox',`0 0 ${w} ${h}`);
@@ -160,40 +158,41 @@
       c.setAttribute('cx',cx); c.setAttribute('cy',cy); c.setAttribute('r',r);
       c.setAttribute('fill',fill); g.appendChild(c); }
 
-    /*********** Word wrapping for bubbles ***********/
-    function wrapTextByWidth(text, maxW, charW=8.2){
-      const rows = text.replace(/\r/g,'').split(/\n/);
-      const out = [];
-      for(const row of rows){
-        const words = row.split(/\s+/);
-        let cur='';
-        for(const w of words){
-          const next = cur ? cur+' '+w : w;
-          if(next.length*charW <= maxW) cur=next;
-          else{
-            if(cur) out.push(cur);
-            if(w.length*charW<=maxW) cur=w;
-            else{
-              let chunk=''; for(const ch of w){
-                if((chunk+ch).length*charW<=maxW) chunk+=ch; else { out.push(chunk); chunk=ch; }
-              }
-              cur=chunk;
-            }
-          }
-        }
-        out.push(cur);
-      }
-      return out;
+    /*********** Bubbles — precise sizing & layering ***********/
+    function measureLineWidth(svg, text, isFa){
+      // عنصر موقتی برای اندازه‌گیری
+      const t = document.createElementNS(svgNS,'text');
+      t.setAttribute('x', 0); t.setAttribute('y', -9999); // بیرون قاب
+      t.setAttribute('font-size','16');
+      t.setAttribute('font-family', isFa ? 'Vazirmatn' : 'Comfortaa');
+      t.setAttribute('font-weight','300');
+      t.setAttribute('direction', isFa ? 'rtl' : 'ltr');
+      t.setAttribute('unicode-bidi', 'plaintext');
+      t.textContent = text;
+      svg.appendChild(t);
+      const w = t.getBBox().width;
+      t.remove();
+      return w;
     }
 
     function drawSay(svg, op){
       const g=document.createElementNS(svgNS,'g');
       g.dataset.type='say'; g.dataset.line=op._line;
 
-      const MAXW=280, padding=10, rx=12, ry=12, lh=18;
-      const lines=wrapTextByWidth(op.text, MAXW, 8);
-      const width = Math.min(MAXW, padding*2 + Math.max(...lines.map(s=>s.length))*8);
-      const height = padding*2 + lines.length*lh;
+      const rawLines = op.text.replace(/\r/g,'').split(/\n/);
+      const padding=12, rx=12, ry=12, lh=20, MAXW=380;
+
+      // اندازه‌گیری دقیق خطوط با فونت واقعی
+      const widths = rawLines.map(ln => measureLineWidth(svg, ln, /[\u0600-\u06FF]/.test(ln)));
+      const maxMeasured = Math.max(...widths, 0);
+      const width = Math.min(MAXW, padding*2 + Math.ceil(maxMeasured));
+      const height = padding*2 + rawLines.length*lh;
+
+      // ترتیب لایه‌ها: اول دم، بعد بدنه، بعد متن‌ها  (دم زیرِ بدنه می‌ماند)
+      const tail=document.createElementNS(svgNS,'path');
+      tail.setAttribute('d',`M ${op.x+24} ${op.y+height} l 14 18 l 6 -22 Z`);
+      tail.setAttribute('fill','#fff'); tail.setAttribute('stroke','#000'); tail.setAttribute('stroke-width','2');
+      g.appendChild(tail);
 
       const r=document.createElementNS(svgNS,'rect');
       r.setAttribute('x',op.x); r.setAttribute('y',op.y);
@@ -202,19 +201,17 @@
       r.setAttribute('fill','#fff'); r.setAttribute('stroke','#000'); r.setAttribute('stroke-width','2');
       g.appendChild(r);
 
-      const tail=document.createElementNS(svgNS,'path');
-      tail.setAttribute('d',`M ${op.x+24} ${op.y+height} l 14 18 l 6 -22 Z`);
-      tail.setAttribute('fill','#fff'); tail.setAttribute('stroke','#000'); tail.setAttribute('stroke-width','2');
-      g.appendChild(tail);
-
-      lines.forEach((ln,i)=>{
+      rawLines.forEach((ln,i)=>{
+        const isFa = /[\u0600-\u06FF]/.test(ln);
         const t=document.createElementNS(svgNS,'text');
-        t.setAttribute('x', op.x+padding);
-        t.setAttribute('y', op.y+padding + (i+1)*lh - 6);
+        t.setAttribute('x', op.x + padding);
+        t.setAttribute('y', op.y + padding + (i+1)*lh - 6);
         t.setAttribute('font-size','16');
-        t.setAttribute('font-family', /[\u0600-\u06FF]/.test(ln) ? 'Vazirmatn' : 'Comfortaa');
+        t.setAttribute('font-family', isFa ? 'Vazirmatn' : 'Comfortaa');
         t.setAttribute('font-weight','300');
         t.setAttribute('fill','#000');
+        t.setAttribute('direction', isFa ? 'rtl' : 'ltr');
+        t.setAttribute('unicode-bidi', 'plaintext');
         t.textContent=ln;
         g.appendChild(t);
       });
@@ -225,33 +222,23 @@
       g.addEventListener('touchstart',ev=>startDrag(ev,g,op,'say-group'),{passive:false});
     }
 
-    /*********** Stick with better proportions + joint handles ***********/
+    /*********** Stick figure (better proportions) ***********/
     function defaultPose(x,y){
-      // نسبت‌های طبیعی‌تر
-      const forearm = 28;               // آرنج→مچ
-      const upperArm = 26;              // شانه→آرنج
-      const torso = Math.max(Math.round(forearm*0.5), 30); // گردن→لگن (حداقل نصف ساعد)
+      const forearm = 28, upperArm = 26;
+      const torso = Math.max(Math.round(forearm*0.5), 30);
       const headR = 14;
-
       return {
-        head:{x:x, y:y-(torso+headR+8)},    // سر کمی بالاتر
-        neck:{x:x, y:y-(torso+8)},
-        shoulder:{x:x, y:y-(torso-6)},
-        elbowL:{x:x-upperArm, y:y-(torso-6)+10},
-        wristL:{x:x-upperArm-forearm, y:y-(torso-6)+24},
-        elbowR:{x:x+upperArm, y:y-(torso-6)+10},
-        wristR:{x:x+upperArm+forearm, y:y-(torso-6)+24},
+        head:{x:x, y:y-(torso+headR+8)}, neck:{x:x, y:y-(torso+8)}, shoulder:{x:x, y:y-(torso-6)},
+        elbowL:{x:x-upperArm, y:y-(torso-6)+10}, wristL:{x:x-upperArm-forearm, y:y-(torso-6)+24},
+        elbowR:{x:x+upperArm, y:y-(torso-6)+10}, wristR:{x:x+upperArm+forearm, y:y-(torso-6)+24},
         hip:{x:x, y:y},
-        kneeL:{x:x-16, y:y+34},
-        ankleL:{x:x-26, y:y+74},
-        kneeR:{x:x+16, y:y+34},
-        ankleR:{x:x+26, y:y+74},
+        kneeL:{x:x-16, y:y+34}, ankleL:{x:x-26, y:y+74},
+        kneeR:{x:x+16, y:y+34}, ankleR:{x:x+26, y:y+74},
         headR
       };
     }
 
     function drawBonesOn(group, pose){
-      // گروه bones را خالی و دوباره رسم می‌کنیم
       let bones = group.querySelector('.bones');
       if(!bones){ bones=document.createElementNS(svgNS,'g'); bones.classList.add('bones'); group.appendChild(bones); }
       bones.innerHTML='';
@@ -269,31 +256,22 @@
     }
 
     function drawStick(svg, op){
-      let pose = poses.get(op._line);
-      if(!pose){ pose = defaultPose(op.x, op.y); poses.set(op._line, pose); }
-
+      let pose = poses.get(op._line); if(!pose){ pose = defaultPose(op.x, op.y); poses.set(op._line, pose); }
       const g=document.createElementNS(svgNS,'g');
       g.dataset.type='stick'; g.dataset.line = op._line;
       svg.appendChild(g);
-
       drawBonesOn(g, pose);
 
-      // رفتارها
       g.style.cursor='move';
       g.addEventListener('mousedown',ev=>startDrag(ev,g,op,'stick-group'));
       g.addEventListener('touchstart',ev=>startDrag(ev,g,op,'stick-group'),{passive:false});
-      g.addEventListener('dblclick',ev=>{
-        ev.stopPropagation();
-        toggleHandles(g, op._line);     // حالا قطعاً کار می‌کند
-      });
-
+      g.addEventListener('dblclick',ev=>{ev.stopPropagation(); toggleHandles(g, op._line);});
       return g;
     }
 
     function toggleHandles(group, lineIndex){
       const existing = group.querySelector('.handles');
       if(existing){ existing.remove(); return; }
-
       const pose = poses.get(lineIndex);
       const handles = document.createElementNS(svgNS,'g');
       handles.classList.add('handles');
@@ -305,7 +283,6 @@
         h.setAttribute('cx', pt.x); h.setAttribute('cy', pt.y); h.setAttribute('r', 6);
         h.classList.add('handle'); h.dataset.key = key; h.dataset.line=lineIndex;
         handles.appendChild(h);
-
         h.addEventListener('mousedown', ev => startHandleDrag(ev, group, lineIndex, key, h));
         h.addEventListener('touchstart', ev => startHandleDrag(ev, group, lineIndex, key, h), {passive:false});
       });
@@ -363,13 +340,11 @@
       ghost.style.display='block';
       ghost.textContent = `${op.t}  x=${op.x}  y=${op.y}`;
     }
-
     function startHandleDrag(ev, group, lineIndex, key, handleEl){
       ev.preventDefault();
       const pt = getSVGPoint(ev);
       const pose = poses.get(lineIndex);
-      dragging = { kind:'handle', group, lineIndex, key, start:pt,
-                   origin:{x:pose[key].x, y:pose[key].y}, handleEl };
+      dragging = { kind:'handle', group, lineIndex, key, start:pt, origin:{x:pose[key].x, y:pose[key].y}, handleEl };
       ghost.style.display='block'; ghost.textContent = `${key}`;
     }
 
@@ -391,11 +366,8 @@
         const ny = Math.round(dragging.origin.y + dy);
         const pose = poses.get(dragging.lineIndex);
         pose[dragging.key].x = nx; pose[dragging.key].y = ny;
-
-        // جابجا کردن خودِ هندل
         dragging.handleEl.setAttribute('cx', nx);
         dragging.handleEl.setAttribute('cy', ny);
-        // بازنقاشی استخوان‌ها (بدون دست‌زدن به گروه هندل‌ها)
         drawBonesOn(dragging.group, pose);
       }
     }
@@ -412,12 +384,10 @@
 
         const line = dragging.op._line;
         if(dragging.kind==='stick-group'){
-          // شیفت همه مفصل‌ها
           const pose = poses.get(line) || defaultPose(dragging.op.x, dragging.op.y);
           Object.keys(pose).forEach(k=>{ if(k!=='headR'){ pose[k].x += dx; pose[k].y += dy; }});
           poses.set(line, pose);
         }
-        // آپدیت DSL
         applyXYToEditorLine(line, (dragging.op.x+dx), (dragging.op.y+dy));
       }
 
@@ -480,18 +450,23 @@ say x=240 y=130 "و من هم همین‌طور ✅"
 
     /*********** Wallet (EIP-1193) ***********/
     async function connect(){
-      if(!ethereum){ tell('MetaMask/Provider یافت نشد.','err'); return; }
-      const [addr] = await ethereum.request({method:'eth_requestAccounts'});
-      account = addr; $("#who").style.display='inline-block'; $("#who").textContent = short(addr);
-      tell('Wallet connected: '+short(addr),'ok');
+      if(!ethereum){ tell('Wallet/provider پیدا نشد.','err'); return; }
+      try{
+        const [addr] = await ethereum.request({method:'eth_requestAccounts'});
+        account = addr;
+        const btn = $("#btn-connect");
+        btn.textContent = `Connected: ${short(addr)}`;
+        btn.disabled = true;
+        tell('Wallet connected.','ok');
+      }catch(e){ tell('اتصال لغو شد.','warn'); }
     }
     async function switchChain(){
       if(!ethereum){ tell('Provider در دسترس نیست.','err'); return; }
       const chainId = $("#chain").value;
       try{
         await ethereum.request({method:'wallet_switchEthereumChain', params:[{chainId}]});
-        tell('Switched to chain '+chainId,'ok');
-      }catch(e){ tell('Cannot switch. اگر لازم است شبکه را دستی اضافه کن.', 'warn'); }
+        tell('Switched network.','ok');
+      }catch(e){ tell('Switch شکست خورد. شاید لازم است شبکه را دستی اضافه کنی.','warn'); }
     }
     async function saveToChain(){
       if(!ethereum){ tell('Provider در دسترس نیست.','err'); return; }
@@ -501,8 +476,11 @@ say x=240 y=130 "و من هم همین‌طور ✅"
       const hex = toHex(JSON.stringify(payload));
       try{
         const tx = await ethereum.request({method:'eth_sendTransaction', params:[{from:account,to:account,value:'0x0',data:hex}]});
-        $("#txhash").value = tx; tell('Saved on chain. Tx: '+short(tx),'ok');
-      }catch(e){ tell('Tx rejected/failed. '+(e.message||''),'err'); }
+        $("#txhash").value = tx; tell('Saved on chain. Tx: '+tx,'ok');
+      }catch(e){
+        // نمایش خطای واقعی متامسک
+        tell((e && e.message) ? e.message : 'Tx rejected/failed.', 'err');
+      }
     }
     async function loadFromTx(){
       if(!ethereum){ tell('Provider در دسترس نیست.','err'); return; }
@@ -510,22 +488,22 @@ say x=240 y=130 "و من هم همین‌طور ✅"
       if(!/^0x([0-9a-fA-F]{64})$/.test(txh)){ tell('TX hash نامعتبر.','warn'); return; }
       try{
         const tx = await ethereum.request({method:'eth_getTransactionByHash', params:[txh]});
-        if(!tx || !tx.input){ tell('Tx یا داده‌ای ندارد یا روی شبکهٔ دیگری است.','warn'); return; }
+        if(!tx || !tx.input){ tell('Tx یا داده ندارد یا روی شبکهٔ دیگری هستی.','warn'); return; }
         const obj = JSON.parse(fromHex(tx.input)||'{}');
         poses.clear();
         if(obj.poses){ for(const [k,v] of Object.entries(obj.poses)){ poses.set(Number(k), v); } }
         editor.setValue(obj.dsl||'', -1);
         $("#comicName").value = obj.name||'';
         run(); tell('Loaded from chain.','ok');
-      }catch(e){ tell('خواندن تراکنش ناموفق بود. '+(e.message||''),'err'); }
+      }catch(e){ tell((e && e.message)?e.message:'خواندن تراکنش ناموفق بود.','err'); }
     }
     $("#btn-connect").onclick = connect;
     $("#btn-switch").onclick = switchChain;
     $("#btn-save").onclick = saveToChain;
     $("#btn-load").onclick = loadFromTx;
 
-    // Escape = بستن هندل‌ها
-    document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ const h=$('.handles'); if(h) h.remove(); } });
+    // ESC = بستن هندل‌ها
+    document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ const h=document.querySelector('.handles'); if(h) h.remove(); }});
   </script>
 </body>
 </html>
