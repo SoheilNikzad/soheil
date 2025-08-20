@@ -7,7 +7,6 @@
   <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300&family=Vazirmatn:wght@300&display=swap" rel="stylesheet">
   <style>
-    /* --- Theme (مشکی + نارنجی) --- */
     :root{
       --bg:#0b0c0f; --panel:#11131a; --fg:#e7e7e7; --muted:#9fb0c8;
       --border:#1c2030; --btn:#1e2436; --btn2:#262d47;
@@ -53,8 +52,6 @@
       padding:6px 8px;border-radius:8px;font-size:12px}
     .handle{fill:#4ad;stroke:#024;stroke-width:1.5;cursor:grab}
     .handle:active{cursor:grabbing}
-    .log{margin-top:8px;font-size:12px;color:#b8c4d6}
-
     @media(max-width:1100px){.wrap{grid-template-columns:1fr}}
   </style>
 </head>
@@ -81,7 +78,7 @@
     <section class="pane">
       <h3>پیش‌نمایش (تک‌کلیک=جابجایی، دابل‌کلیک=ویرایش مفصل‌ها)</h3>
       <div id="preview" class="preview"><div id="host" class="host"></div></div>
-      <div class="log" id="log"></div>
+      <div class="log" id="log" style="margin-top:8px;font-size:12px;color:#b8c4d6"></div>
     </section>
 
     <section class="pane">
@@ -108,45 +105,40 @@
         دستورات: <span class="kbd">panel &lt;W&gt;x&lt;H&gt;</span>،
         <span class="kbd">stick x=… y=…</span>،
         <span class="kbd">say x=… y=… "متن"</span> — با کشیدن اشیاء، مختصات در ادیتور آپدیت می‌شود.  
-        ذخیره‌سازی روی زنجیره هزینه‌ی گس دارد؛ پیشنهاد: تست‌نت‌ها (Sepolia/Amoy). محتوای JSON را کوچک نگه دارید (&lt; ~2KB).
+        ذخیره‌سازی روی زنجیره هزینه‌ی گس دارد؛ بهتره روی تست‌نت‌ها تست کنی.
       </div>
     </section>
   </div>
 
   <div id="ghost" class="ghost en" style="display:none;"></div>
 
-  <!-- Ace Editor -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.6/ace.js" crossorigin="anonymous"></script>
 
   <script>
-    /************* Helpers *************/
+    /*********** Constants & helpers ***********/
+    const STROKE = 4; // ضخامت خطوط (کمتر از قبل)
     const $ = s => document.querySelector(s);
     const svgNS = 'http://www.w3.org/2000/svg';
     const ghost = $("#ghost");
-    const log  = $("#log");
-    let currentParse = null;            // آخرین پارس DSL
-    let dragging = null;                // وضعیت درگ
-    const poses = new Map();            // lineIndex -> pose
+    const log = $("#log");
+    let currentParse = null;
+    let dragging = null;
+    const poses = new Map(); // lineIndex -> pose object
     let account = null;
+    const ethereum = window.ethereum;
 
-    const toHex = (str) => {
-      const bytes = new TextEncoder().encode(str);
-      return '0x' + [...bytes].map(b=>b.toString(16).padStart(2,'0')).join('');
-    };
+    const toHex = (str) => '0x' + [...new TextEncoder().encode(str)].map(b=>b.toString(16).padStart(2,'0')).join('');
     const fromHex = (hex) => {
-      hex = (hex||'').startsWith('0x') ? hex.slice(2) : hex;
-      if(!hex) return '';
-      const arr = hex.match(/.{1,2}/g).map(b=>parseInt(b,16));
-      return new TextDecoder().decode(new Uint8Array(arr));
+      hex = (hex||'').replace(/^0x/,'');
+      return new TextDecoder().decode(new Uint8Array(hex?hex.match(/.{1,2}/g).map(h=>parseInt(h,16)):[]));
     };
-    const short = (a)=> a ? a.slice(0,6) + '…' + a.slice(-4) : '';
-
-    function tell(msg, kind='info'){
-      const color = kind==='ok'? 'var(--ok)': kind==='warn'? 'var(--warn)': kind==='err'? 'var(--err)': '#9fb0c8';
+    const short = a => a ? a.slice(0,6)+'…'+a.slice(-4) : '';
+    const tell = (msg,kind='info')=>{
+      const color = kind==='ok'?'#1db954':kind==='warn'?'#ffcc00':kind==='err'?'#ff4d4f':'#9fb0c8';
       log.innerHTML = `<span style="color:${color}">${msg}</span>`;
-    }
+    };
 
-    /************* SVG primitives *************/
+    /*********** SVG ***********/
     function createSVG(w=800,h=400){
       const svg=document.createElementNS(svgNS,'svg');
       svg.setAttribute('viewBox',`0 0 ${w} ${h}`);
@@ -159,7 +151,7 @@
       svg.addEventListener('touchend',onDragEnd);
       return svg;
     }
-    function lineP(g,x1,y1,x2,y2,sw=6){ const ln=document.createElementNS(svgNS,'line');
+    function lineP(g,x1,y1,x2,y2,sw=STROKE){ const ln=document.createElementNS(svgNS,'line');
       ln.setAttribute('x1',x1); ln.setAttribute('y1',y1);
       ln.setAttribute('x2',x2); ln.setAttribute('y2',y2);
       ln.setAttribute('stroke','#000'); ln.setAttribute('stroke-width',sw);
@@ -168,25 +160,24 @@
       c.setAttribute('cx',cx); c.setAttribute('cy',cy); c.setAttribute('r',r);
       c.setAttribute('fill',fill); g.appendChild(c); }
 
-    /************* Speech bubble (with wrapping) *************/
+    /*********** Word wrapping for bubbles ***********/
     function wrapTextByWidth(text, maxW, charW=8.2){
-      const rawLines = text.replace(/\r/g,'').split(/\n/);
+      const rows = text.replace(/\r/g,'').split(/\n/);
       const out = [];
-      for(const rl of rawLines){
-        const words = rl.split(/\s+/);
+      for(const row of rows){
+        const words = row.split(/\s+/);
         let cur='';
         for(const w of words){
-          const next = cur ? (cur+' '+w) : w;
-          if(next.length*charW <= maxW) cur = next;
+          const next = cur ? cur+' '+w : w;
+          if(next.length*charW <= maxW) cur=next;
           else{
             if(cur) out.push(cur);
-            if(w.length*charW <= maxW) cur = w;
+            if(w.length*charW<=maxW) cur=w;
             else{
-              // break long token
-              let ch=''; for(const c of w){
-                if((ch+c).length*charW <= maxW) ch+=c; else { out.push(ch); ch=c; }
+              let chunk=''; for(const ch of w){
+                if((chunk+ch).length*charW<=maxW) chunk+=ch; else { out.push(chunk); chunk=ch; }
               }
-              cur = ch;
+              cur=chunk;
             }
           }
         }
@@ -199,9 +190,8 @@
       const g=document.createElementNS(svgNS,'g');
       g.dataset.type='say'; g.dataset.line=op._line;
 
-      const MAXW = 280;
-      const lines = wrapTextByWidth(op.text, MAXW, 8);
-      const padding=10, rx=12, ry=12, lh=18;
+      const MAXW=280, padding=10, rx=12, ry=12, lh=18;
+      const lines=wrapTextByWidth(op.text, MAXW, 8);
       const width = Math.min(MAXW, padding*2 + Math.max(...lines.map(s=>s.length))*8);
       const height = padding*2 + lines.length*lh;
 
@@ -235,61 +225,93 @@
       g.addEventListener('touchstart',ev=>startDrag(ev,g,op,'say-group'),{passive:false});
     }
 
-    /************* Stick figure with joints (double-click to edit joints) *************/
+    /*********** Stick with better proportions + joint handles ***********/
     function defaultPose(x,y){
+      // نسبت‌های طبیعی‌تر
+      const forearm = 28;               // آرنج→مچ
+      const upperArm = 26;              // شانه→آرنج
+      const torso = Math.max(Math.round(forearm*0.5), 30); // گردن→لگن (حداقل نصف ساعد)
+      const headR = 14;
+
       return {
-        head:{x:x, y:y-36}, neck:{x:x, y:y-18}, shoulder:{x:x, y:y-10},
-        elbowL:{x:x-28, y:y+6}, wristL:{x:x-48, y:y+24},
-        elbowR:{x:x+28, y:y+6}, wristR:{x:x+48, y:y+24},
+        head:{x:x, y:y-(torso+headR+8)},    // سر کمی بالاتر
+        neck:{x:x, y:y-(torso+8)},
+        shoulder:{x:x, y:y-(torso-6)},
+        elbowL:{x:x-upperArm, y:y-(torso-6)+10},
+        wristL:{x:x-upperArm-forearm, y:y-(torso-6)+24},
+        elbowR:{x:x+upperArm, y:y-(torso-6)+10},
+        wristR:{x:x+upperArm+forearm, y:y-(torso-6)+24},
         hip:{x:x, y:y},
-        kneeL:{x:x-18, y:y+36}, ankleL:{x:x-28, y:y+76},
-        kneeR:{x:x+18, y:y+36}, ankleR:{x:x+28, y:y+76},
-        headR:16
+        kneeL:{x:x-16, y:y+34},
+        ankleL:{x:x-26, y:y+74},
+        kneeR:{x:x+16, y:y+34},
+        ankleR:{x:x+26, y:y+74},
+        headR
       };
     }
 
+    function drawBonesOn(group, pose){
+      // گروه bones را خالی و دوباره رسم می‌کنیم
+      let bones = group.querySelector('.bones');
+      if(!bones){ bones=document.createElementNS(svgNS,'g'); bones.classList.add('bones'); group.appendChild(bones); }
+      bones.innerHTML='';
+      circleP(bones, pose.head.x, pose.head.y, pose.headR);
+      lineP(bones, pose.head.x, pose.head.y+pose.headR, pose.neck.x, pose.neck.y, STROKE);
+      lineP(bones, pose.neck.x, pose.neck.y, pose.hip.x, pose.hip.y+2, STROKE);
+      lineP(bones, pose.shoulder.x, pose.shoulder.y, pose.elbowL.x, pose.elbowL.y, STROKE);
+      lineP(bones, pose.elbowL.x, pose.elbowL.y, pose.wristL.x, pose.wristL.y, STROKE);
+      lineP(bones, pose.shoulder.x, pose.shoulder.y, pose.elbowR.x, pose.elbowR.y, STROKE);
+      lineP(bones, pose.elbowR.x, pose.elbowR.y, pose.wristR.x, pose.wristR.y, STROKE);
+      lineP(bones, pose.hip.x, pose.hip.y, pose.kneeL.x, pose.kneeL.y, STROKE);
+      lineP(bones, pose.kneeL.x, pose.kneeL.y, pose.ankleL.x, pose.ankleL.y, STROKE);
+      lineP(bones, pose.hip.x, pose.hip.y, pose.kneeR.x, pose.kneeR.y, STROKE);
+      lineP(bones, pose.kneeR.x, pose.kneeR.y, pose.ankleR.x, pose.ankleR.y, STROKE);
+    }
+
     function drawStick(svg, op){
-      let pose = poses.get(op._line); if(!pose){ pose = defaultPose(op.x, op.y); poses.set(op._line, pose); }
+      let pose = poses.get(op._line);
+      if(!pose){ pose = defaultPose(op.x, op.y); poses.set(op._line, pose); }
+
       const g=document.createElementNS(svgNS,'g');
       g.dataset.type='stick'; g.dataset.line = op._line;
       svg.appendChild(g);
 
-      // bones
-      circleP(g, pose.head.x, pose.head.y, pose.headR);
-      lineP(g, pose.head.x, pose.head.y+pose.headR, pose.neck.x, pose.neck.y, 6);
-      lineP(g, pose.neck.x, pose.neck.y, pose.hip.x, pose.hip.y+2, 6);
-      lineP(g, pose.shoulder.x, pose.shoulder.y, pose.elbowL.x, pose.elbowL.y, 6);
-      lineP(g, pose.elbowL.x, pose.elbowL.y, pose.wristL.x, pose.wristL.y, 6);
-      lineP(g, pose.shoulder.x, pose.shoulder.y, pose.elbowR.x, pose.elbowR.y, 6);
-      lineP(g, pose.elbowR.x, pose.elbowR.y, pose.wristR.x, pose.wristR.y, 6);
-      lineP(g, pose.hip.x, pose.hip.y, pose.kneeL.x, pose.kneeL.y, 6);
-      lineP(g, pose.kneeL.x, pose.kneeL.y, pose.ankleL.x, pose.ankleL.y, 6);
-      lineP(g, pose.hip.x, pose.hip.y, pose.kneeR.x, pose.kneeR.y, 6);
-      lineP(g, pose.kneeR.x, pose.kneeR.y, pose.ankleR.x, pose.ankleR.y, 6);
+      drawBonesOn(g, pose);
 
+      // رفتارها
       g.style.cursor='move';
       g.addEventListener('mousedown',ev=>startDrag(ev,g,op,'stick-group'));
       g.addEventListener('touchstart',ev=>startDrag(ev,g,op,'stick-group'),{passive:false});
-      g.addEventListener('dblclick',ev=>{ev.stopPropagation(); toggleHandles(g, op._line);});
+      g.addEventListener('dblclick',ev=>{
+        ev.stopPropagation();
+        toggleHandles(g, op._line);     // حالا قطعاً کار می‌کند
+      });
+
       return g;
     }
 
     function toggleHandles(group, lineIndex){
+      const existing = group.querySelector('.handles');
+      if(existing){ existing.remove(); return; }
+
       const pose = poses.get(lineIndex);
-      const old = group.querySelectorAll('.handle'); if(old.length){ old.forEach(h=>h.remove()); return; }
-      const keys = Object.keys(pose).filter(k=>k!=='headR');
-      keys.forEach(key=>{
-        const p=pose[key];
+      const handles = document.createElementNS(svgNS,'g');
+      handles.classList.add('handles');
+      group.appendChild(handles);
+
+      Object.entries(pose).forEach(([key,pt])=>{
+        if(key==='headR') return;
         const h=document.createElementNS(svgNS,'circle');
-        h.setAttribute('cx', p.x); h.setAttribute('cy', p.y); h.setAttribute('r', 6);
-        h.classList.add('handle'); h.dataset.key = key;
-        group.appendChild(h);
-        h.addEventListener('mousedown', ev => startHandleDrag(ev, group, lineIndex, key));
-        h.addEventListener('touchstart', ev => startHandleDrag(ev, group, lineIndex, key), {passive:false});
+        h.setAttribute('cx', pt.x); h.setAttribute('cy', pt.y); h.setAttribute('r', 6);
+        h.classList.add('handle'); h.dataset.key = key; h.dataset.line=lineIndex;
+        handles.appendChild(h);
+
+        h.addEventListener('mousedown', ev => startHandleDrag(ev, group, lineIndex, key, h));
+        h.addEventListener('touchstart', ev => startHandleDrag(ev, group, lineIndex, key, h), {passive:false});
       });
     }
 
-    /************* Parser & Render *************/
+    /*********** Parser & Render ***********/
     function parse(src){
       const lines=src.split(/\r?\n/);
       let W=820,H=420; const ops=[];
@@ -324,7 +346,7 @@
       });
     }
 
-    /************* Drag logic *************/
+    /*********** Drag logic ***********/
     function getSVGPoint(ev){
       const svg = $('#host svg'); if(!svg) return {x:0,y:0};
       const pt = svg.createSVGPoint();
@@ -341,12 +363,13 @@
       ghost.style.display='block';
       ghost.textContent = `${op.t}  x=${op.x}  y=${op.y}`;
     }
-    function startHandleDrag(ev, group, lineIndex, key){
+
+    function startHandleDrag(ev, group, lineIndex, key, handleEl){
       ev.preventDefault();
       const pt = getSVGPoint(ev);
       const pose = poses.get(lineIndex);
       dragging = { kind:'handle', group, lineIndex, key, start:pt,
-                   origin:{x:pose[key].x, y:pose[key].y}};
+                   origin:{x:pose[key].x, y:pose[key].y}, handleEl };
       ghost.style.display='block'; ghost.textContent = `${key}`;
     }
 
@@ -369,31 +392,11 @@
         const pose = poses.get(dragging.lineIndex);
         pose[dragging.key].x = nx; pose[dragging.key].y = ny;
 
-        // بازنقاشی گروه: پاک و دوباره بکش + هندل‌ها
-        const g = dragging.group;
-        const keepHandles = [...g.querySelectorAll('.handle')].map(h=>h.dataset.key);
-        g.innerHTML = '';
-        // شکل
-        const p = poses.get(dragging.lineIndex);
-        circleP(g, p.head.x, p.head.y, p.headR);
-        lineP(g, p.head.x, p.head.y+p.headR, p.neck.x, p.neck.y, 6);
-        lineP(g, p.neck.x, p.neck.y, p.hip.x, p.hip.y+2, 6);
-        lineP(g, p.shoulder.x, p.shoulder.y, p.elbowL.x, p.elbowL.y, 6);
-        lineP(g, p.elbowL.x, p.elbowL.y, p.wristL.x, p.wristL.y, 6);
-        lineP(g, p.shoulder.x, p.shoulder.y, p.elbowR.x, p.elbowR.y, 6);
-        lineP(g, p.elbowR.x, p.elbowR.y, p.wristR.x, p.wristR.y, 6);
-        lineP(g, p.hip.x, p.hip.y, p.kneeL.x, p.kneeL.y, 6);
-        lineP(g, p.kneeL.x, p.kneeL.y, p.ankleL.x, p.ankleL.y, 6);
-        lineP(g, p.hip.x, p.hip.y, p.kneeR.x, p.kneeR.y, 6);
-        lineP(g, p.kneeR.x, p.kneeR.y, p.ankleR.x, p.ankleR.y, 6);
-        // دوباره هندل‌ها
-        keepHandles.forEach(key=>{
-          const pt = p[key]; const h=document.createElementNS(svgNS,'circle');
-          h.setAttribute('cx', pt.x); h.setAttribute('cy', pt.y); h.setAttribute('r', 6);
-          h.classList.add('handle'); h.dataset.key=key; g.appendChild(h);
-          h.addEventListener('mousedown', ev => startHandleDrag(ev, g, dragging.lineIndex, key));
-          h.addEventListener('touchstart', ev => startHandleDrag(ev, g, dragging.lineIndex, key), {passive:false});
-        });
+        // جابجا کردن خودِ هندل
+        dragging.handleEl.setAttribute('cx', nx);
+        dragging.handleEl.setAttribute('cy', ny);
+        // بازنقاشی استخوان‌ها (بدون دست‌زدن به گروه هندل‌ها)
+        drawBonesOn(dragging.group, pose);
       }
     }
 
@@ -409,20 +412,20 @@
 
         const line = dragging.op._line;
         if(dragging.kind==='stick-group'){
-          // شیفت همه‌ی مفصل‌ها
+          // شیفت همه مفصل‌ها
           const pose = poses.get(line) || defaultPose(dragging.op.x, dragging.op.y);
           Object.keys(pose).forEach(k=>{ if(k!=='headR'){ pose[k].x += dx; pose[k].y += dy; }});
           poses.set(line, pose);
         }
-        // آپدیت DSL: x,y همان خط
+        // آپدیت DSL
         applyXYToEditorLine(line, (dragging.op.x+dx), (dragging.op.y+dy));
       }
 
       dragging = null;
-      run(); // بازنقاشی
+      run();
     }
 
-    /************* Editor *************/
+    /*********** Editor ***********/
     const editor = ace.edit("editor");
     editor.setTheme("ace/theme/one_dark");
     editor.session.setMode("ace/mode/text");
@@ -467,7 +470,6 @@ say x=240 y=130 "و من هم همین‌طور ✅"
 `
     };
 
-    // load default
     editor.setValue(samples.s1, -1); run();
     $("#btn-run").onclick = run;
     $("#btn-reset").onclick = ()=>{ poses.clear(); editor.setValue(samples.s2, -1); run(); };
@@ -476,10 +478,9 @@ say x=240 y=130 "و من هم همین‌طور ✅"
     });
     editor.commands.addCommand({name:'render',bindKey:{win:'Enter',mac:'Enter'},exec:run});
 
-    /************* Wallet integration (EIP-1193) *************/
-    const ethereum = window.ethereum;
+    /*********** Wallet (EIP-1193) ***********/
     async function connect(){
-      if(!ethereum){ tell('MetaMask/Provider یافت نشد.', 'err'); return; }
+      if(!ethereum){ tell('MetaMask/Provider یافت نشد.','err'); return; }
       const [addr] = await ethereum.request({method:'eth_requestAccounts'});
       account = addr; $("#who").style.display='inline-block'; $("#who").textContent = short(addr);
       tell('Wallet connected: '+short(addr),'ok');
@@ -490,63 +491,41 @@ say x=240 y=130 "و من هم همین‌طور ✅"
       try{
         await ethereum.request({method:'wallet_switchEthereumChain', params:[{chainId}]});
         tell('Switched to chain '+chainId,'ok');
-      }catch(e){
-        tell('Cannot switch. Add the chain in wallet if needed.','warn');
-      }
+      }catch(e){ tell('Cannot switch. اگر لازم است شبکه را دستی اضافه کن.', 'warn'); }
     }
-
     async function saveToChain(){
       if(!ethereum){ tell('Provider در دسترس نیست.','err'); return; }
       if(!account){ await connect(); if(!account) return; }
       const name = $("#comicName").value.trim();
-      // ساخت JSON کم‌حجم
-      const posesObj = Object.fromEntries([...poses.entries()]);
-      const payload = { v:1, name, ts:Date.now(), dsl: editor.getValue().trim(), poses: posesObj };
-      const str = JSON.stringify(payload);
-      const hex = toHex(str);
-      if(hex.length > 2 + 2*2048){ tell('Payload بزرگ است؛ سعی کن زیر 2KB بماند.', 'warn'); }
+      const payload = { v:1, name, ts:Date.now(), dsl: editor.getValue().trim(), poses:Object.fromEntries([...poses.entries()]) };
+      const hex = toHex(JSON.stringify(payload));
       try{
-        const tx = await ethereum.request({
-          method: 'eth_sendTransaction',
-          params: [{ from: account, to: account, value: '0x0', data: hex }]
-        });
-        $("#txhash").value = tx;
-        tell('Saved on chain. Tx: '+short(tx),'ok');
-      }catch(e){
-        tell('Tx rejected or failed. '+(e.message||''), 'err');
-      }
+        const tx = await ethereum.request({method:'eth_sendTransaction', params:[{from:account,to:account,value:'0x0',data:hex}]});
+        $("#txhash").value = tx; tell('Saved on chain. Tx: '+short(tx),'ok');
+      }catch(e){ tell('Tx rejected/failed. '+(e.message||''),'err'); }
     }
-
     async function loadFromTx(){
       if(!ethereum){ tell('Provider در دسترس نیست.','err'); return; }
       const txh = $("#txhash").value.trim();
-      if(!/^0x([0-9a-fA-F]{64})$/.test(txh)){ tell('TX hash درست وارد نشده.','warn'); return; }
+      if(!/^0x([0-9a-fA-F]{64})$/.test(txh)){ tell('TX hash نامعتبر.','warn'); return; }
       try{
         const tx = await ethereum.request({method:'eth_getTransactionByHash', params:[txh]});
-        if(!tx || !tx.input){ tell('Tx پیدا نشد یا داده ندارد. مطمئن شو روی همان شبکه‌ای که ذخیره کردی هستی.', 'warn'); return; }
-        const str = fromHex(tx.input);
-        const obj = JSON.parse(str);
+        if(!tx || !tx.input){ tell('Tx یا داده‌ای ندارد یا روی شبکهٔ دیگری است.','warn'); return; }
+        const obj = JSON.parse(fromHex(tx.input)||'{}');
         poses.clear();
         if(obj.poses){ for(const [k,v] of Object.entries(obj.poses)){ poses.set(Number(k), v); } }
-        editor.setValue(obj.dsl || '', -1);
-        $("#comicName").value = obj.name || '';
-        run();
-        tell('Loaded from chain.','ok');
-      }catch(e){
-        tell('خواندن تراکنش ناموفق بود. '+(e.message||''), 'err');
-      }
+        editor.setValue(obj.dsl||'', -1);
+        $("#comicName").value = obj.name||'';
+        run(); tell('Loaded from chain.','ok');
+      }catch(e){ tell('خواندن تراکنش ناموفق بود. '+(e.message||''),'err'); }
     }
-
     $("#btn-connect").onclick = connect;
     $("#btn-switch").onclick = switchChain;
     $("#btn-save").onclick = saveToChain;
     $("#btn-load").onclick = loadFromTx;
 
-    /************* Drag end support helpers *************/
-    function onKeyEscCloseHandles(){
-      document.addEventListener('keydown', (e)=>{ if(e.key==='Escape'){ const hs=document.querySelectorAll('.handle'); hs.forEach(h=>h.remove()); } });
-    }
-    onKeyEscCloseHandles();
+    // Escape = بستن هندل‌ها
+    document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ const h=$('.handles'); if(h) h.remove(); } });
   </script>
 </body>
 </html>
