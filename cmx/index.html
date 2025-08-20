@@ -47,7 +47,7 @@
     .btn:hover{background:var(--btn2)}
     .btn-accent{background:linear-gradient(180deg,var(--accent),var(--accent2));color:#1b1106;border:none}
     .kbd{display:inline-block;background:#1a1f33;border:1px solid #2f3a5d;border-radius:6px;padding:0 6px;margin:0 2px}
-    .hint{padding:8px 12px;color:var(--muted);font-size:12px;border-top:1px dashed #24304d;background:#0f1324}
+    .hint{padding:8px 12px;color:#9fb0c8;font-size:12px;border-top:1px dashed #24304d;background:#0f1324}
 
     .ghost{pointer-events:none;position:fixed;left:8px;bottom:8px;background:#111a;border:1px solid #333;
       padding:6px 8px;border-radius:8px;font-size:12px}
@@ -158,11 +158,10 @@
       c.setAttribute('cx',cx); c.setAttribute('cy',cy); c.setAttribute('r',r);
       c.setAttribute('fill',fill); g.appendChild(c); }
 
-    /*********** Bubbles — precise sizing & layering ***********/
-    function measureLineWidth(svg, text, isFa){
-      // عنصر موقتی برای اندازه‌گیری
+    /*********** measure & wrap ***********/
+    function measureText(svg, text, isFa){
       const t = document.createElementNS(svgNS,'text');
-      t.setAttribute('x', 0); t.setAttribute('y', -9999); // بیرون قاب
+      t.setAttribute('x', 0); t.setAttribute('y', -9999);
       t.setAttribute('font-size','16');
       t.setAttribute('font-family', isFa ? 'Vazirmatn' : 'Comfortaa');
       t.setAttribute('font-weight','300');
@@ -174,21 +173,46 @@
       t.remove();
       return w;
     }
+    function wrapByWidth(svg, text, isFa, maxW){
+      // می‌شکند بر اساس کلمات با اندازه‌گیری واقعی
+      const words = text.split(/\s+/);
+      const lines = []; let cur = '';
+      for(const w of words){
+        const trial = cur ? (isFa ? (w + ' ' + cur) : (cur + ' ' + w)) : w;
+        const width = measureText(svg, trial, isFa);
+        if(width <= maxW) cur = trial;
+        else{
+          if(cur) lines.push(cur);
+          cur = w;
+        }
+      }
+      if(cur) lines.push(cur);
+      return lines;
+    }
 
+    /*********** Bubbles — RTL/LTR correct ***********/
     function drawSay(svg, op){
       const g=document.createElementNS(svgNS,'g');
       g.dataset.type='say'; g.dataset.line=op._line;
 
-      const rawLines = op.text.replace(/\r/g,'').split(/\n/);
-      const padding=12, rx=12, ry=12, lh=20, MAXW=380;
+      const raw = op.text.replace(/\r/g,'').split(/\n/);
+      const padding=12, rx=12, ry=12, lh=20, MAXW=420;
 
-      // اندازه‌گیری دقیق خطوط با فونت واقعی
-      const widths = rawLines.map(ln => measureLineWidth(svg, ln, /[\u0600-\u06FF]/.test(ln)));
-      const maxMeasured = Math.max(...widths, 0);
-      const width = Math.min(MAXW, padding*2 + Math.ceil(maxMeasured));
-      const height = padding*2 + rawLines.length*lh;
+      // مرحلهٔ 1: برای هر خط، اگر از MAXW بزرگ‌تر شد، wrap کن
+      const wrapped = [];
+      raw.forEach(ln=>{
+        const isFa = /[\u0600-\u06FF]/.test(ln);
+        const w = measureText(svg, ln, isFa);
+        if(w <= MAXW) wrapped.push(ln);
+        else wrapped.push(...wrapByWidth(svg, ln, isFa, MAXW));
+      });
 
-      // ترتیب لایه‌ها: اول دم، بعد بدنه، بعد متن‌ها  (دم زیرِ بدنه می‌ماند)
+      // مرحلهٔ 2: عرض نهایی با دقت بالا
+      const widths = wrapped.map(ln => measureText(svg, ln, /[\u0600-\u06FF]/.test(ln)));
+      const width = padding*2 + Math.min(MAXW, Math.max(...widths, 0));
+      const height = padding*2 + wrapped.length*lh;
+
+      // ترتیب لایه‌ها: دم (زیر) → بدنه → متن‌ها
       const tail=document.createElementNS(svgNS,'path');
       tail.setAttribute('d',`M ${op.x+24} ${op.y+height} l 14 18 l 6 -22 Z`);
       tail.setAttribute('fill','#fff'); tail.setAttribute('stroke','#000'); tail.setAttribute('stroke-width','2');
@@ -201,10 +225,12 @@
       r.setAttribute('fill','#fff'); r.setAttribute('stroke','#000'); r.setAttribute('stroke-width','2');
       g.appendChild(r);
 
-      rawLines.forEach((ln,i)=>{
+      wrapped.forEach((ln,i)=>{
         const isFa = /[\u0600-\u06FF]/.test(ln);
         const t=document.createElementNS(svgNS,'text');
-        t.setAttribute('x', op.x + padding);
+        const xLeft = op.x + padding;
+        const xRight = op.x + width - padding;
+        t.setAttribute('x', isFa ? xRight : xLeft);
         t.setAttribute('y', op.y + padding + (i+1)*lh - 6);
         t.setAttribute('font-size','16');
         t.setAttribute('font-family', isFa ? 'Vazirmatn' : 'Comfortaa');
@@ -212,6 +238,7 @@
         t.setAttribute('fill','#000');
         t.setAttribute('direction', isFa ? 'rtl' : 'ltr');
         t.setAttribute('unicode-bidi', 'plaintext');
+        t.setAttribute('text-anchor', isFa ? 'end' : 'start');
         t.textContent=ln;
         g.appendChild(t);
       });
@@ -237,7 +264,6 @@
         headR
       };
     }
-
     function drawBonesOn(group, pose){
       let bones = group.querySelector('.bones');
       if(!bones){ bones=document.createElementNS(svgNS,'g'); bones.classList.add('bones'); group.appendChild(bones); }
@@ -254,7 +280,6 @@
       lineP(bones, pose.hip.x, pose.hip.y, pose.kneeR.x, pose.kneeR.y, STROKE);
       lineP(bones, pose.kneeR.x, pose.kneeR.y, pose.ankleR.x, pose.ankleR.y, STROKE);
     }
-
     function drawStick(svg, op){
       let pose = poses.get(op._line); if(!pose){ pose = defaultPose(op.x, op.y); poses.set(op._line, pose); }
       const g=document.createElementNS(svgNS,'g');
@@ -268,7 +293,6 @@
       g.addEventListener('dblclick',ev=>{ev.stopPropagation(); toggleHandles(g, op._line);});
       return g;
     }
-
     function toggleHandles(group, lineIndex){
       const existing = group.querySelector('.handles');
       if(existing){ existing.remove(); return; }
@@ -311,7 +335,6 @@
       });
       return {W,H,ops,lines};
     }
-
     function render(src){
       currentParse = parse(src);
       const {W,H,ops} = currentParse;
@@ -332,7 +355,6 @@
       const m = svg.getScreenCTM().inverse();
       return pt.matrixTransform(m);
     }
-
     function startDrag(ev, g, op, kind){
       ev.preventDefault();
       const pt = getSVGPoint(ev);
@@ -347,7 +369,6 @@
       dragging = { kind:'handle', group, lineIndex, key, start:pt, origin:{x:pose[key].x, y:pose[key].y}, handleEl };
       ghost.style.display='block'; ghost.textContent = `${key}`;
     }
-
     function onDragMove(ev){
       if(!dragging) return;
       ev.preventDefault();
@@ -371,7 +392,6 @@
         drawBonesOn(dragging.group, pose);
       }
     }
-
     function onDragEnd(){
       if(!dragging) return;
       ghost.style.display='none';
@@ -478,7 +498,6 @@ say x=240 y=130 "و من هم همین‌طور ✅"
         const tx = await ethereum.request({method:'eth_sendTransaction', params:[{from:account,to:account,value:'0x0',data:hex}]});
         $("#txhash").value = tx; tell('Saved on chain. Tx: '+tx,'ok');
       }catch(e){
-        // نمایش خطای واقعی متامسک
         tell((e && e.message) ? e.message : 'Tx rejected/failed.', 'err');
       }
     }
