@@ -2,41 +2,59 @@
 <html lang="fa" dir="rtl">
 <head>
   <meta charset="utf-8" />
-  <title>cmx — interactive mini editor (static)</title>
+  <title>cmx — on-chain comic editor (static)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300&family=Vazirmatn:wght@300&display=swap" rel="stylesheet">
-
   <style>
-    :root{--bg:#0b0c0f;--panel:#11131a;--fg:#e7e7e7;--muted:#9fb0c8;--border:#1c2030;--btn:#1e2436;--btn2:#262d47}
+    /* --- Theme (مشکی + نارنجی) --- */
+    :root{
+      --bg:#0b0c0f; --panel:#11131a; --fg:#e7e7e7; --muted:#9fb0c8;
+      --border:#1c2030; --btn:#1e2436; --btn2:#262d47;
+      --accent:#ff7a00; --accent2:#ff9933;
+      --ok:#1db954; --warn:#ffcc00; --err:#ff4d4f;
+    }
     *{box-sizing:border-box}
-    html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font-family:'Vazirmatn',sans-serif;font-weight:300}
-    .en, .kbd, button, .brand{font-family:'Comfortaa',sans-serif!important;font-weight:300}
+    html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);
+      font-family:'Vazirmatn',sans-serif; font-weight:300}
+    .en, .kbd, button, .brand, .addr{font-family:'Comfortaa',sans-serif!important;font-weight:300}
 
-    .wrap{display:grid;grid-template-columns:1fr 420px;gap:16px;min-height:100vh;padding:16px}
-    header{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;padding:4px 0 12px;border-bottom:1px solid var(--border)}
+    .wrap{display:grid;grid-template-columns:1fr 440px;gap:16px;min-height:100vh;padding:16px}
+    header{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;
+      padding:8px 0 14px;border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap}
     .title{font-weight:700;letter-spacing:.3px}
     .brand{opacity:.85;font-size:12px}
     .brand a{color:var(--muted);text-decoration:none}.brand a:hover{text-decoration:underline}
 
+    .walletbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    select, input[type="text"]{
+      background:#0f1220;border:1px solid #2a3350;border-radius:10px;padding:8px 10px;color:#cbd3df}
+    .connect{background:linear-gradient(180deg,var(--accent),var(--accent2)); color:#1b1106;
+      border:none;border-radius:10px;padding:10px 14px;cursor:pointer}
+    .connect:hover{filter:brightness(1.05)}
+    .pill{border:1px solid #2a3350;border-radius:999px;padding:6px 10px;color:#cbd3df;font-size:12px}
+    .addr{background:#151b2a}
+
     .pane{background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
     .pane h3{margin:0;padding:12px 14px;border-bottom:1px solid var(--border);color:#cbd3df;font-size:14px}
-
     .preview{padding:12px;flex:1;overflow:auto}
     .preview .host{display:flex;align-items:center;justify-content:center;min-height:380px}
-    .editor{position:relative;min-height:420px}
+    .editor{position:relative;min-height:460px}
     #editor{position:absolute;inset:0;font-size:13px}
 
     .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 12px;border-top:1px solid var(--border);background:#0f1220}
-    .toolbar button{background:var(--btn);color:#cbd3df;border:1px solid #2a3350;border-radius:8px;padding:8px 12px;cursor:pointer}
-    .toolbar button:hover{background:var(--btn2)}
+    .btn{background:var(--btn);color:#cbd3df;border:1px solid #2a3350;border-radius:10px;padding:8px 12px;cursor:pointer}
+    .btn:hover{background:var(--btn2)}
+    .btn-accent{background:linear-gradient(180deg,var(--accent),var(--accent2));color:#1b1106;border:none}
     .kbd{display:inline-block;background:#1a1f33;border:1px solid #2f3a5d;border-radius:6px;padding:0 6px;margin:0 2px}
     .hint{padding:8px 12px;color:var(--muted);font-size:12px;border-top:1px dashed #24304d;background:#0f1324}
 
-    .ghost{pointer-events:none;position:fixed;left:8px;bottom:8px;background:#111a;border:1px solid #333;padding:6px 8px;border-radius:8px;font-size:12px}
+    .ghost{pointer-events:none;position:fixed;left:8px;bottom:8px;background:#111a;border:1px solid #333;
+      padding:6px 8px;border-radius:8px;font-size:12px}
     .handle{fill:#4ad;stroke:#024;stroke-width:1.5;cursor:grab}
     .handle:active{cursor:grabbing}
-    .group-selected{outline:2px dashed #4ad}
+    .log{margin-top:8px;font-size:12px;color:#b8c4d6}
+
     @media(max-width:1100px){.wrap{grid-template-columns:1fr}}
   </style>
 </head>
@@ -44,31 +62,53 @@
   <div class="wrap">
     <header>
       <div class="brand">Inspired by <a href="https://github.com/darwin/cmx.js" target="_blank" rel="noopener">cmx.js</a></div>
-      <div class="title en">cmx — interactive mini editor</div>
+      <div class="title en">cmx — on-chain comic editor</div>
+
+      <div class="walletbar">
+        <select id="chain" title="Network">
+          <option value="0xaa36a7">Ethereum Sepolia</option>
+          <option value="0x89">Polygon Mainnet</option>
+          <option value="0x13882">Polygon Amoy (test)</option>
+          <option value="0x1a4">Optimism Sepolia</option>
+          <option value="0xa869">Avalanche Fuji</option>
+        </select>
+        <button id="btn-switch" class="btn en">Switch</button>
+        <button id="btn-connect" class="connect en">Connect Wallet</button>
+        <span id="who" class="pill addr en" style="display:none"></span>
+      </div>
     </header>
 
     <section class="pane">
-      <h3>پیش‌نمایش (تک‌کلیک=جابه‌جا، دابل‌کلیک=ویرایش مفصل‌ها / متن)</h3>
-      <div id="preview" class="preview">
-        <div id="host" class="host"></div>
-      </div>
+      <h3>پیش‌نمایش (تک‌کلیک=جابجایی، دابل‌کلیک=ویرایش مفصل‌ها)</h3>
+      <div id="preview" class="preview"><div id="host" class="host"></div></div>
+      <div class="log" id="log"></div>
     </section>
 
     <section class="pane">
       <h3>ویرایشگر</h3>
       <div class="editor"><div id="editor"></div></div>
+
       <div class="toolbar">
-        <button id="btn-run" class="en">Render (⏎)</button>
-        <button id="btn-reset" class="en">Reset</button>
+        <button id="btn-run" class="btn en">Render (⏎)</button>
+        <button id="btn-reset" class="btn en">Reset</button>
         <span class="brand">Samples:</span>
-        <button class="en" data-sample="s1">Sample A</button>
-        <button class="en" data-sample="s2">Sample B</button>
-        <button class="en" data-sample="s3">Sample C</button>
+        <button class="btn en" data-sample="s1">Sample A</button>
+        <button class="btn en" data-sample="s2">Sample B</button>
+        <button class="btn en" data-sample="s3">Sample C</button>
       </div>
+
+      <div class="toolbar">
+        <input id="comicName" type="text" class="en" placeholder="comic name (optional)" style="min-width:180px">
+        <button id="btn-save" class="btn-accent en">Save to Chain</button>
+        <input id="txhash" type="text" class="en" placeholder="0x… transaction hash" style="flex:1;min-width:240px">
+        <button id="btn-load" class="btn en">Load by Tx Hash</button>
+      </div>
+
       <div class="hint">
         دستورات: <span class="kbd">panel &lt;W&gt;x&lt;H&gt;</span>،
         <span class="kbd">stick x=… y=…</span>،
-        <span class="kbd">say x=… y=… "متن"</span> — با کشیدن اشیاء، مختصات در ادیتور آپدیت می‌شود. برای ویرایش مفصل‌های آدمک، روی آدمک **دابل‌کلیک** کن.
+        <span class="kbd">say x=… y=… "متن"</span> — با کشیدن اشیاء، مختصات در ادیتور آپدیت می‌شود.  
+        ذخیره‌سازی روی زنجیره هزینه‌ی گس دارد؛ پیشنهاد: تست‌نت‌ها (Sepolia/Amoy). محتوای JSON را کوچک نگه دارید (&lt; ~2KB).
       </div>
     </section>
   </div>
@@ -79,17 +119,34 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.6/ace.js" crossorigin="anonymous"></script>
 
   <script>
+    /************* Helpers *************/
     const $ = s => document.querySelector(s);
     const svgNS = 'http://www.w3.org/2000/svg';
     const ghost = $("#ghost");
+    const log  = $("#log");
+    let currentParse = null;            // آخرین پارس DSL
+    let dragging = null;                // وضعیت درگ
+    const poses = new Map();            // lineIndex -> pose
+    let account = null;
 
-    // حالت‌ها
-    let currentParse = null;      // آخرین پارس DSL
-    let dragging = null;          // وضعیت درگ عمومی (گروه یا هندل)
-    const poses = new Map();      // pose برای هر خط stick: key=lineIndex => joints
-    const sayEdits = new Map();   // اگر بعداً چیزی برای say لازم شد
+    const toHex = (str) => {
+      const bytes = new TextEncoder().encode(str);
+      return '0x' + [...bytes].map(b=>b.toString(16).padStart(2,'0')).join('');
+    };
+    const fromHex = (hex) => {
+      hex = (hex||'').startsWith('0x') ? hex.slice(2) : hex;
+      if(!hex) return '';
+      const arr = hex.match(/.{1,2}/g).map(b=>parseInt(b,16));
+      return new TextDecoder().decode(new Uint8Array(arr));
+    };
+    const short = (a)=> a ? a.slice(0,6) + '…' + a.slice(-4) : '';
 
-    // ---------- ابزار SVG ----------
+    function tell(msg, kind='info'){
+      const color = kind==='ok'? 'var(--ok)': kind==='warn'? 'var(--warn)': kind==='err'? 'var(--err)': '#9fb0c8';
+      log.innerHTML = `<span style="color:${color}">${msg}</span>`;
+    }
+
+    /************* SVG primitives *************/
     function createSVG(w=800,h=400){
       const svg=document.createElementNS(svgNS,'svg');
       svg.setAttribute('viewBox',`0 0 ${w} ${h}`);
@@ -111,41 +168,39 @@
       c.setAttribute('cx',cx); c.setAttribute('cy',cy); c.setAttribute('r',r);
       c.setAttribute('fill',fill); g.appendChild(c); }
 
-    // ---------- word wrap برای حباب ----------
+    /************* Speech bubble (with wrapping) *************/
     function wrapTextByWidth(text, maxW, charW=8.2){
-      // ساده: بر اساس فاصله‌ها می‌شکند؛ فارسی و انگلیسی را یکسان فرض می‌کنیم
-      const words = text.replace(/\r/g,'').split(/\n/).map(l=>l.split(/\s+/));
-      const lines = [];
-      for(const wl of words){
+      const rawLines = text.replace(/\r/g,'').split(/\n/);
+      const out = [];
+      for(const rl of rawLines){
+        const words = rl.split(/\s+/);
         let cur='';
-        for(const w of wl){
+        for(const w of words){
           const next = cur ? (cur+' '+w) : w;
           if(next.length*charW <= maxW) cur = next;
-          else {
-            if(cur) lines.push(cur);
-            if(w.length*charW <= maxW){ cur = w; }
-            else { // خیلی بلند: بشکن
-              let chunk=''; for(const ch of w){
-                if((chunk+ch).length*charW<=maxW) chunk+=ch;
-                else { lines.push(chunk); chunk=ch; }
+          else{
+            if(cur) out.push(cur);
+            if(w.length*charW <= maxW) cur = w;
+            else{
+              // break long token
+              let ch=''; for(const c of w){
+                if((ch+c).length*charW <= maxW) ch+=c; else { out.push(ch); ch=c; }
               }
-              cur = chunk;
+              cur = ch;
             }
           }
         }
-        lines.push(cur);
+        out.push(cur);
       }
-      return lines;
+      return out;
     }
 
-    // ---------- حباب گفت‌وگو (درگ + دابل‌کلیک برای ویرایش متن در آینده) ----------
     function drawSay(svg, op){
       const g=document.createElementNS(svgNS,'g');
       g.dataset.type='say'; g.dataset.line=op._line;
 
-      // wrap
       const MAXW = 280;
-      const lines = wrapTextByWidth(op.text, MAXW, 8); // ~8px per char
+      const lines = wrapTextByWidth(op.text, MAXW, 8);
       const padding=10, rx=12, ry=12, lh=18;
       const width = Math.min(MAXW, padding*2 + Math.max(...lines.map(s=>s.length))*8);
       const height = padding*2 + lines.length*lh;
@@ -175,17 +230,13 @@
       });
 
       svg.appendChild(g);
-
-      // جابه‌جایی کل گراف
       g.style.cursor='move';
       g.addEventListener('mousedown',ev=>startDrag(ev,g,op,'say-group'));
       g.addEventListener('touchstart',ev=>startDrag(ev,g,op,'say-group'),{passive:false});
-      g.addEventListener('dblclick',ev=>ev.stopPropagation());
     }
 
-    // ---------- آدمک با مفصل‌ها ----------
+    /************* Stick figure with joints (double-click to edit joints) *************/
     function defaultPose(x,y){
-      // y: لگن مرکزی
       return {
         head:{x:x, y:y-36}, neck:{x:x, y:y-18}, shoulder:{x:x, y:y-10},
         elbowL:{x:x-28, y:y+6}, wristL:{x:x-48, y:y+24},
@@ -198,67 +249,47 @@
     }
 
     function drawStick(svg, op){
-      // بازیابی یا ساخت پوز
-      let pose = poses.get(op._line);
-      if(!pose){ pose = defaultPose(op.x, op.y); poses.set(op._line, pose); }
-
+      let pose = poses.get(op._line); if(!pose){ pose = defaultPose(op.x, op.y); poses.set(op._line, pose); }
       const g=document.createElementNS(svgNS,'g');
       g.dataset.type='stick'; g.dataset.line = op._line;
       svg.appendChild(g);
 
-      // استخوان‌ها
-      // سر
+      // bones
       circleP(g, pose.head.x, pose.head.y, pose.headR);
-      // گردن و ستون فقرات
       lineP(g, pose.head.x, pose.head.y+pose.headR, pose.neck.x, pose.neck.y, 6);
       lineP(g, pose.neck.x, pose.neck.y, pose.hip.x, pose.hip.y+2, 6);
-      // دست چپ
       lineP(g, pose.shoulder.x, pose.shoulder.y, pose.elbowL.x, pose.elbowL.y, 6);
       lineP(g, pose.elbowL.x, pose.elbowL.y, pose.wristL.x, pose.wristL.y, 6);
-      // دست راست
       lineP(g, pose.shoulder.x, pose.shoulder.y, pose.elbowR.x, pose.elbowR.y, 6);
       lineP(g, pose.elbowR.x, pose.elbowR.y, pose.wristR.x, pose.wristR.y, 6);
-      // پاها
       lineP(g, pose.hip.x, pose.hip.y, pose.kneeL.x, pose.kneeL.y, 6);
       lineP(g, pose.kneeL.x, pose.kneeL.y, pose.ankleL.x, pose.ankleL.y, 6);
       lineP(g, pose.hip.x, pose.hip.y, pose.kneeR.x, pose.kneeR.y, 6);
       lineP(g, pose.kneeR.x, pose.kneeR.y, pose.ankleR.x, pose.ankleR.y, 6);
 
-      // تعامل: تک‌کلیک جابه‌جایی کل گروه
       g.style.cursor='move';
       g.addEventListener('mousedown',ev=>startDrag(ev,g,op,'stick-group'));
       g.addEventListener('touchstart',ev=>startDrag(ev,g,op,'stick-group'),{passive:false});
-      // دابل‌کلیک: نمایش/پنهان‌سازی هندل‌های مفصل‌ها
-      g.addEventListener('dblclick',ev=>{
-        ev.stopPropagation();
-        toggleHandles(g, op._line);
-      });
-
+      g.addEventListener('dblclick',ev=>{ev.stopPropagation(); toggleHandles(g, op._line);});
       return g;
     }
 
     function toggleHandles(group, lineIndex){
       const pose = poses.get(lineIndex);
-      // اگر قبلاً هندل‌ها هست، حذف کن
-      const old = group.querySelectorAll('.handle');
-      if(old.length){ old.forEach(h=>h.remove()); return; }
-
-      // وگرنه بساز
+      const old = group.querySelectorAll('.handle'); if(old.length){ old.forEach(h=>h.remove()); return; }
       const keys = Object.keys(pose).filter(k=>k!=='headR');
       keys.forEach(key=>{
         const p=pose[key];
         const h=document.createElementNS(svgNS,'circle');
         h.setAttribute('cx', p.x); h.setAttribute('cy', p.y); h.setAttribute('r', 6);
-        h.classList.add('handle');
-        h.dataset.key = key;
+        h.classList.add('handle'); h.dataset.key = key;
         group.appendChild(h);
-
         h.addEventListener('mousedown', ev => startHandleDrag(ev, group, lineIndex, key));
         h.addEventListener('touchstart', ev => startHandleDrag(ev, group, lineIndex, key), {passive:false});
       });
     }
 
-    // ---------- Parser ----------
+    /************* Parser & Render *************/
     function parse(src){
       const lines=src.split(/\r?\n/);
       let W=820,H=420; const ops=[];
@@ -282,7 +313,6 @@
       return {W,H,ops,lines};
     }
 
-    // ---------- Render ----------
     function render(src){
       currentParse = parse(src);
       const {W,H,ops} = currentParse;
@@ -294,10 +324,9 @@
       });
     }
 
-    // ---------- درگِ گروه و هندل ----------
+    /************* Drag logic *************/
     function getSVGPoint(ev){
-      const svg = $('#host svg');
-      if(!svg) return {x:0,y:0};
+      const svg = $('#host svg'); if(!svg) return {x:0,y:0};
       const pt = svg.createSVGPoint();
       const src = ev.touches ? ev.touches[0] : ev;
       pt.x = src.clientX; pt.y = src.clientY;
@@ -312,14 +341,13 @@
       ghost.style.display='block';
       ghost.textContent = `${op.t}  x=${op.x}  y=${op.y}`;
     }
-
     function startHandleDrag(ev, group, lineIndex, key){
       ev.preventDefault();
       const pt = getSVGPoint(ev);
       const pose = poses.get(lineIndex);
-      dragging = { kind:'handle', group, lineIndex, key, start:pt, origin:{x:pose[key].x, y:pose[key].y}};
-      ghost.style.display='block';
-      ghost.textContent = `${key}`;
+      dragging = { kind:'handle', group, lineIndex, key, start:pt,
+                   origin:{x:pose[key].x, y:pose[key].y}};
+      ghost.style.display='block'; ghost.textContent = `${key}`;
     }
 
     function onDragMove(ev){
@@ -329,96 +357,72 @@
       const dx = pt.x - dragging.start.x;
       const dy = pt.y - dragging.start.y;
 
-      if(dragging.kind==='stick-group'){
+      if(dragging.kind==='stick-group' || dragging.kind==='say-group'){
         dragging.moved = true;
         dragging.g.setAttribute('transform', `translate(${dx},${dy})`);
-        ghost.textContent = `stick x=${dragging.op.x+Math.round(dx)} y=${dragging.op.y+Math.round(dy)}`;
-      }else if(dragging.kind==='say-group'){
-        dragging.moved = true;
-        dragging.g.setAttribute('transform', `translate(${dx},${dy})`);
-        ghost.textContent = `say x=${dragging.op.x+Math.round(dx)} y=${dragging.op.y+Math.round(dy)}`;
-      }else if(dragging.kind==='handle'){
+        const label = dragging.kind==='stick-group'?'stick':'say';
+        ghost.textContent = `${label} x=${dragging.op.x+Math.round(dx)} y=${dragging.op.y+Math.round(dy)}`;
+      } else if(dragging.kind==='handle'){
         dragging.moved = true;
         const nx = Math.round(dragging.origin.x + dx);
         const ny = Math.round(dragging.origin.y + dy);
         const pose = poses.get(dragging.lineIndex);
         pose[dragging.key].x = nx; pose[dragging.key].y = ny;
-        // هندل جاری را هم جابه‌جا کن
-        const handle = [...dragging.group.querySelectorAll('.handle')].find(h=>h.dataset.key===dragging.key);
-        if(handle){ handle.setAttribute('cx', nx); handle.setAttribute('cy', ny); }
-        // بازنقاشی اسکلت روی همان گروه (ساده: کل گروه را ری‌رندر می‌کنیم)
-        const line = dragging.lineIndex;
-        const op = {t:'stick', _line:line};
-        dragging.group.innerHTML=''; // پاک
-        drawStickOnGroup(dragging.group, poses.get(line)); // بدون ایجاد گروه جدید
-        // سپس دوباره هندل‌ها را بساز
-        toggleHandles(dragging.group, line);
-        toggleHandles(dragging.group, line);
-        toggleHandles(dragging.group, line); // سه بار؟ نه، یکبار کافی بود — ولی چون بالا پاک کردیم، دوباره:
-      }
-    }
 
-    function drawStickOnGroup(g, pose){
-      // کمک‌کار: بازنقاشی فقط خطوط/دایره‌های آدمک در همان گروه
-      circleP(g, pose.head.x, pose.head.y, pose.headR);
-      lineP(g, pose.head.x, pose.head.y+pose.headR, pose.neck.x, pose.neck.y, 6);
-      lineP(g, pose.neck.x, pose.neck.y, pose.hip.x, pose.hip.y+2, 6);
-      lineP(g, pose.shoulder.x, pose.shoulder.y, pose.elbowL.x, pose.elbowL.y, 6);
-      lineP(g, pose.elbowL.x, pose.elbowL.y, pose.wristL.x, pose.wristL.y, 6);
-      lineP(g, pose.shoulder.x, pose.shoulder.y, pose.elbowR.x, pose.elbowR.y, 6);
-      lineP(g, pose.elbowR.x, pose.elbowR.y, pose.wristR.x, pose.wristR.y, 6);
-      lineP(g, pose.hip.x, pose.hip.y, pose.kneeL.x, pose.kneeL.y, 6);
-      lineP(g, pose.kneeL.x, pose.kneeL.y, pose.ankleL.x, pose.ankleL.y, 6);
-      lineP(g, pose.hip.x, pose.hip.y, pose.kneeR.x, pose.kneeR.y, 6);
-      lineP(g, pose.kneeR.x, pose.kneeR.y, pose.ankleR.x, pose.ankleR.y, 6);
-      // رویدادهای گروه را دوباره اضافه کنیم
-      g.style.cursor='move';
-      const lineIndex = [...poses.entries()].find(([k,v])=>v===pose)?.[0];
-      g.dataset.type='stick'; if(lineIndex!=null) g.dataset.line=lineIndex;
-      g.addEventListener('mousedown',ev=>startDrag(ev,g,{t:'stick',x:pose.hip.x,y:pose.hip.y,_line:lineIndex},'stick-group'));
-      g.addEventListener('touchstart',ev=>startDrag(ev,g,{t:'stick',x:pose.hip.x,y:pose.hip.y,_line:lineIndex},'stick-group'),{passive:false});
-      g.addEventListener('dblclick',ev=>{ev.stopPropagation(); toggleHandles(g, lineIndex);});
+        // بازنقاشی گروه: پاک و دوباره بکش + هندل‌ها
+        const g = dragging.group;
+        const keepHandles = [...g.querySelectorAll('.handle')].map(h=>h.dataset.key);
+        g.innerHTML = '';
+        // شکل
+        const p = poses.get(dragging.lineIndex);
+        circleP(g, p.head.x, p.head.y, p.headR);
+        lineP(g, p.head.x, p.head.y+p.headR, p.neck.x, p.neck.y, 6);
+        lineP(g, p.neck.x, p.neck.y, p.hip.x, p.hip.y+2, 6);
+        lineP(g, p.shoulder.x, p.shoulder.y, p.elbowL.x, p.elbowL.y, 6);
+        lineP(g, p.elbowL.x, p.elbowL.y, p.wristL.x, p.wristL.y, 6);
+        lineP(g, p.shoulder.x, p.shoulder.y, p.elbowR.x, p.elbowR.y, 6);
+        lineP(g, p.elbowR.x, p.elbowR.y, p.wristR.x, p.wristR.y, 6);
+        lineP(g, p.hip.x, p.hip.y, p.kneeL.x, p.kneeL.y, 6);
+        lineP(g, p.kneeL.x, p.kneeL.y, p.ankleL.x, p.ankleL.y, 6);
+        lineP(g, p.hip.x, p.hip.y, p.kneeR.x, p.kneeR.y, 6);
+        lineP(g, p.kneeR.x, p.kneeR.y, p.ankleR.x, p.ankleR.y, 6);
+        // دوباره هندل‌ها
+        keepHandles.forEach(key=>{
+          const pt = p[key]; const h=document.createElementNS(svgNS,'circle');
+          h.setAttribute('cx', pt.x); h.setAttribute('cy', pt.y); h.setAttribute('r', 6);
+          h.classList.add('handle'); h.dataset.key=key; g.appendChild(h);
+          h.addEventListener('mousedown', ev => startHandleDrag(ev, g, dragging.lineIndex, key));
+          h.addEventListener('touchstart', ev => startHandleDrag(ev, g, dragging.lineIndex, key), {passive:false});
+        });
+      }
     }
 
     function onDragEnd(){
       if(!dragging) return;
       ghost.style.display='none';
 
-      if(dragging.kind==='stick-group' && dragging.moved){
-        // محاسبه‌ی مختصات جدید و اعمال به pose + ادیتور
+      if((dragging.kind==='stick-group' || dragging.kind==='say-group') && dragging.moved){
         const m = dragging.g.getAttribute('transform');
         const delta = m ? m.match(/translate\(([-\d.]+),([-\d.]+)\)/) : null;
         const dx = delta ? Math.round(parseFloat(delta[1])) : 0;
         const dy = delta ? Math.round(parseFloat(delta[2])) : 0;
 
         const line = dragging.op._line;
-        // شیفت همه‌ی مفصل‌ها
-        const pose = poses.get(line) || defaultPose(dragging.op.x, dragging.op.y);
-        Object.keys(pose).forEach(k=>{
-          if(k==='headR') return;
-          pose[k].x += dx; pose[k].y += dy;
-        });
-        poses.set(line, pose);
-
-        // آپدیت DSL: x,y خط stick
-        applyXYToEditorLine(line, (dragging.op.x+dx), (dragging.op.y+dy));
-      }
-
-      if(dragging.kind==='say-group' && dragging.moved){
-        const m = dragging.g.getAttribute('transform');
-        const delta = m ? m.match(/translate\(([-\d.]+),([-\d.]+)\)/) : null;
-        const dx = delta ? Math.round(parseFloat(delta[1])) : 0;
-        const dy = delta ? Math.round(parseFloat(delta[2])) : 0;
-        const line = dragging.op._line;
+        if(dragging.kind==='stick-group'){
+          // شیفت همه‌ی مفصل‌ها
+          const pose = poses.get(line) || defaultPose(dragging.op.x, dragging.op.y);
+          Object.keys(pose).forEach(k=>{ if(k!=='headR'){ pose[k].x += dx; pose[k].y += dy; }});
+          poses.set(line, pose);
+        }
+        // آپدیت DSL: x,y همان خط
         applyXYToEditorLine(line, (dragging.op.x+dx), (dragging.op.y+dy));
       }
 
       dragging = null;
-      // باز-رندر با مقادیر جدید
-      run();
+      run(); // بازنقاشی
     }
 
-    // ---------- Editor ----------
+    /************* Editor *************/
     const editor = ace.edit("editor");
     editor.setTheme("ace/theme/one_dark");
     editor.session.setMode("ace/mode/text");
@@ -433,12 +437,10 @@
       line = line.replace(/y\s*=\s*("[^"]*"|-?\d+(\.\d+)?)/, `y=${y}`);
       session.replace({start:{row:lineIndex,column:0}, end:{row:lineIndex,column:session.getLine(lineIndex).length}}, line);
     }
-
     function run(){ render(editor.getValue()); }
 
-    // ---------- Samples ----------
     const samples = {
-s1: `# Sample A — 4 sticks + 2 bubbles
+s1:`# Sample A — 4 sticks + 2 bubbles
 panel 860x420
 stick x=140 y=230
 say   x=60  y=120 "سلام! به cmx خوش اومدی :)"
@@ -449,38 +451,102 @@ say   x=500 y=120 "Welcome to cmx! Minimal, static, fun."
 stick x=720 y=230
 say   x=640 y=140 "soheil.info/cmx"
 `,
-s2: `# Sample B — Two people talk
+s2:`# Sample B — Two people talk
 panel 800x420
 stick x=200 y=220
 say   x=120 y=120 "سلام Soheil! این پیش‌فرض آماده‌ست."
 stick x=520 y=220
 say   x=440 y=130 "اوکی، Enter رو بزن تا رندر شه یا متن رو تغییر بده."
 `,
-s3: `# Sample C — Minimal
+s3:`# Sample C — Minimal
 panel 800x420
 stick x=160 y=210
 stick x=300 y=210
-say x=80  y=120 "من یک آدمکم! من حرف می‌زنم و این متن داخل کادر می‌ماند."
+say x=80  y=120 "من یک آدمکم! متن طولانی هم داخل کادر می‌ماند و می‌شکند."
 say x=240 y=130 "و من هم همین‌طور ✅"
 `
     };
 
-    // بارگذاری پیش‌فرض
-    editor.setValue(samples.s1, -1);
-    run();
-
-    // دکمه‌ها
+    // load default
+    editor.setValue(samples.s1, -1); run();
     $("#btn-run").onclick = run;
     $("#btn-reset").onclick = ()=>{ poses.clear(); editor.setValue(samples.s2, -1); run(); };
     document.querySelectorAll('[data-sample]').forEach(b=>{
-      b.addEventListener('click',()=>{
-        poses.clear();
-        const key=b.getAttribute('data-sample');
-        editor.setValue(samples[key]||samples.s1, -1);
-        run();
-      });
+      b.addEventListener('click',()=>{ poses.clear(); editor.setValue(samples[b.dataset.sample]||samples.s1, -1); run(); });
     });
     editor.commands.addCommand({name:'render',bindKey:{win:'Enter',mac:'Enter'},exec:run});
+
+    /************* Wallet integration (EIP-1193) *************/
+    const ethereum = window.ethereum;
+    async function connect(){
+      if(!ethereum){ tell('MetaMask/Provider یافت نشد.', 'err'); return; }
+      const [addr] = await ethereum.request({method:'eth_requestAccounts'});
+      account = addr; $("#who").style.display='inline-block'; $("#who").textContent = short(addr);
+      tell('Wallet connected: '+short(addr),'ok');
+    }
+    async function switchChain(){
+      if(!ethereum){ tell('Provider در دسترس نیست.','err'); return; }
+      const chainId = $("#chain").value;
+      try{
+        await ethereum.request({method:'wallet_switchEthereumChain', params:[{chainId}]});
+        tell('Switched to chain '+chainId,'ok');
+      }catch(e){
+        tell('Cannot switch. Add the chain in wallet if needed.','warn');
+      }
+    }
+
+    async function saveToChain(){
+      if(!ethereum){ tell('Provider در دسترس نیست.','err'); return; }
+      if(!account){ await connect(); if(!account) return; }
+      const name = $("#comicName").value.trim();
+      // ساخت JSON کم‌حجم
+      const posesObj = Object.fromEntries([...poses.entries()]);
+      const payload = { v:1, name, ts:Date.now(), dsl: editor.getValue().trim(), poses: posesObj };
+      const str = JSON.stringify(payload);
+      const hex = toHex(str);
+      if(hex.length > 2 + 2*2048){ tell('Payload بزرگ است؛ سعی کن زیر 2KB بماند.', 'warn'); }
+      try{
+        const tx = await ethereum.request({
+          method: 'eth_sendTransaction',
+          params: [{ from: account, to: account, value: '0x0', data: hex }]
+        });
+        $("#txhash").value = tx;
+        tell('Saved on chain. Tx: '+short(tx),'ok');
+      }catch(e){
+        tell('Tx rejected or failed. '+(e.message||''), 'err');
+      }
+    }
+
+    async function loadFromTx(){
+      if(!ethereum){ tell('Provider در دسترس نیست.','err'); return; }
+      const txh = $("#txhash").value.trim();
+      if(!/^0x([0-9a-fA-F]{64})$/.test(txh)){ tell('TX hash درست وارد نشده.','warn'); return; }
+      try{
+        const tx = await ethereum.request({method:'eth_getTransactionByHash', params:[txh]});
+        if(!tx || !tx.input){ tell('Tx پیدا نشد یا داده ندارد. مطمئن شو روی همان شبکه‌ای که ذخیره کردی هستی.', 'warn'); return; }
+        const str = fromHex(tx.input);
+        const obj = JSON.parse(str);
+        poses.clear();
+        if(obj.poses){ for(const [k,v] of Object.entries(obj.poses)){ poses.set(Number(k), v); } }
+        editor.setValue(obj.dsl || '', -1);
+        $("#comicName").value = obj.name || '';
+        run();
+        tell('Loaded from chain.','ok');
+      }catch(e){
+        tell('خواندن تراکنش ناموفق بود. '+(e.message||''), 'err');
+      }
+    }
+
+    $("#btn-connect").onclick = connect;
+    $("#btn-switch").onclick = switchChain;
+    $("#btn-save").onclick = saveToChain;
+    $("#btn-load").onclick = loadFromTx;
+
+    /************* Drag end support helpers *************/
+    function onKeyEscCloseHandles(){
+      document.addEventListener('keydown', (e)=>{ if(e.key==='Escape'){ const hs=document.querySelectorAll('.handle'); hs.forEach(h=>h.remove()); } });
+    }
+    onKeyEscCloseHandles();
   </script>
 </body>
 </html>
