@@ -6,28 +6,37 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300&family=Vazirmatn:wght@300&display=swap" rel="stylesheet">
+
   <style>
     :root{--bg:#0b0c0f;--panel:#11131a;--fg:#e7e7e7;--muted:#9fb0c8;--border:#1c2030;--btn:#1e2436;--btn2:#262d47}
     *{box-sizing:border-box}
     html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font-family:'Vazirmatn',sans-serif;font-weight:300}
     .en, .kbd, button, .brand{font-family:'Comfortaa',sans-serif!important;font-weight:300}
+
     .wrap{display:grid;grid-template-columns:1fr 420px;gap:16px;min-height:100vh;padding:16px}
     header{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;padding:4px 0 12px;border-bottom:1px solid var(--border)}
     .title{font-weight:700;letter-spacing:.3px}
     .brand{opacity:.85;font-size:12px}
     .brand a{color:var(--muted);text-decoration:none}.brand a:hover{text-decoration:underline}
+
     .pane{background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
     .pane h3{margin:0;padding:12px 14px;border-bottom:1px solid var(--border);color:#cbd3df;font-size:14px}
+
     .preview{padding:12px;flex:1;overflow:auto}
     .preview .host{display:flex;align-items:center;justify-content:center;min-height:380px}
     .editor{position:relative;min-height:420px}
     #editor{position:absolute;inset:0;font-size:13px}
+
     .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 12px;border-top:1px solid var(--border);background:#0f1220}
     .toolbar button{background:var(--btn);color:#cbd3df;border:1px solid #2a3350;border-radius:8px;padding:8px 12px;cursor:pointer}
     .toolbar button:hover{background:var(--btn2)}
     .kbd{display:inline-block;background:#1a1f33;border:1px solid #2f3a5d;border-radius:6px;padding:0 6px;margin:0 2px}
     .hint{padding:8px 12px;color:var(--muted);font-size:12px;border-top:1px dashed #24304d;background:#0f1324}
+
     .ghost{pointer-events:none;position:fixed;left:8px;bottom:8px;background:#111a;border:1px solid #333;padding:6px 8px;border-radius:8px;font-size:12px}
+    .handle{fill:#4ad;stroke:#024;stroke-width:1.5;cursor:grab}
+    .handle:active{cursor:grabbing}
+    .group-selected{outline:2px dashed #4ad}
     @media(max-width:1100px){.wrap{grid-template-columns:1fr}}
   </style>
 </head>
@@ -39,7 +48,7 @@
     </header>
 
     <section class="pane">
-      <h3>پیش‌نمایش (عناصر قابل‌کشیدن هستند)</h3>
+      <h3>پیش‌نمایش (تک‌کلیک=جابه‌جا، دابل‌کلیک=ویرایش مفصل‌ها / متن)</h3>
       <div id="preview" class="preview">
         <div id="host" class="host"></div>
       </div>
@@ -58,8 +67,8 @@
       </div>
       <div class="hint">
         دستورات: <span class="kbd">panel &lt;W&gt;x&lt;H&gt;</span>،
-        <span class="kbd">stick x=… y=… [arms=up|down]</span>،
-        <span class="kbd">say x=… y=… "متن"</span> — با موس/لمس بکشید؛ مختصات در ادیتور آپدیت می‌شود.
+        <span class="kbd">stick x=… y=…</span>،
+        <span class="kbd">say x=… y=… "متن"</span> — با کشیدن اشیاء، مختصات در ادیتور آپدیت می‌شود. برای ویرایش مفصل‌های آدمک، روی آدمک **دابل‌کلیک** کن.
       </div>
     </section>
   </div>
@@ -72,17 +81,20 @@
   <script>
     const $ = s => document.querySelector(s);
     const svgNS = 'http://www.w3.org/2000/svg';
-    let currentParse = null;   // آخرین ساختار پارس‌شده (برای نگهداشت شماره خطوط)
-    let dragging = null;       // وضعیت درگ جاری
     const ghost = $("#ghost");
 
-    // ---------- پایه‌ی SVG ----------
+    // حالت‌ها
+    let currentParse = null;      // آخرین پارس DSL
+    let dragging = null;          // وضعیت درگ عمومی (گروه یا هندل)
+    const poses = new Map();      // pose برای هر خط stick: key=lineIndex => joints
+    const sayEdits = new Map();   // اگر بعداً چیزی برای say لازم شد
+
+    // ---------- ابزار SVG ----------
     function createSVG(w=800,h=400){
       const svg=document.createElementNS(svgNS,'svg');
       svg.setAttribute('viewBox',`0 0 ${w} ${h}`);
       svg.setAttribute('width',w); svg.setAttribute('height',h);
       svg.style.background='#fff'; svg.style.border='2px solid #000'; svg.style.borderRadius='8px';
-      // eventi برای درگ
       svg.addEventListener('mousemove',onDragMove);
       svg.addEventListener('touchmove',onDragMove,{passive:false});
       svg.addEventListener('mouseup',onDragEnd);
@@ -90,102 +102,70 @@
       svg.addEventListener('touchend',onDragEnd);
       return svg;
     }
-    function line(svg,x1,y1,x2,y2,sw=6){ const ln=document.createElementNS(svgNS,'line');
+    function lineP(g,x1,y1,x2,y2,sw=6){ const ln=document.createElementNS(svgNS,'line');
       ln.setAttribute('x1',x1); ln.setAttribute('y1',y1);
       ln.setAttribute('x2',x2); ln.setAttribute('y2',y2);
       ln.setAttribute('stroke','#000'); ln.setAttribute('stroke-width',sw);
-      ln.setAttribute('stroke-linecap','round'); svg.appendChild(ln); }
-    function circle(svg,cx,cy,r,fill='#000'){ const c=document.createElementNS(svgNS,'circle');
+      ln.setAttribute('stroke-linecap','round'); g.appendChild(ln); }
+    function circleP(g,cx,cy,r,fill='#000'){ const c=document.createElementNS(svgNS,'circle');
       c.setAttribute('cx',cx); c.setAttribute('cy',cy); c.setAttribute('r',r);
-      c.setAttribute('fill',fill); svg.appendChild(c); }
+      c.setAttribute('fill',fill); g.appendChild(c); }
 
-    // ---------- گروه‌های درَگ‌پذیر ----------
-    function makeDraggableGroup(svg, op, drawFn){
+    // ---------- word wrap برای حباب ----------
+    function wrapTextByWidth(text, maxW, charW=8.2){
+      // ساده: بر اساس فاصله‌ها می‌شکند؛ فارسی و انگلیسی را یکسان فرض می‌کنیم
+      const words = text.replace(/\r/g,'').split(/\n/).map(l=>l.split(/\s+/));
+      const lines = [];
+      for(const wl of words){
+        let cur='';
+        for(const w of wl){
+          const next = cur ? (cur+' '+w) : w;
+          if(next.length*charW <= maxW) cur = next;
+          else {
+            if(cur) lines.push(cur);
+            if(w.length*charW <= maxW){ cur = w; }
+            else { // خیلی بلند: بشکن
+              let chunk=''; for(const ch of w){
+                if((chunk+ch).length*charW<=maxW) chunk+=ch;
+                else { lines.push(chunk); chunk=ch; }
+              }
+              cur = chunk;
+            }
+          }
+        }
+        lines.push(cur);
+      }
+      return lines;
+    }
+
+    // ---------- حباب گفت‌وگو (درگ + دابل‌کلیک برای ویرایش متن در آینده) ----------
+    function drawSay(svg, op){
       const g=document.createElementNS(svgNS,'g');
-      g.dataset.opIndex = op._index;   // شماره عمل در آرایه
-      g.dataset.line = op._line;       // شماره خط ادیتور
-      g.dataset.type = op.t;           // stick | say
-      drawFn(g);                       // اجزای داخلی را بساز
-      svg.appendChild(g);
+      g.dataset.type='say'; g.dataset.line=op._line;
 
-      // هندل‌های درگ
-      g.style.cursor = 'move';
-      g.addEventListener('mousedown', ev => startDrag(ev, g, op));
-      g.addEventListener('touchstart', ev => startDrag(ev, g, op), {passive:false});
-      return g;
-    }
-
-    function startDrag(ev, g, op){
-      ev.preventDefault();
-      const pt = getPoint(ev);
-      dragging = {
-        g, op,
-        start: pt,
-        origin: {x: op.x, y: op.y}
-      };
-      ghost.style.display='block';
-      ghost.textContent = `${op.t}  x=${op.x}  y=${op.y}`;
-    }
-    function onDragMove(ev){
-      if(!dragging) return;
-      ev.preventDefault();
-      const pt = getPoint(ev);
-      const dx = pt.x - dragging.start.x;
-      const dy = pt.y - dragging.start.y;
-      // مختصات جدید
-      const nx = Math.round(dragging.origin.x + dx);
-      const ny = Math.round(dragging.origin.y + dy);
-      // نمایش لحظه‌ای
-      dragging.g.setAttribute('transform', `translate(${nx - dragging.op.x}, ${ny - dragging.op.y})`);
-      ghost.textContent = `${dragging.op.t}  x=${nx}  y=${ny}`;
-      dragging.newXY = {x:nx, y:ny};
-    }
-    function onDragEnd(){
-      if(!dragging) return;
-      // سند ادیتور را آپدیت کن و رندر مجدد
-      const nx = dragging.newXY?.x ?? dragging.op.x;
-      const ny = dragging.newXY?.y ?? dragging.op.y;
-      applyXYToEditorLine(dragging.op._line, nx, ny);
-      dragging = null;
-      ghost.style.display='none';
-      run(); // رندر مجدد با داده‌های جدید
-    }
-    function getPoint(ev){
-      const svg = ev.currentTarget?.closest('svg') || $('#host svg');
-      const pt = svg.createSVGPoint();
-      const src = ev.touches ? ev.touches[0] : ev;
-      pt.x = src.clientX; pt.y = src.clientY;
-      const m = svg.getScreenCTM().inverse();
-      return pt.matrixTransform(m);
-    }
-
-    // ---------- اجزای گرافیکی ----------
-    function drawSayGroup(g, op){
-      // کل حباب را نسبت به x,y رسم می‌کنیم (بدون transform اولیه)
-      const padding=10, rx=12, ry=12;
-      const lines=op.text.split(/\n/);
-      const charW=7.5, lh=18;
-      const maxLen=Math.max(...lines.map(s=>s.length));
-      const w=padding*2 + maxLen*charW;
-      const h=padding*2 + lines.length*lh;
+      // wrap
+      const MAXW = 280;
+      const lines = wrapTextByWidth(op.text, MAXW, 8); // ~8px per char
+      const padding=10, rx=12, ry=12, lh=18;
+      const width = Math.min(MAXW, padding*2 + Math.max(...lines.map(s=>s.length))*8);
+      const height = padding*2 + lines.length*lh;
 
       const r=document.createElementNS(svgNS,'rect');
       r.setAttribute('x',op.x); r.setAttribute('y',op.y);
-      r.setAttribute('width',w); r.setAttribute('height',h);
+      r.setAttribute('width',width); r.setAttribute('height',height);
       r.setAttribute('rx',rx); r.setAttribute('ry',ry);
       r.setAttribute('fill','#fff'); r.setAttribute('stroke','#000'); r.setAttribute('stroke-width','2');
       g.appendChild(r);
 
       const tail=document.createElementNS(svgNS,'path');
-      tail.setAttribute('d',`M ${op.x+24} ${op.y+h} l 14 18 l 6 -22 Z`);
+      tail.setAttribute('d',`M ${op.x+24} ${op.y+height} l 14 18 l 6 -22 Z`);
       tail.setAttribute('fill','#fff'); tail.setAttribute('stroke','#000'); tail.setAttribute('stroke-width','2');
       g.appendChild(tail);
 
-      const paddingX = op.x + padding, baseY = op.y + padding;
       lines.forEach((ln,i)=>{
         const t=document.createElementNS(svgNS,'text');
-        t.setAttribute('x', paddingX);
-        t.setAttribute('y', baseY + (i+1)*lh - 6);
+        t.setAttribute('x', op.x+padding);
+        t.setAttribute('y', op.y+padding + (i+1)*lh - 6);
         t.setAttribute('font-size','16');
         t.setAttribute('font-family', /[\u0600-\u06FF]/.test(ln) ? 'Vazirmatn' : 'Comfortaa');
         t.setAttribute('font-weight','300');
@@ -193,23 +173,89 @@
         t.textContent=ln;
         g.appendChild(t);
       });
+
+      svg.appendChild(g);
+
+      // جابه‌جایی کل گراف
+      g.style.cursor='move';
+      g.addEventListener('mousedown',ev=>startDrag(ev,g,op,'say-group'));
+      g.addEventListener('touchstart',ev=>startDrag(ev,g,op,'say-group'),{passive:false});
+      g.addEventListener('dblclick',ev=>ev.stopPropagation());
     }
-    function drawStickGroup(g, op){
-      // y محور لگن؛ سر، تنه، دست، پا نسبت به x,y
-      const headR=16, neck=18, body=56;
-      circle(g, op.x, op.y-(neck+headR), headR);
-      line(g, op.x, op.y-neck, op.x, op.y+(body- neck));
-      const chestY = op.y - 8;
-      if(op.arms==='up'){
-        line(g, op.x, chestY, op.x-32, chestY-22);
-        line(g, op.x, chestY, op.x+32, chestY-22);
-      } else {
-        line(g, op.x, chestY, op.x-34, chestY+16);
-        line(g, op.x, chestY, op.x+34, chestY+16);
-      }
-      const legsY = op.y+(body-10);
-      line(g, op.x, legsY, op.x-28, legsY+42);
-      line(g, op.x, legsY, op.x+28, legsY+42);
+
+    // ---------- آدمک با مفصل‌ها ----------
+    function defaultPose(x,y){
+      // y: لگن مرکزی
+      return {
+        head:{x:x, y:y-36}, neck:{x:x, y:y-18}, shoulder:{x:x, y:y-10},
+        elbowL:{x:x-28, y:y+6}, wristL:{x:x-48, y:y+24},
+        elbowR:{x:x+28, y:y+6}, wristR:{x:x+48, y:y+24},
+        hip:{x:x, y:y},
+        kneeL:{x:x-18, y:y+36}, ankleL:{x:x-28, y:y+76},
+        kneeR:{x:x+18, y:y+36}, ankleR:{x:x+28, y:y+76},
+        headR:16
+      };
+    }
+
+    function drawStick(svg, op){
+      // بازیابی یا ساخت پوز
+      let pose = poses.get(op._line);
+      if(!pose){ pose = defaultPose(op.x, op.y); poses.set(op._line, pose); }
+
+      const g=document.createElementNS(svgNS,'g');
+      g.dataset.type='stick'; g.dataset.line = op._line;
+      svg.appendChild(g);
+
+      // استخوان‌ها
+      // سر
+      circleP(g, pose.head.x, pose.head.y, pose.headR);
+      // گردن و ستون فقرات
+      lineP(g, pose.head.x, pose.head.y+pose.headR, pose.neck.x, pose.neck.y, 6);
+      lineP(g, pose.neck.x, pose.neck.y, pose.hip.x, pose.hip.y+2, 6);
+      // دست چپ
+      lineP(g, pose.shoulder.x, pose.shoulder.y, pose.elbowL.x, pose.elbowL.y, 6);
+      lineP(g, pose.elbowL.x, pose.elbowL.y, pose.wristL.x, pose.wristL.y, 6);
+      // دست راست
+      lineP(g, pose.shoulder.x, pose.shoulder.y, pose.elbowR.x, pose.elbowR.y, 6);
+      lineP(g, pose.elbowR.x, pose.elbowR.y, pose.wristR.x, pose.wristR.y, 6);
+      // پاها
+      lineP(g, pose.hip.x, pose.hip.y, pose.kneeL.x, pose.kneeL.y, 6);
+      lineP(g, pose.kneeL.x, pose.kneeL.y, pose.ankleL.x, pose.ankleL.y, 6);
+      lineP(g, pose.hip.x, pose.hip.y, pose.kneeR.x, pose.kneeR.y, 6);
+      lineP(g, pose.kneeR.x, pose.kneeR.y, pose.ankleR.x, pose.ankleR.y, 6);
+
+      // تعامل: تک‌کلیک جابه‌جایی کل گروه
+      g.style.cursor='move';
+      g.addEventListener('mousedown',ev=>startDrag(ev,g,op,'stick-group'));
+      g.addEventListener('touchstart',ev=>startDrag(ev,g,op,'stick-group'),{passive:false});
+      // دابل‌کلیک: نمایش/پنهان‌سازی هندل‌های مفصل‌ها
+      g.addEventListener('dblclick',ev=>{
+        ev.stopPropagation();
+        toggleHandles(g, op._line);
+      });
+
+      return g;
+    }
+
+    function toggleHandles(group, lineIndex){
+      const pose = poses.get(lineIndex);
+      // اگر قبلاً هندل‌ها هست، حذف کن
+      const old = group.querySelectorAll('.handle');
+      if(old.length){ old.forEach(h=>h.remove()); return; }
+
+      // وگرنه بساز
+      const keys = Object.keys(pose).filter(k=>k!=='headR');
+      keys.forEach(key=>{
+        const p=pose[key];
+        const h=document.createElementNS(svgNS,'circle');
+        h.setAttribute('cx', p.x); h.setAttribute('cy', p.y); h.setAttribute('r', 6);
+        h.classList.add('handle');
+        h.dataset.key = key;
+        group.appendChild(h);
+
+        h.addEventListener('mousedown', ev => startHandleDrag(ev, group, lineIndex, key));
+        h.addEventListener('touchstart', ev => startHandleDrag(ev, group, lineIndex, key), {passive:false});
+      });
     }
 
     // ---------- Parser ----------
@@ -217,20 +263,20 @@
       const lines=src.split(/\r?\n/);
       let W=820,H=420; const ops=[];
       lines.forEach((raw,idx)=>{
-        const s = raw.trim();
+        const s=raw.trim();
         if(!s || s.startsWith('#')) return;
         const cmd=s.split(/\s+/)[0], rest=s.slice(cmd.length).trim();
         if(cmd==='panel'){
           const m=rest.match(/(\d+)\s*x\s*(\d+)/i);
           if(m){ W=+m[1]; H=+m[2]; }
-        } else if(cmd==='stick'){
-          const m = Object.fromEntries([...rest.matchAll(/(\w+)\s*=\s*("[^"]*"|\S+)/g)].map(([_,k,v])=>[k,v.replace(/^"|"$/g,'')]));
-          ops.push({_line:idx,_index:ops.length,t:'stick', x:+m.x||100, y:+m.y||160, arms:(m.arms||'down')});
-        } else if(cmd==='say'){
-          const m = Object.fromEntries([...rest.matchAll(/(\w+)\s*=\s*("[^"]*"|\S+)/g)].map(([_,k,v])=>[k,v.replace(/^"|"$/g,'')]));
-          const mtext = rest.match(/"([^"]*)"/);
-          const text = mtext ? mtext[1] : (m.text||'');
-          ops.push({_line:idx,_index:ops.length,t:'say', x:+m.x||60, y:+m.y||60, text});
+        }else if(cmd==='stick'){
+          const m=Object.fromEntries([...rest.matchAll(/(\w+)\s*=\s*("[^"]*"|\S+)/g)].map(([_,k,v])=>[k,v.replace(/^"|"$/g,'')]));
+          ops.push({_line:idx,t:'stick',x:+m.x||100,y:+m.y||160});
+        }else if(cmd==='say'){
+          const m=Object.fromEntries([...rest.matchAll(/(\w+)\s*=\s*("[^"]*"|\S+)/g)].map(([_,k,v])=>[k,v.replace(/^"|"$/g,'')]));
+          const mtext=rest.match(/"([^"]*)"/);
+          const text = mtext? mtext[1] : (m.text||'');
+          ops.push({_line:idx,t:'say',x:+m.x||60,y:+m.y||60,text});
         }
       });
       return {W,H,ops,lines};
@@ -242,15 +288,137 @@
       const {W,H,ops} = currentParse;
       const host=$("#host"); host.innerHTML='';
       const svg=createSVG(W,H); host.appendChild(svg);
-
-      // هر op را به یک گروه درگ‌پذیر تبدیل کن
       ops.forEach(op=>{
-        if(op.t==='stick') makeDraggableGroup(svg, op, g=>drawStickGroup(g,op));
-        else if(op.t==='say') makeDraggableGroup(svg, op, g=>drawSayGroup(g,op));
+        if(op.t==='stick') drawStick(svg, op);
+        else if(op.t==='say') drawSay(svg, op);
       });
     }
 
-    // ---------- Editor helpers ----------
+    // ---------- درگِ گروه و هندل ----------
+    function getSVGPoint(ev){
+      const svg = $('#host svg');
+      if(!svg) return {x:0,y:0};
+      const pt = svg.createSVGPoint();
+      const src = ev.touches ? ev.touches[0] : ev;
+      pt.x = src.clientX; pt.y = src.clientY;
+      const m = svg.getScreenCTM().inverse();
+      return pt.matrixTransform(m);
+    }
+
+    function startDrag(ev, g, op, kind){
+      ev.preventDefault();
+      const pt = getSVGPoint(ev);
+      dragging = { kind, g, op, start:pt, moved:false };
+      ghost.style.display='block';
+      ghost.textContent = `${op.t}  x=${op.x}  y=${op.y}`;
+    }
+
+    function startHandleDrag(ev, group, lineIndex, key){
+      ev.preventDefault();
+      const pt = getSVGPoint(ev);
+      const pose = poses.get(lineIndex);
+      dragging = { kind:'handle', group, lineIndex, key, start:pt, origin:{x:pose[key].x, y:pose[key].y}};
+      ghost.style.display='block';
+      ghost.textContent = `${key}`;
+    }
+
+    function onDragMove(ev){
+      if(!dragging) return;
+      ev.preventDefault();
+      const pt = getSVGPoint(ev);
+      const dx = pt.x - dragging.start.x;
+      const dy = pt.y - dragging.start.y;
+
+      if(dragging.kind==='stick-group'){
+        dragging.moved = true;
+        dragging.g.setAttribute('transform', `translate(${dx},${dy})`);
+        ghost.textContent = `stick x=${dragging.op.x+Math.round(dx)} y=${dragging.op.y+Math.round(dy)}`;
+      }else if(dragging.kind==='say-group'){
+        dragging.moved = true;
+        dragging.g.setAttribute('transform', `translate(${dx},${dy})`);
+        ghost.textContent = `say x=${dragging.op.x+Math.round(dx)} y=${dragging.op.y+Math.round(dy)}`;
+      }else if(dragging.kind==='handle'){
+        dragging.moved = true;
+        const nx = Math.round(dragging.origin.x + dx);
+        const ny = Math.round(dragging.origin.y + dy);
+        const pose = poses.get(dragging.lineIndex);
+        pose[dragging.key].x = nx; pose[dragging.key].y = ny;
+        // هندل جاری را هم جابه‌جا کن
+        const handle = [...dragging.group.querySelectorAll('.handle')].find(h=>h.dataset.key===dragging.key);
+        if(handle){ handle.setAttribute('cx', nx); handle.setAttribute('cy', ny); }
+        // بازنقاشی اسکلت روی همان گروه (ساده: کل گروه را ری‌رندر می‌کنیم)
+        const line = dragging.lineIndex;
+        const op = {t:'stick', _line:line};
+        dragging.group.innerHTML=''; // پاک
+        drawStickOnGroup(dragging.group, poses.get(line)); // بدون ایجاد گروه جدید
+        // سپس دوباره هندل‌ها را بساز
+        toggleHandles(dragging.group, line);
+        toggleHandles(dragging.group, line);
+        toggleHandles(dragging.group, line); // سه بار؟ نه، یکبار کافی بود — ولی چون بالا پاک کردیم، دوباره:
+      }
+    }
+
+    function drawStickOnGroup(g, pose){
+      // کمک‌کار: بازنقاشی فقط خطوط/دایره‌های آدمک در همان گروه
+      circleP(g, pose.head.x, pose.head.y, pose.headR);
+      lineP(g, pose.head.x, pose.head.y+pose.headR, pose.neck.x, pose.neck.y, 6);
+      lineP(g, pose.neck.x, pose.neck.y, pose.hip.x, pose.hip.y+2, 6);
+      lineP(g, pose.shoulder.x, pose.shoulder.y, pose.elbowL.x, pose.elbowL.y, 6);
+      lineP(g, pose.elbowL.x, pose.elbowL.y, pose.wristL.x, pose.wristL.y, 6);
+      lineP(g, pose.shoulder.x, pose.shoulder.y, pose.elbowR.x, pose.elbowR.y, 6);
+      lineP(g, pose.elbowR.x, pose.elbowR.y, pose.wristR.x, pose.wristR.y, 6);
+      lineP(g, pose.hip.x, pose.hip.y, pose.kneeL.x, pose.kneeL.y, 6);
+      lineP(g, pose.kneeL.x, pose.kneeL.y, pose.ankleL.x, pose.ankleL.y, 6);
+      lineP(g, pose.hip.x, pose.hip.y, pose.kneeR.x, pose.kneeR.y, 6);
+      lineP(g, pose.kneeR.x, pose.kneeR.y, pose.ankleR.x, pose.ankleR.y, 6);
+      // رویدادهای گروه را دوباره اضافه کنیم
+      g.style.cursor='move';
+      const lineIndex = [...poses.entries()].find(([k,v])=>v===pose)?.[0];
+      g.dataset.type='stick'; if(lineIndex!=null) g.dataset.line=lineIndex;
+      g.addEventListener('mousedown',ev=>startDrag(ev,g,{t:'stick',x:pose.hip.x,y:pose.hip.y,_line:lineIndex},'stick-group'));
+      g.addEventListener('touchstart',ev=>startDrag(ev,g,{t:'stick',x:pose.hip.x,y:pose.hip.y,_line:lineIndex},'stick-group'),{passive:false});
+      g.addEventListener('dblclick',ev=>{ev.stopPropagation(); toggleHandles(g, lineIndex);});
+    }
+
+    function onDragEnd(){
+      if(!dragging) return;
+      ghost.style.display='none';
+
+      if(dragging.kind==='stick-group' && dragging.moved){
+        // محاسبه‌ی مختصات جدید و اعمال به pose + ادیتور
+        const m = dragging.g.getAttribute('transform');
+        const delta = m ? m.match(/translate\(([-\d.]+),([-\d.]+)\)/) : null;
+        const dx = delta ? Math.round(parseFloat(delta[1])) : 0;
+        const dy = delta ? Math.round(parseFloat(delta[2])) : 0;
+
+        const line = dragging.op._line;
+        // شیفت همه‌ی مفصل‌ها
+        const pose = poses.get(line) || defaultPose(dragging.op.x, dragging.op.y);
+        Object.keys(pose).forEach(k=>{
+          if(k==='headR') return;
+          pose[k].x += dx; pose[k].y += dy;
+        });
+        poses.set(line, pose);
+
+        // آپدیت DSL: x,y خط stick
+        applyXYToEditorLine(line, (dragging.op.x+dx), (dragging.op.y+dy));
+      }
+
+      if(dragging.kind==='say-group' && dragging.moved){
+        const m = dragging.g.getAttribute('transform');
+        const delta = m ? m.match(/translate\(([-\d.]+),([-\d.]+)\)/) : null;
+        const dx = delta ? Math.round(parseFloat(delta[1])) : 0;
+        const dy = delta ? Math.round(parseFloat(delta[2])) : 0;
+        const line = dragging.op._line;
+        applyXYToEditorLine(line, (dragging.op.x+dx), (dragging.op.y+dy));
+      }
+
+      dragging = null;
+      // باز-رندر با مقادیر جدید
+      run();
+    }
+
+    // ---------- Editor ----------
     const editor = ace.edit("editor");
     editor.setTheme("ace/theme/one_dark");
     editor.session.setMode("ace/mode/text");
@@ -259,7 +427,6 @@
     function applyXYToEditorLine(lineIndex, x, y){
       const session = editor.session;
       let line = session.getLine(lineIndex);
-      // تضمین وجود x= و y= (اگر نبود، اضافه می‌کنیم)
       if(!/x\s*=/.test(line)) line += ` x=${x}`;
       if(!/y\s*=/.test(line)) line += ` y=${y}`;
       line = line.replace(/x\s*=\s*("[^"]*"|-?\d+(\.\d+)?)/, `x=${x}`);
@@ -273,40 +440,41 @@
     const samples = {
 s1: `# Sample A — 4 sticks + 2 bubbles
 panel 860x420
-stick x=140 y=230 arms=up
-say   x=60  y=120 "سلام!\\nبه cmx خوش اومدی :)"
+stick x=140 y=230
+say   x=60  y=120 "سلام! به cmx خوش اومدی :)"
 stick x=280 y=230
-say   x=220 y=140 "اینجا همه‌چیز استاتیکه.\\nفقط همین فایل رو منتشر کن!"
-stick x=580 y=230 arms=up
-say   x=500 y=120 "Welcome to cmx!\\nMinimal, static, fun."
+say   x=220 y=140 "اینجا همه‌چیز استاتیکه. فقط همین فایل رو منتشر کن!"
+stick x=580 y=230
+say   x=500 y=120 "Welcome to cmx! Minimal, static, fun."
 stick x=720 y=230
 say   x=640 y=140 "soheil.info/cmx"
 `,
 s2: `# Sample B — Two people talk
 panel 800x420
-stick x=200 y=220 arms=up
-say   x=120 y=120 "سلام Soheil!\\nاین پیش‌فرض آماده‌ست."
+stick x=200 y=220
+say   x=120 y=120 "سلام Soheil! این پیش‌فرض آماده‌ست."
 stick x=520 y=220
 say   x=440 y=130 "اوکی، Enter رو بزن تا رندر شه یا متن رو تغییر بده."
 `,
 s3: `# Sample C — Minimal
 panel 800x420
-stick x=160 y=210 arms=up
+stick x=160 y=210
 stick x=300 y=210
-say x=80  y=120 "من یک آدمکم!"
+say x=80  y=120 "من یک آدمکم! من حرف می‌زنم و این متن داخل کادر می‌ماند."
 say x=240 y=130 "و من هم همین‌طور ✅"
 `
     };
 
-    // load default
+    // بارگذاری پیش‌فرض
     editor.setValue(samples.s1, -1);
     run();
 
-    // UI actions
+    // دکمه‌ها
     $("#btn-run").onclick = run;
-    $("#btn-reset").onclick = ()=>{ editor.setValue(samples.s2, -1); run(); };
+    $("#btn-reset").onclick = ()=>{ poses.clear(); editor.setValue(samples.s2, -1); run(); };
     document.querySelectorAll('[data-sample]').forEach(b=>{
       b.addEventListener('click',()=>{
+        poses.clear();
         const key=b.getAttribute('data-sample');
         editor.setValue(samples[key]||samples.s1, -1);
         run();
