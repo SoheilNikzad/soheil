@@ -1,126 +1,204 @@
-<!DOCTYPE html>
-<html lang="fa" dir="rtl">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MirSoheil Nikzad Kalurazi</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@200;300&family=Vazirmatn:wght@200;300&display=swap');
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>soheil.info</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;500;600;700&family=Vazirmatn:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <main class="page" aria-label="Personal links">
+        <section class="intro">
+          <h1>
+            <span>MirSoheil Nikzad Kalurazi</span>
+            <span lang="fa" dir="rtl">میـــرسـهیــل نیـــک‌زاد کلـــورزی</span>
+          </h1>
+          <p>
+            <span>Hello! Welcome to my personal page.</span>
+            <span lang="fa" dir="rtl">ســـلام! به صفحــه شـخصـی من خــوش آمدیــد.</span>
+          </p>
+        </section>
 
-    html {
-      font-size: 16px;
-    }
+        <nav class="folder-tabs" aria-label="Link sections">
+          <button class="folder-tab is-active" type="button" data-tab="accounts" aria-controls="accounts-panel" aria-selected="true">
+            <span>Profiles</span>
+            <span lang="fa" dir="rtl">حساب‌ها</span>
+          </button>
+          <button class="folder-tab" type="button" data-tab="toolkit" aria-controls="toolkit-panel" aria-selected="false">
+            <span>ToolKit</span>
+            <span lang="fa" dir="rtl">جعبه‌ابزار</span>
+          </button>
+          <button class="folder-tab" type="button" data-tab="daos" aria-controls="daos-panel" aria-selected="false">
+            <span>DAOs</span>
+            <span lang="fa" dir="rtl">دائوها</span>
+          </button>
+          <button class="folder-tab" type="button" data-tab="service" aria-controls="service-panel" aria-selected="false">
+            <span>Services</span>
+            <span lang="fa" dir="rtl">خدمات</span>
+          </button>
+          <button class="folder-tab" type="button" data-tab="hardware" aria-controls="hardware-panel" aria-selected="false">
+            <span>Devices</span>
+            <span lang="fa" dir="rtl">سخت‌افزار</span>
+          </button>
+        </nav>
 
-    body {
-      margin: 0;
-      padding: 0;
-      background: #fff;
-      color: #000;
-      text-align: center;
-    }
+        <section class="link-section is-active" id="accounts-panel" data-panel="accounts">
+          <h2>
+            <span>Accounts</span>
+            <span lang="fa" dir="rtl">حساب‌ها</span>
+          </h2>
+          <div class="link-grid two-col">
+            <a class="link-row" href="https://x.com/SoheilNikzad/" target="_blank" rel="noopener noreferrer">
+              <span>X</span>
+              <span lang="fa" dir="rtl">ایکس</span>
+            </a>
+            <a class="link-row" href="https://www.instagram.com/amuzanjirbaaf/" target="_blank" rel="noopener noreferrer">
+              <span>Instagram</span>
+              <span lang="fa" dir="rtl">اینستاگرام</span>
+            </a>
+            <a class="link-row" href="https://www.linkedin.com/in/soheilnikzad/" target="_blank" rel="noopener noreferrer">
+              <span>LinkedIn</span>
+              <span lang="fa" dir="rtl">لینکدین</span>
+            </a>
+            <a class="link-row" href="https://www.facebook.com/mirsoheilnikzad/" target="_blank" rel="noopener noreferrer">
+              <span>Facebook</span>
+              <span lang="fa" dir="rtl">فیسبوک</span>
+            </a>
+            <a class="link-row" href="https://github.com/SoheilNikzad" target="_blank" rel="noopener noreferrer">
+              <span>GitHub</span>
+              <span lang="fa" dir="rtl">گیت‌هاب</span>
+            </a>
+            <a class="link-row" href="mailto:soheil.nikzad@gmail.com">
+              <span>Gmail</span>
+              <span lang="fa" dir="rtl">جیمیل</span>
+            </a>
+            <a class="link-row" href="https://www.figma.com/@soheilnikzad" target="_blank" rel="noopener noreferrer">
+              <span>Figma</span>
+              <span lang="fa" dir="rtl">فیگما</span>
+            </a>
+            <a class="link-row" href="https://www.youtube.com/@soheilnikzad/" target="_blank" rel="noopener noreferrer">
+              <span>YouTube</span>
+              <span lang="fa" dir="rtl">یوتیوب</span>
+            </a>
+            <a class="link-row" href="https://drive.google.com/file/d/1SwaDMlsGq4sqUFmfDDOJy6Z6cI2UbH9p/view?usp=drive_link" target="_blank" rel="noopener noreferrer">
+              <span>Resume*</span>
+              <span lang="fa" dir="rtl">پیشینه</span>
+            </a>
+            <a class="link-row" href="https://t.me/SoheilNikzad" target="_blank" rel="noopener noreferrer">
+              <span>Telegram</span>
+              <span lang="fa" dir="rtl">تلگرام</span>
+            </a>
+          </div>
+        </section>
 
-    body:lang(fa) {
-      font-family: 'Vazirmatn';
-      font-weight: 200;
-    }
+        <section class="link-section" id="toolkit-panel" data-panel="toolkit" hidden>
+          <h2>
+            <span>ToolKit</span>
+            <span lang="fa" dir="rtl">جعبه‌ابزار</span>
+          </h2>
+          <div class="link-grid">
+            <a class="link-row" href="https://soheil.info/explorer" target="_blank" rel="noopener noreferrer">
+              <span>Blockchain Explorer</span>
+              <span lang="fa" dir="rtl">مرورگر بلاکچین</span>
+            </a>
+            <a class="link-row" href="https://soheil.info/hashlab" target="_blank" rel="noopener noreferrer">
+              <span>Hash Lab</span>
+              <span lang="fa" dir="rtl">آزمایشگاه رمزنگاری</span>
+            </a>
+            <a class="link-row" href="https://soheil.info/seedkit" target="_blank" rel="noopener noreferrer">
+              <span>Seed Kit</span>
+              <span lang="fa" dir="rtl">جعبه‌ابزار سید</span>
+            </a>
+            <a class="link-row" href="https://soheil.info/wevm" target="_blank" rel="noopener noreferrer">
+              <span>WEVM</span>
+              <span lang="fa" dir="rtl">نسخه وب نود اتریوم</span>
+            </a>
+          </div>
+        </section>
 
-    body:lang(en),
-    *:lang(en) {
-      font-family: 'Comfortaa';
-      font-weight: 200;
-    }
+        <section class="link-section" id="daos-panel" data-panel="daos" hidden>
+          <h2>
+            <span>DAOs</span>
+            <span lang="fa" dir="rtl">دائوها</span>
+          </h2>
+          <div class="link-grid">
+            <a class="link-row" href="https://soheil.info/cid" target="_blank" rel="noopener noreferrer">
+              <span>CID Chat</span>
+              <span lang="fa" dir="rtl">سید چت</span>
+            </a>
+            <a class="link-row" href="https://soheil.info/cmx" target="_blank" rel="noopener noreferrer">
+              <span>CMX</span>
+              <span lang="fa" dir="rtl">کمیکس</span>
+            </a>
+            <a class="link-row" href="https://soheil.info/nftshop" target="_blank" rel="noopener noreferrer">
+              <span>NFT Shop</span>
+              <span lang="fa" dir="rtl">ان‌اف‌تی سازی</span>
+            </a>
+            <a class="link-row" href="https://soheil.info/p2pdex" target="_blank" rel="noopener noreferrer">
+              <span>P2P DEX</span>
+              <span lang="fa" dir="rtl">بازار خودمختار مستقیم</span>
+            </a>
+            <a class="link-row" href="https://soheil.info/tokenshop" target="_blank" rel="noopener noreferrer">
+              <span>Token Shop</span>
+              <span lang="fa" dir="rtl">توکن سازی</span>
+            </a>
+            <a class="link-row" href="https://soheil.info/tokenfactory" target="_blank" rel="noopener noreferrer">
+              <span>Token Factory</span>
+              <span lang="fa" dir="rtl">کارخانه توکن</span>
+            </a>
+          </div>
+        </section>
 
-    h1 {
-      margin-top: 40px;
-      font-size: 23px;
-      font-weight: 300;
-    }
+        <section class="link-section" id="service-panel" data-panel="service" hidden>
+          <h2>
+            <span>Service</span>
+            <span lang="fa" dir="rtl">خدمات</span>
+          </h2>
+          <div class="link-grid">
+            <a class="link-row" href="https://rialchange.com" target="_blank" rel="noopener noreferrer">
+              <span>OTC</span>
+              <span lang="fa" dir="rtl">تبادل</span>
+            </a>
+            <a class="link-row" href="https://hoopaad.ir" target="_blank" rel="noopener noreferrer">
+              <span>Tokenization</span>
+              <span lang="fa" dir="rtl">توکنی‌سازی</span>
+            </a>
+            <a class="link-row" href="https://real.info" target="_blank" rel="noopener noreferrer">
+              <span>Information</span>
+              <span lang="fa" dir="rtl">اطلاع‌رسانی</span>
+            </a>
+          </div>
+        </section>
 
-    h2 {
-      font-size: 26px;
-      font-weight: 300;
-      color: #333;
-      margin-top: 8px;
-      margin-bottom: 30px;
-    }
+        <section class="link-section" id="hardware-panel" data-panel="hardware" hidden>
+          <h2>
+            <span>Hardware</span>
+            <span lang="fa" dir="rtl">سخت‌افزار</span>
+          </h2>
+          <div class="link-grid">
+            <a class="link-row" href="https://steellet.com" target="_blank" rel="noopener noreferrer">
+              <span>Cold Storage</span>
+              <span lang="fa" dir="rtl">حافظه سرد</span>
+            </a>
+            <a class="link-row" href="https://tardiwallet.com" target="_blank" rel="noopener noreferrer">
+              <span>Hardware Wallet</span>
+              <span lang="fa" dir="rtl">کیف‌پول سخت‌افزاری</span>
+            </a>
+            <a class="link-row" href="https://rpcnode.ir" target="_blank" rel="noopener noreferrer">
+              <span>Crypto ATM</span>
+              <span lang="fa" dir="rtl">خودپرداز رمزارزی</span>
+            </a>
+          </div>
+        </section>
 
-    .divider {
-      width: 320px;
-      height: 3px;
-      background: orange;
-      margin: 35px auto;
-      border-radius: 2px;
-    }
-
-    p {
-      margin: 5px auto;
-      max-width: 600px;
-    }
-
-    .social-links {
-      margin-top: 10px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .social-links a {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      width: 300px;
-      padding: 6px 10px;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      text-decoration: none;
-      background: #f9f9f9;
-      color: #000;
-    }
-
-    .social-links a:hover {
-      background: #f0f0f0;
-    }
-
-    .social-links span:first-child {
-      order: 2; /* English on the left */
-    }
-
-    .social-links span:last-child {
-      order: 1; /* Persian on the right */
-    }
-
-    footer {
-      margin-top: 30px;
-      font-size: 14px;
-      color: #777;
-    }
-  </style>
-</head>
-<body>
-  <h1 lang="en">MirSoheil Nikzad Kalurazi</h1>
-  <h2 lang="fa">میــرسـهیـل نیــک‌زاد کلـــورزی</h2>
-  <div class="divider"></div>
-
-  <p lang="en">.Hello! Welcome to my personal page</p>
-  <p lang="fa">ســلام! بـه صـفحـه شـخصی مـن خــوش آمـدیـد.</p>
-
-  <div class="social-links">
-    <a href="https://x.com/SoheilNikzad/" target="_blank"><span>X</span> <span>ایکس</span></a>
-    <a href="https://www.linkedin.com/in/soheilnikzad/" target="_blank"><span>LinkedIn</span> <span>لینکدین</span></a>
-    <a href="https://www.youtube.com/@soheilnikzad/" target="_blank"><span>YouTube</span> <span>یوتیوب</span></a>
-    <a href="https://t.me/SoheilNikzad" target="_blank"><span>Telegram</span> <span>تلگرام</span></a>
-    <a href="https://www.instagram.com/amuzanjirbaaf/" target="_blank"><span>Instagram</span> <span>اینستاگرام</span></a>
-    <a href="https://www.facebook.com/mirsoheilnikzad/" target="_blank"><span>Facebook</span> <span>فیسبوک</span></a>
-    <a href="https://github.com/SoheilNikzad" target="_blank"><span>GitHub</span> <span>گیت‌هاب</span></a>
-    <a href="https://www.figma.com/@soheilnikzad" target="_blank"><span>Figma</span> <span>فیگما</span></a>
-    <a href="https://drive.google.com/drive/folders/0B3kZ-7gOO_isLWNBSVB2RmUwWlU?resourcekey=0-09gIt8RVugxdt1C4STuPOQ&usp=drive_link" target="_blank"><span>MoneyTalks</span> <span>مانی‌تاک</span></a>
-    <a href="https://docs.google.com/document/d/1DfFLtBPuXAUbufzihxnf8Eq6tgwFbleCOlGMkdO0nTw/edit?usp=drive_link" target="_blank"><span>Resume</span> <span>رزومه</span></a>
-  </div>
-
-  <footer>
-    <p lang="en">.Thanks for your visit</p>
-    <p lang="fa">بـا تشکـــر از بـازدید شـمـــا.</p>
-  </footer>
-</body>
+        <footer class="footer">
+          <span>Thanks for your visit.</span>
+          <span lang="fa" dir="rtl">بـا تشکـــر از بـازدید شـمـــا.</span>
+        </footer>
+    </main>
+    <script src="script.js"></script>
+  </body>
 </html>
