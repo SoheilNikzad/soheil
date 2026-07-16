@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Steellet Tool — Cold Storage Companion</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Vazirmatn:wght@300;400;700;900&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>STEEL<span class="logo-accent">LET</span></h1>
+        <p>ابزار متن‌باز تبدیل و تفکیک فیزیکی انتروپی کلمات کلیدی (BIP39) بر روی شیلدهای سرد فولادی مقاوم</p>
+    </header>
+
+    <div class="tabs-nav">
+        <button class="tab-trigger active" onclick="switchSection('setup')">پیکربندی فریم استیلت (SETUP)</button>
+        <button class="tab-trigger" onclick="switchSection('recovery')">بازیابی از روی فلز (RECOVERY)</button>
+    </div>
+
+    <div id="setup" class="tab-panel active">
+        <div class="security-banner">
+            <div>
+                <strong>نکته امنیتی:</strong> همواره توصیه می‌شود این فرآیند را روی یک لایو-بوت یا سیستم ایزوله کاملاً قطع از شبکه (Air-gapped) اجرا کنید تا از خطر دسترسی‌های بدافزاری به کلمات خود جلوگیری کنید.
+            </div>
+        </div>
+
+        <div class="cyber-card">
+            <h2 class="card-header-title">ورود کلمات تصادفی (Mnemonic)</h2>
+            <div class="form-group">
+                <label class="form-label" for="mnemonic-input">۲۴ یا ۱۲ کلمه استاندارد BIP39 را با فاصله وارد نمایید:</label>
+                <textarea id="mnemonic-input" rows="4" class="mono-field" placeholder="abandon ability able about above absent absorb abstract absurd abuse access accident..."></textarea>
+            </div>
+            <button class="cyber-btn" onclick="processMnemonic()">تولید نقشه چیدمان فیزیکی</button>
+        </div>
+
+        <div id="setup-results" class="cyber-card" style="display: none;">
+            <h2 class="card-header-title">نتایج استخراج انتروپی (۲۵۶ بیت)</h2>
+            
+            <div class="form-group">
+                <label class="form-label">رشته کامل باینری با بیت‌های چک‌سام انتهای ساختار:</label>
+                <textarea id="full-binary-output" class="mono-field" rows="3" readonly></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">۲۵۶ بیت انتروپی نهایی:</label>
+                <textarea id="entropy-binary-output" class="mono-field" rows="3" readonly></textarea>
+            </div>
+
+            <h3 style="font-size: 1.1rem; font-weight: 700; margin-top: 2rem; margin-bottom: 1rem;">نحوه پانچ و پیاده‌سازی روی ۴ ستون فولادی (هر ستون ۶۴ ردیف):</h3>
+            
+            <div class="grid-layout">
+                <div class="grid-column-box">
+                    <div class="column-header">COL 1 (1 - 64)</div>
+                    <div id="col1-display" class="binary-output-stream"></div>
+                </div>
+                <div class="grid-column-box">
+                    <div class="column-header">COL 2 (65 - 128)</div>
+                    <div id="col2-display" class="binary-output-stream"></div>
+                </div>
+                <div class="grid-column-box">
+                    <div class="column-header">COL 3 (129 - 192)</div>
+                    <div id="col3-display" class="binary-output-stream"></div>
+                </div>
+                <div class="grid-column-box">
+                    <div class="column-header">COL 4 (193 - 256)</div>
+                    <div id="col4-display" class="binary-output-stream"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="recovery" class="tab-panel">
+        <div class="cyber-card">
+            <h2 class="card-header-title">ورود رشته‌های باینری از روی ستون‌های فیزیکی</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem; font-weight: 300;">
+                داده‌های پانچ‌شده روی هر ستون را به صورت صفر و یک وارد کنید. هر ستون باید شامل دقیقاً ۶۴ کاراکتر باینری باشد:
+            </p>
+
+            <div class="grid-layout" style="margin-bottom: 2rem;">
+                <div class="grid-column-box">
+                    <div class="column-header">ستون اول (۶۴ بیت)</div>
+                    <textarea id="recover-col1" class="mono-field" rows="5" placeholder="00000000..."></textarea>
+                </div>
+                <div class="grid-column-box">
+                    <div class="column-header">ستون دوم (۶۴ بیت)</div>
+                    <textarea id="recover-col2" class="mono-field" rows="5" placeholder="00000000..."></textarea>
+                </div>
+                <div class="grid-column-box">
+                    <div class="column-header">ستون سوم (۶۴ بیت)</div>
+                    <textarea id="recover-col3" class="mono-field" rows="5" placeholder="00000000..."></textarea>
+                </div>
+                <div class="grid-column-box">
+                    <div class="column-header">ستون چهارم (۶۴ بیت)</div>
+                    <textarea id="recover-col4" class="mono-field" rows="5" placeholder="00000000..."></textarea>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="recovery-type">تعداد کلمات خروجی مورد نظر:</label>
+                <select id="recovery-type">
+                    <option value="24">۲۴ کلمه استاندارد (انتروپی کامل)</option>
+                    <option value="12">۱۲ کلمه</option>
+                </select>
+            </div>
+
+            <button class="cyber-btn" onclick="recoverMnemonic()">مهندسی معکوس و بازیابی کلمات</button>
+        </div>
+
+        <div id="recovery-results" class="cyber-card" style="display: none;">
+            <h2 class="card-header-title">کلمات بازیابی استخراج شده</h2>
+            <div class="form-group">
+                <label class="form-label">لیست کلمات بازیابی نهایی (Mnemonic Phrase):</label>
+                <textarea id="recovered-mnemonic-output" class="mono-field" rows="3" readonly></textarea>
+            </div>
+            <div class="success-banner">
+                <strong>تست انطباق باینری موفقیت‌آمیز بود!</strong> شما می‌توانید این کلمات را در کلاینت‌های استاندارد بازیابی ولت خود وارد نمایید.
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>توسعه‌یافته در استودیو کسب‌وکار وب۳ <a href="https://moneylab.finance" target="_blank">MoneyLab</a> | با احترام به حریم خصوصی شما</p>
+    </footer>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
