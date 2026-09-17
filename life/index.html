@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#000000">
+  <meta name="description" content="Life: a private, offline birth-based time counter.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Life">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data:; connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="./icons/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;500;600;700&family=Vazirmatn:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="./styles.css">
+  <title>Life | زندگی</title>
+  <script type="module" src="./app.mjs"></script>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <span class="brand" data-i18n="brand">Life</span>
+      <button type="button" id="settingsBtn" class="icon-button hidden" aria-label="Settings" data-i18n-aria="settings" title="Settings">⚙</button>
+    </header>
+
+    <section id="welcome" class="view hidden" aria-labelledby="welcomeTitle">
+      <div class="intro-head">
+        <h1 id="welcomeTitle" data-i18n="welcomeTitle">Your birth details</h1>
+        <p class="subtle" data-i18n="welcomeDescription">Enter once. Your counter stays on this device.</p>
+      </div>
+      <div class="field language-first"><label for="welcomeLanguage" data-i18n="language">Language</label><select id="welcomeLanguage" class="language-select"></select></div>
+      <form id="birthForm" novalidate>
+        <div class="field"><label for="name" data-i18n="name">Name</label><input id="name" name="name" type="text" autocomplete="given-name" maxlength="50" required></div>
+        <fieldset class="fieldset">
+          <legend data-i18n="birthDate">Date of birth</legend>
+          <div class="calendar-switch" role="group" aria-label="Calendar" data-i18n-aria="calendar">
+            <button type="button" id="calendarGregorian" class="choice" aria-pressed="true" data-calendar="gregorian" data-i18n="gregorian">Gregorian</button>
+            <button type="button" id="calendarPersian" class="choice" aria-pressed="false" data-calendar="jalali" data-i18n="persian">Persian</button>
+          </div>
+          <div class="date-grid">
+            <div class="field"><label for="year" data-i18n="yearInput">Year</label><input id="year" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="1983" required></div>
+            <div class="field"><label for="month" data-i18n="monthInput">Month</label><input id="month" inputmode="numeric" maxlength="2" autocomplete="off" placeholder="03" required></div>
+            <div class="field"><label for="day" data-i18n="dayInput">Day</label><input id="day" inputmode="numeric" maxlength="2" autocomplete="off" placeholder="08" required></div>
+          </div>
+        </fieldset>
+        <fieldset class="fieldset"><legend data-i18n="birthTime">Time of birth</legend>
+          <div class="time-grid">
+            <div class="field"><label for="hour" data-i18n="hourInput">Hour (0–23)</label><input id="hour" inputmode="numeric" maxlength="2" placeholder="04" required></div>
+            <div class="field"><label for="minute" data-i18n="minuteInput">Minute</label><input id="minute" inputmode="numeric" maxlength="2" placeholder="30" required></div>
+          </div>
+        </fieldset>
+        <div class="field"><label for="timeZone" data-i18n="birthZone">Birth time zone</label>
+          <select id="timeZone">
+            <option value="local" data-i18n="deviceZone">Device time zone</option>
+            <option value="Asia/Tehran" data-i18n="tehran">Tehran</option>
+            <option value="Asia/Baku" data-i18n="baku">Baku</option>
+            <option value="UTC">UTC</option>
+            <option value="Europe/London">London</option>
+            <option value="Europe/Paris">Paris</option>
+            <option value="America/New_York">New York</option>
+            <option value="America/Los_Angeles">Los Angeles</option>
+            <option value="Asia/Dubai">Dubai</option>
+            <option value="Asia/Tokyo">Tokyo</option>
+            <option value="other" data-i18n="otherZone">Other time zone</option>
+          </select>
+          <p class="hint" data-i18n="zoneHint">Select the time zone of your birthplace.</p>
+        </div>
+        <div id="customZoneField" class="field hidden"><label for="customZone" data-i18n="zoneId">IANA time zone (e.g. Europe/Rome)</label><input id="customZone" type="text" placeholder="Europe/Rome" autocomplete="off"></div>
+        <p id="formError" class="error hidden" role="alert"></p>
+        <button type="submit" class="primary" data-i18n="showLife">Show Life</button>
+      </form>
+      <div class="recovery">
+        <button id="restoreToggle" class="text-button" type="button" aria-expanded="false" aria-controls="restorePanel" data-i18n="restoreBirth">Restore birth details</button>
+        <div id="restorePanel" class="hidden recovery-panel">
+          <label for="restoreText" data-i18n="pasteDetails">Paste saved birth details</label>
+          <textarea id="restoreText" rows="3" spellcheck="false" dir="auto" placeholder="LIFE/2 | 1983/03/08 | 04:30 | Asia/Tehran | Name | gregorian"></textarea>
+          <button id="restoreBtn" type="button" class="secondary" data-i18n="restore">Restore</button>
+          <p id="restoreMessage" class="feedback" role="status"></p>
+        </div>
+      </div>
+      <p class="privacy" data-i18n="privacy">Birth data is stored on this device only.</p>
+    </section>
+
+    <section id="dashboard" class="view dashboard hidden" aria-labelledby="dashTitle">
+      <div class="dashboard-head">
+        <h1 id="dashTitle"><span id="displayName"></span></h1>
+        <p id="birthLine" class="birth-line"></p>
+      </div>
+      <div class="stats" aria-label="Life counters" data-i18n-aria="counterLabel">
+        <div class="stat"><span class="stat-label" data-i18n="year">Year</span><strong class="stat-number" id="years">—</strong></div>
+        <div class="stat"><span class="stat-label" data-i18n="month">Month</span><strong class="stat-number" id="months">—</strong></div>
+        <div class="stat"><span class="stat-label" data-i18n="week">Week</span><strong class="stat-number" id="weeks">—</strong></div>
+        <div class="stat"><span class="stat-label" data-i18n="day">Day</span><strong class="stat-number" id="days">—</strong></div>
+        <div class="stat featured">
+          <div class="featured-head"><span class="stat-label" data-i18n="hour">Hour</span><span class="live-indicator" data-i18n="live">LIVE</span></div>
+          <strong class="stat-number" id="hours">—</strong>
+          <div class="progress" id="hourProgressTrack" role="progressbar" aria-valuemin="0" aria-valuemax="3600" aria-valuenow="0" aria-label="Hour progress"><div id="hourProgress" class="progress-fill"></div></div>
+          <div class="progress-legend"><span id="minutesDetail">—</span><span id="nowClock">—</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="settings" class="view settings hidden" aria-labelledby="settingsTitle">
+      <button id="backBtn" type="button" class="text-button back" data-i18n="back">← Back</button>
+      <h1 id="settingsTitle" data-i18n="settings">Settings</h1>
+      <div class="settings-section">
+        <h2 data-i18n="appearance">Appearance</h2>
+        <div class="field"><label for="settingsLanguage" data-i18n="language">Language</label><select id="settingsLanguage" class="language-select"></select></div>
+        <div class="field"><span class="field-heading" data-i18n="theme">Theme</span>
+          <div class="theme-switch" role="group" aria-label="Theme" data-i18n-aria="theme">
+            <button type="button" data-theme-option="light" aria-pressed="false" data-i18n="light">Light</button>
+            <button type="button" data-theme-option="dark" aria-pressed="true" data-i18n="dark">Dark</button>
+          </div>
+        </div>
+      </div>
+      <div class="settings-section">
+        <h2 data-i18n="birthInformation">Birth information</h2>
+        <div id="profileSummary" class="summary"></div>
+        <button id="editBtn" type="button" class="secondary" data-i18n="editBirth">Edit birth details</button>
+        <p class="hint" data-i18n="monthBasis">Year and month follow your selected calendar; week, day and hour count elapsed time from birth, starting at 1.</p>
+      </div>
+      <div class="settings-section">
+        <h2 data-i18n="data">Data</h2>
+        <button id="copyBtn" type="button" class="secondary" data-i18n="copyBirth">Copy birth details</button>
+        <button id="settingsRestoreToggle" type="button" class="secondary" aria-expanded="false" aria-controls="settingsRestorePanel" data-i18n="restoreBirth">Restore birth details</button>
+        <div id="settingsRestorePanel" class="hidden recovery-panel">
+          <label for="settingsRestoreText" data-i18n="pasteDetails">Paste saved birth details</label>
+          <textarea id="settingsRestoreText" rows="3" spellcheck="false" dir="auto"></textarea>
+          <button id="settingsRestoreBtn" type="button" class="secondary" data-i18n="restore">Restore</button>
+        </div>
+        <p id="settingsMessage" class="feedback" role="status"></p>
+        <button id="resetBtn" type="button" class="secondary danger" data-i18n="deleteBirth">Delete birth details</button>
+        <p class="hint" data-i18n="dataNote">Your data stays on this device. Keep a private copy before clearing site data.</p>
+      </div>
+    </section>
+    <footer>Life <span aria-hidden="true">·</span> 1.2 <span aria-hidden="true">·</span> <span data-i18n="offline">Offline</span></footer>
+  </main>
+</body>
+</html>
