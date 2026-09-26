@@ -59,8 +59,8 @@
     </div>
     <div id="manualBar" class="decoded"><b>ویرایش دستی نشان</b><div id="decodedText">پس از تغییر رنگ، «خواندن نشان» را بزن.</div><button id="decode" type="button">خواندن نشان</button></div>
   </section>
-  <details class="tool calendar-tool" id="calendarPanel">
-    <summary><span>تبدیل تقویم</span><span lang="en" dir="ltr">Convert <span aria-hidden="true">＋</span></span></summary>
+  <section class="tool calendar-tool" id="calendarPanel" aria-labelledby="calendarTitle">
+    <div class="section-title"><h2 id="calendarTitle">تبدیل تقویم</h2><span lang="en" dir="ltr">Calendar converter</span></div>
     <p class="caption">یک تاریخ وارد کنید؛ معادل آن در دو تقویم دیگر نمایش داده می‌شود.</p>
     <div class="calendar-inputs">
       <div><label for="sourceCalendar">تقویم مبدأ</label><select id="sourceCalendar"><option value="persian">هجری شمسی</option><option value="gregory">میلادی</option><option value="islamic-civil">قمری حسابی</option></select></div>
@@ -72,7 +72,7 @@
     <p id="calendarError" class="error" role="status"></p>
     <div id="calendarResults" class="calendar-results" aria-live="polite" aria-atomic="true"></div>
     <p class="caption">بازهٔ تبدیل: ۱۹ ژوئیهٔ ۶۲۲ تا ۳۱ دسامبر ۳۰۰۰ میلادی. روز از نیمه‌شب محاسبه می‌شود.</p>
-  </details>
+  </section>
   <details class="tool technical">
     <summary><span>جزئیات فنی و راهنما</span><span lang="en" dir="ltr">Behind the mark <span aria-hidden="true">＋</span></span></summary>
     <div class="tech"><div class="box">عدد ترکیبی<b id="code">—</b></div><div class="box">ثانیه از مبدأ<b id="sec">—</b></div><div class="box digits">۲۱ رقم مبنای چهار<b id="digits">—</b></div></div>
