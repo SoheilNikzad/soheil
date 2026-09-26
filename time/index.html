@@ -83,7 +83,7 @@
 </main>
 <dialog id="help"><button class="close" id="closeHelp">بستن</button><h2>راهنمای Tokenomist Timestamp</h2><div class="help">
 <p>این نشان، زمان را با ۲۱ خانهٔ متغیر چهارحالته نمایش می‌دهد. شش خانهٔ سرمه‌ایِ حرف T و نقطهٔ بالای راست ثابت‌اند و جزو داده نیستند.</p>
-<p>رنگ‌ها: سرمه‌ای=۰، آبی روشن=۱، قرمز=۲، زرد=۳. بنابراین ظرفیت خام نشان ۴²¹ حالت است.</p>
+<p>رنگ‌ها: سرمه‌ای=۰، آبی روشن=۱، قرمز=۲، زرد=۳. در حالت شب، خانه‌های سرمه‌ای سفید نمایش داده می‌شوند و همچنان مقدار ۰ دارند. بنابراین ظرفیت خام نشان ۴²¹ حالت است.</p>
 <p>مبدأ زمان: ۲۰۲۶/۰۱/۰۱ ساعت ۰۰:۰۰:۰۰ UTC. اختلاف UTC نیز در همان عدد ذخیره می‌شود؛ بازهٔ −۱۲:۰۰ تا +۱۴:۰۰ با گام ۱۵ دقیقه، یعنی ۱۰۵ حالت.</p>
 <code>offset_code = (offset_minutes + 720) / 15<br>combined_index = elapsed_utc_seconds × 105 + offset_code</code>
 <p>برای خواندن نشان:</p><code>offset_code = combined_index mod 105<br>offset_minutes = offset_code × 15 − 720<br>elapsed_seconds = floor(combined_index / 105)</code>

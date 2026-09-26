@@ -5,4 +5,4 @@
 
 /* Keep the visible analog face larger than the timestamp at every breakpoint. */
 @media(max-width:640px){.clock-panel{display:flex;flex-direction:column;align-items:center}.clock-panel>.panel-heading{margin-bottom:12px}.analog{width:min(100%,380px);margin:0 auto 12px}.device-time{align-self:center;font-size:26px}#deviceZone{align-self:center;font-size:11px}}
-:root[data-theme="dark"] .mark{background:#f4f4f4;border-radius:4px;box-shadow:0 0 0 4px #f4f4f4}
+:root[data-theme="dark"] .mark .fixed,:root[data-theme="dark"] .mark .v[data-value="0"]{background:#fff!important}
