@@ -1,17 +1,86 @@
-<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Tokenomist Timestamp Converter</title><style>
-:root{--n:#020260;--b:#48B7FF;--r:#CC0000;--y:#FFB600;--ink:#111827;--muted:#6b7280;--line:#e5e7eb;--bg:#f5f6f8}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,sans-serif}main{max-width:980px;margin:auto;padding:22px}
-.card{background:white;border:1px solid var(--line);border-radius:20px;padding:22px}header{display:flex;justify-content:space-between;align-items:center;gap:12px}h1{font-size:18px;margin:0}button,select,input{font:inherit;border:1px solid #d1d5db;background:white;border-radius:10px;padding:9px 11px}button{cursor:pointer}.hero{display:grid;grid-template-columns:minmax(310px,1fr) 1fr;gap:28px;align-items:center;margin:24px 0}@media(max-width:720px){.hero{grid-template-columns:1fr}}
-.mark{direction:ltr;display:grid;grid-template-columns:repeat(7,46px);grid-template-rows:repeat(7,46px);gap:5px;width:max-content;margin:auto}.c{width:46px;height:46px;border-radius:4px}.v{cursor:pointer}.fixed{background:var(--n)}.clock{text-align:center}.clock .time{font-size:30px;font-weight:700;direction:ltr}.clock .meta{color:var(--muted);margin-top:8px;direction:ltr}.badge{display:inline-block;background:#eef2ff;color:var(--n);border-radius:999px;padding:5px 9px;font-size:12px;margin-top:10px}
-.controls{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:end;border-top:1px solid var(--line);padding-top:18px}@media(max-width:720px){.controls{grid-template-columns:1fr 1fr}}label{display:block;font-size:11px;color:var(--muted);margin-bottom:5px}.primary{background:var(--n);color:white;border-color:var(--n)}.decoded{margin-top:12px;padding:12px;background:#f8fafc;border-radius:10px;display:none}details{border-top:1px solid var(--line);margin-top:18px;padding-top:14px}summary{cursor:pointer;font-weight:700}.tech{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.box{background:#f8fafc;border-radius:9px;padding:10px;font-size:12px}.box b{display:block;margin-top:4px;direction:ltr;overflow-wrap:anywhere}.help{line-height:1.9;font-size:13px;color:#374151}.help code{direction:ltr;display:block;background:#f8fafc;padding:10px;border-radius:8px;margin:8px 0;overflow:auto}dialog{max-width:680px;border:0;border-radius:16px;padding:22px;box-shadow:0 20px 60px #0004}dialog::backdrop{background:#0006}.close{float:left}
-</style></head><body><main><div class="card">
-<header><h1>Tokenomist Timestamp</h1><button id="helpBtn">راهنما و فرمول</button></header>
-<section class="hero"><div><div id="mark" class="mark"></div></div><div class="clock"><div id="localClock" class="time">—</div><div id="utcClock" class="meta">—</div><div id="offsetClock" class="badge">—</div></div></section>
-<section class="controls"><div><label>حالت</label><select id="mode"><option value="live">زنده</option><option value="manual">دستی</option></select></div><div><label>زمان محلی</label><input id="local" type="datetime-local" step="1"></div><div><label>اختلاف UTC</label><select id="offset"></select></div><button id="apply" class="primary">تبدیل</button></section>
-<div id="manualBar" class="decoded"><b>ویرایش دستی نشان</b><div id="decodedText" style="margin-top:6px">پس از تغییر رنگ، «خواندن نشان» را بزن.</div><button id="decode" style="margin-top:9px">خواندن نشان</button></div>
-<details><summary>جزئیات فنی</summary><div class="tech"><div class="box">عدد ترکیبی<b id="code">—</b></div><div class="box">ثانیه از مبدأ<b id="sec">—</b></div><div class="box" style="grid-column:1/-1">۲۱ رقم مبنای چهار<b id="digits">—</b></div></div></details>
-</div></main>
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Time · soheil.info | ابزارهای زمان</title>
+  <script src="theme.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;500;600;700&family=Vazirmatn:wght@100..900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="time.css">
+  <script src="calendars.js" defer></script>
+  <script src="timestamp.js" defer></script>
+  <script src="page.js" defer></script>
+</head>
+<body>
+<main>
+  <header class="topbar">
+    <a class="brand" href="/" lang="en" dir="ltr">soheil.info <span>/ time</span></a>
+    <button id="themeToggle" type="button" aria-label="حالت تاریک" aria-pressed="false">شب / روز</button>
+  </header>
+  <section class="today" aria-labelledby="pageTitle">
+    <div class="section-title"><h1 id="pageTitle">زمان</h1><span lang="en" dir="ltr">Time tools</span></div>
+    <p id="todayFa">در حال دریافت تاریخ…</p>
+    <p id="todayEn" lang="en" dir="ltr"></p>
+    <p class="caption">تاریخ امروز و ساعت بر اساس زمان دستگاه · قمری حسابی</p>
+  </section>
+  <section class="composition" aria-label="زمان و نشان">
+    <div class="timestamp-panel">
+      <div class="panel-heading"><h2 lang="en" dir="ltr">Tokenomist Timestamp</h2><span class="caption">۲۱ خانه، یک لحظه</span></div>
+      <div id="mark" class="mark" aria-label="نشان زمان؛ برای ویرایش روی خانه‌ها بزنید"></div>
+      <div class="stamp-reading">
+        <div id="localClock" class="time" dir="ltr">—</div>
+        <div class="stamp-meta"><span id="utcClock" dir="ltr">—</span><span id="offsetClock" dir="ltr">—</span></div>
+      </div>
+    </div>
+    <div class="clock-panel">
+      <div class="panel-heading"><h2>اکنون</h2><span lang="en" dir="ltr" class="caption">Local time</span></div>
+      <svg id="analogClock" viewBox="0 0 200 200" role="img" aria-label="ساعت دستگاه" class="analog">
+        <circle class="clock-ring" cx="100" cy="100" r="88"/>
+        <g id="clockTicks"></g>
+        <line id="hourHand" class="hand hour" x1="100" y1="100" x2="100" y2="52"/>
+        <line id="minuteHand" class="hand minute" x1="100" y1="100" x2="100" y2="31"/>
+        <line id="secondHand" class="hand second" x1="100" y1="112" x2="100" y2="25"/>
+        <circle class="clock-pin" cx="100" cy="100" r="4"/>
+      </svg>
+      <div id="deviceTime" class="device-time" lang="en" dir="ltr">—</div>
+      <span id="deviceZone" class="caption" dir="ltr"></span>
+    </div>
+  </section>
+  <section class="tool" aria-labelledby="timestampTitle">
+    <div class="section-title"><h2 id="timestampTitle">مبدل نشان زمان</h2><span lang="en" dir="ltr">Timestamp</span></div>
+    <div class="controls">
+      <div><label for="mode">حالت</label><select id="mode"><option value="live">زنده</option><option value="manual">دستی</option></select></div>
+      <div class="local-field"><label for="local">زمان محلی · میلادی</label><input id="local" type="datetime-local" step="1"></div>
+      <div><label for="offset">اختلاف UTC</label><select id="offset" dir="ltr"></select></div>
+      <button id="apply" type="button" class="primary">تبدیل</button>
+    </div>
+    <div id="manualBar" class="decoded"><b>ویرایش دستی نشان</b><div id="decodedText">پس از تغییر رنگ، «خواندن نشان» را بزن.</div><button id="decode" type="button">خواندن نشان</button></div>
+  </section>
+  <details class="tool calendar-tool" id="calendarPanel">
+    <summary><span>تبدیل تقویم</span><span lang="en" dir="ltr">Convert <span aria-hidden="true">＋</span></span></summary>
+    <p class="caption">یک تاریخ وارد کنید؛ معادل آن در دو تقویم دیگر نمایش داده می‌شود.</p>
+    <div class="calendar-inputs">
+      <div><label for="sourceCalendar">تقویم مبدأ</label><select id="sourceCalendar"><option value="persian">هجری شمسی</option><option value="gregory">میلادی</option><option value="islamic-civil">قمری حسابی</option></select></div>
+      <div><label for="calendarYear">سال</label><input id="calendarYear" type="text" inputmode="numeric" dir="ltr" autocomplete="off"></div>
+      <div><label for="calendarMonth">ماه</label><select id="calendarMonth"></select></div>
+      <div><label for="calendarDay">روز</label><input id="calendarDay" type="text" inputmode="numeric" dir="ltr" autocomplete="off"></div>
+      <button id="calendarToday" type="button">امروز</button>
+    </div>
+    <p id="calendarError" class="error" role="status"></p>
+    <div id="calendarResults" class="calendar-results" aria-live="polite" aria-atomic="true"></div>
+    <p class="caption">بازهٔ تبدیل: ۱۹ ژوئیهٔ ۶۲۲ تا ۳۱ دسامبر ۳۰۰۰ میلادی. روز از نیمه‌شب محاسبه می‌شود.</p>
+  </details>
+  <details class="tool technical">
+    <summary><span>جزئیات فنی و راهنما</span><span lang="en" dir="ltr">Behind the mark <span aria-hidden="true">＋</span></span></summary>
+    <div class="tech"><div class="box">عدد ترکیبی<b id="code">—</b></div><div class="box">ثانیه از مبدأ<b id="sec">—</b></div><div class="box digits">۲۱ رقم مبنای چهار<b id="digits">—</b></div></div>
+    <button id="helpBtn" type="button">راهنما و فرمول Timestamp</button>
+    <p class="caption">تقویم‌ها با Intl مرورگر محاسبه می‌شوند. قمری: islamic-civil، روش حسابی با چرخهٔ ۳۰ساله و مبدأ مدنی؛ ممکن است با رؤیت محلی هلال یک روز اختلاف داشته باشد.</p>
+  </details>
+  <footer><a href="/">بازگشت به صفحهٔ اصلی</a><span lang="en" dir="ltr">soheil.info / time</span></footer>
+</main>
 <dialog id="help"><button class="close" id="closeHelp">بستن</button><h2>راهنمای Tokenomist Timestamp</h2><div class="help">
 <p>این نشان، زمان را با ۲۱ خانهٔ متغیر چهارحالته نمایش می‌دهد. شش خانهٔ سرمه‌ایِ حرف T و نقطهٔ بالای راست ثابت‌اند و جزو داده نیستند.</p>
 <p>رنگ‌ها: سرمه‌ای=۰، آبی روشن=۱، قرمز=۲، زرد=۳. بنابراین ظرفیت خام نشان ۴²¹ حالت است.</p>
@@ -22,41 +91,5 @@
 <p>در حالت دستی می‌توان زمان و اختلاف UTC را وارد کرد. همچنین با کلیک روی خانه‌های رنگی، نشان وارد حالت «ویرایش دستی» می‌شود و می‌توان زمان متناظر آن را خواند.</p>
 <p><b>نسخه:</b> Tokenomist Timestamp V 0.1</p>
 </div></dialog>
-<script>
-const COLORS=["#020260","#48B7FF","#CC0000","#FFB600"];
-const EPOCH=Date.UTC(2026,0,1,0,0,0);
-const MAX_SPEC=Date.UTC(3001,0,1,0,0,0)-1000;
-const LAYOUT=[
- [3,11,17,21,1,null,"f"],
- [6,null,null,null,null,null,null],
- [7,null,"f","f","f",null,2],
- [8,null,null,"f",null,null,18],
- [9,null,null,"f",null,null,19],
- [10,null,null,null,null,null,20],
- [4,12,13,14,15,16,5]
-];
-function pad(n){return String(n).padStart(2,"0")}
-function offText(m){let s=m<0?"−":"+";m=Math.abs(m);return s+pad(Math.floor(m/60))+":"+pad(m%60)}
-function sysOff(){let m=-new Date().getTimezoneOffset();return Math.max(-720,Math.min(840,Math.round(m/15)*15))}
-function localText(ms,off){let d=new Date(ms+off*60000);return d.getUTCFullYear()+"/"+pad(d.getUTCMonth()+1)+"/"+pad(d.getUTCDate())+" "+pad(d.getUTCHours())+":"+pad(d.getUTCMinutes())+":"+pad(d.getUTCSeconds())}
-function localInput(ms,off){return localText(ms,off).replaceAll("/","-").replace(" ","T")}
-function parseLocal(s,off){if(!s||!s.includes("T"))return NaN;let [a,b]=s.split("T"),d=a.split("-").map(Number),t=b.split(":").map(Number);return Date.UTC(d[0],d[1]-1,d[2],t[0]||0,t[1]||0,t[2]||0)-off*60000}
-function digitsFromCode(code){let a=Array(21).fill(0);for(let i=20;i>=0;i--){a[i]=code%4;code=Math.floor(code/4)}return a}
-function codeFromDigits(a){let n=0;for(let d of a)n=n*4+d;return n}
-function encodeMs(ms,off){let sec=Math.floor((ms-EPOCH)/1000);if(sec<0||ms>MAX_SPEC)return null;let oc=(off+720)/15;if(!Number.isInteger(oc)||oc<0||oc>104)return null;let code=sec*105+oc;return {ms,off,sec,code,digits:digitsFromCode(code)}}
-function decodeDigits(a){let code=codeFromDigits(a),oc=code%105,sec=Math.floor(code/105),off=oc*15-720,ms=EPOCH+sec*1000;return {ms,off,sec,code,valid:ms>=EPOCH&&ms<=MAX_SPEC}}
-
-let values=Array(21).fill(0),timer=null;
-const $=x=>document.getElementById(x);
-for(let m=-720;m<=840;m+=15){let o=document.createElement("option");o.value=m;o.textContent=offText(m);$("offset").appendChild(o)}
-function render(){let root=$("mark");root.innerHTML="";for(let row of LAYOUT)for(let x of row){let q=document.createElement("div");q.className="c";if(x==="f")q.className+=" fixed";else if(typeof x==="number"){q.className+=" v";q.style.background=COLORS[values[x-1]];q.onclick=()=>{stop();$("mode").value="manual";values[x-1]=(values[x-1]+1)%4;$("manualBar").style.display="block";render()}}root.appendChild(q)}$("digits").textContent=values.join("")}
-function show(o){values=o.digits;render();$("localClock").textContent=localText(o.ms,o.off);$("utcClock").textContent=new Date(o.ms).toISOString().replace("T"," ").replace(".000Z"," UTC");$("offsetClock").textContent="UTC "+offText(o.off);$("code").textContent=o.code;$("sec").textContent=o.sec}
-function now(){let off=sysOff(),o=encodeMs(Date.now(),off);$("offset").value=off;$("local").value=localInput(Date.now(),off);if(o)show(o)}
-function stop(){if(timer)clearInterval(timer);timer=null}
-function live(){stop();now();timer=setInterval(now,1000)}
-$("mode").onchange=function(){if(this.value==="live"){$("manualBar").style.display="none";live()}else stop()};
-$("apply").onclick=function(){stop();$("mode").value="manual";let off=Number($("offset").value),ms=parseLocal($("local").value,off),o=encodeMs(ms,off);if(o){show(o);$("manualBar").style.display="none"}};
-$("decode").onclick=function(){let o=decodeDigits(values);$("decodedText").textContent=o.valid?"زمان محلی خوانده‌شده: "+localText(o.ms,o.off)+"  |  UTC "+offText(o.off):"این الگو خارج از محدودهٔ استاندارد تا پایان سال ۳۰۰۰ است.";if(o.valid){$("local").value=localInput(o.ms,o.off);$("offset").value=o.off}};
-$("helpBtn").onclick=()=>$("help").showModal();$("closeHelp").onclick=()=>$("help").close();
-render();live();
-</script></body></html>
+</body>
+</html>
