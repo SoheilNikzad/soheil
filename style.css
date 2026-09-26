@@ -127,6 +127,10 @@ h1 span:last-child,
   gap: var(--grid-gap);
 }
 
+#accounts-panel .link-grid {
+  width: min(100%, 520px);
+}
+
 .link-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
