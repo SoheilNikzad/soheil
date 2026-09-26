@@ -24,7 +24,11 @@ function encodeMs(ms,off){let sec=Math.floor((ms-EPOCH)/1000);if(sec<0||ms>MAX_S
 function decodeDigits(a){let code=codeFromDigits(a),oc=code%105,sec=Math.floor(code/105),off=oc*15-720,ms=EPOCH+sec*1000;return {ms,off,sec,code,valid:ms>=EPOCH&&ms<=MAX_SPEC}}
 
 let root=document.getElementById("m");
-function draw(a){root.innerHTML="";for(let row of LAYOUT)for(let x of row){let q=document.createElement("div");q.className="c";if(x==="f")q.className+=" f";else if(typeof x==="number")q.style.background=COLORS[a[x-1]];root.appendChild(q)}}
+let widget=document.getElementById("tokenomist-widget"),themeQuery=matchMedia("(prefers-color-scheme: dark)");
+function darkMode(){let saved;try{saved=localStorage.getItem("soheil-time-theme")}catch{}return saved==="dark"||(saved!=="light"&&themeQuery.matches)}
+function applyTheme(){widget.classList.toggle("is-dark",darkMode())}
+function draw(a){root.innerHTML="";for(let row of LAYOUT)for(let x of row){let q=document.createElement("div");q.className="c";if(x==="f"){q.className+=" f";q.dataset.value="0"}else if(typeof x==="number"){q.dataset.value=a[x-1];q.style.background=COLORS[a[x-1]]}root.appendChild(q)}}
 function tick(){let o=encodeMs(Date.now(),sysOff());if(o)draw(o.digits)}tick();setInterval(tick,1000);
+applyTheme();themeQuery.addEventListener("change",applyTheme);addEventListener("storage",applyTheme);
 
 })();
