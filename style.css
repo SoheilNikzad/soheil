@@ -48,7 +48,7 @@ h1,
 h1 {
   min-height: 92px;
   padding: 16px 20px;
-  font-size: clamp(19px, 3.3vw, 27px);
+  font-size: clamp(15px, 2.8vw, 22px);
   font-weight: 350;
   line-height: 1.25;
 }
@@ -65,6 +65,14 @@ h1 span,
 .intro p span,
 .link-row span,
 .footer span { display: block; }
+
+h1 span { white-space: nowrap; }
+
+h1,
+.intro p,
+.folder-tab,
+.link-row,
+.footer { border-radius: 4px; }
 
 h1 span:first-child,
 .intro p span:first-child { text-align: left; }
@@ -85,7 +93,6 @@ h1 span:last-child,
   min-height: 52px;
   padding: 6px 4px;
   border: 0;
-  border-bottom: 4px solid var(--surface);
   background: var(--muted);
   color: var(--text);
   cursor: pointer;
@@ -124,17 +131,12 @@ h1 span:last-child,
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   align-items: center;
-  min-height: 44px;
-  padding: 7px 13px;
-  background: var(--muted);
-  border-inline-start: 3px solid transparent;
-  transition: background-color 120ms ease, border-color 120ms ease;
-}
-
-#accounts-panel .link-row {
   min-height: 34px;
   padding: 4px 10px;
+  background: var(--muted);
+  border-inline-start: 3px solid transparent;
   font-size: 13px;
+  transition: background-color 120ms ease, border-color 120ms ease;
 }
 
 .link-row:hover,
@@ -190,7 +192,7 @@ h1 span:last-child,
   h1 {
     min-height: 0;
     padding: 12px 12px 11px;
-    font-size: clamp(21px, 6.5vw, 28px);
+    font-size: clamp(14px, 5vw, 22px);
   }
 
   .intro p {
@@ -210,13 +212,8 @@ h1 span:last-child,
   }
 
   .link-row {
-    min-height: 40px;
-    padding: 6px 10px;
-  }
-
-  #accounts-panel .link-row {
     min-height: 32px;
-    padding-block: 3px;
+    padding: 3px 10px;
     font-size: 12px;
   }
 
