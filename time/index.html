@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;500;600;700&family=Vazirmatn:wght@100..900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="time.css?v=20260926-3">
+  <link rel="stylesheet" href="time.css?v=20260926-4">
   <script src="calendars.js" defer></script>
   <script src="timestamp.js" defer></script>
   <script src="page.js" defer></script>
@@ -21,14 +21,13 @@
     <button id="themeToggle" type="button" aria-label="حالت تاریک" aria-pressed="false">شب / روز</button>
   </header>
   <section class="today" aria-labelledby="pageTitle">
-    <div class="section-title"><h1 id="pageTitle">زمان</h1><span lang="en" dir="ltr">Time tools</span></div>
+    <h1 id="pageTitle">زمان</h1>
     <p id="todayFa">در حال دریافت تاریخ…</p>
     <p id="todayEn" lang="en" dir="ltr"></p>
-    <p class="caption">تاریخ امروز و ساعت بر اساس زمان دستگاه · قمری حسابی</p>
   </section>
   <section class="composition" aria-label="زمان و نشان">
     <div class="timestamp-panel">
-      <div class="panel-heading"><h2 lang="en" dir="ltr">Tokenomist Timestamp</h2><span class="caption">نمایش زندهٔ زمان</span></div>
+      <div class="panel-heading"><h2 lang="en" dir="ltr">Tokenomist Timestamp</h2></div>
       <div class="visual-stage"><div id="mark" class="mark" aria-label="نشان زمان؛ برای ویرایش روی خانه‌ها بزنید"></div></div>
       <div class="stamp-reading">
         <div id="localClock" class="time" dir="ltr">—</div>
@@ -36,7 +35,7 @@
       </div>
     </div>
     <div class="clock-panel">
-      <div class="panel-heading"><h2>اکنون</h2><span lang="en" dir="ltr" class="caption">Local time</span></div>
+      <div class="panel-heading"><h2>ساعت</h2></div>
       <div class="visual-stage"><svg id="analogClock" viewBox="0 0 200 200" role="img" aria-label="ساعت دستگاه" class="analog">
         <circle class="clock-ring" cx="100" cy="100" r="88"/>
         <g id="clockTicks"></g>
@@ -50,7 +49,7 @@
     </div>
   </section>
   <section class="tool" aria-labelledby="timestampTitle">
-    <div class="section-title"><h2 id="timestampTitle">مبدل نشان زمان</h2><span lang="en" dir="ltr">Timestamp</span></div>
+    <div class="section-title"><h2 id="timestampTitle">مبدل نشان زمان</h2></div>
     <div class="controls">
       <div><label for="mode">حالت</label><select id="mode"><option value="live">زنده</option><option value="manual">دستی</option></select></div>
       <div class="local-field"><label for="local">زمان محلی · میلادی</label><input id="local" type="datetime-local" step="1"></div>
@@ -60,8 +59,7 @@
     <div id="manualBar" class="decoded"><b>ویرایش دستی نشان</b><div id="decodedText">پس از تغییر رنگ، «خواندن نشان» را بزن.</div><button id="decode" type="button">خواندن نشان</button></div>
   </section>
   <section class="tool calendar-tool" id="calendarPanel" aria-labelledby="calendarTitle">
-    <div class="section-title"><h2 id="calendarTitle">تبدیل تقویم</h2><span lang="en" dir="ltr">Calendar converter</span></div>
-    <p class="caption">یک تاریخ وارد کنید؛ معادل آن در دو تقویم دیگر نمایش داده می‌شود.</p>
+    <div class="section-title"><h2 id="calendarTitle">تبدیل تقویم</h2></div>
     <div class="calendar-inputs">
       <div><label for="sourceCalendar">تقویم مبدأ</label><select id="sourceCalendar"><option value="persian">هجری شمسی</option><option value="gregory">میلادی</option><option value="islamic-civil">قمری حسابی</option></select></div>
       <div><label for="calendarYear">سال</label><input id="calendarYear" type="text" inputmode="numeric" dir="ltr" autocomplete="off"></div>
@@ -71,13 +69,16 @@
     </div>
     <p id="calendarError" class="error" role="status"></p>
     <div id="calendarResults" class="calendar-results" aria-live="polite" aria-atomic="true"></div>
-    <p class="caption">بازهٔ تبدیل: ۱۹ ژوئیهٔ ۶۲۲ تا ۳۱ دسامبر ۳۰۰۰ میلادی. روز از نیمه‌شب محاسبه می‌شود.</p>
   </section>
   <details class="tool technical">
-    <summary><span>جزئیات فنی و راهنما</span><span lang="en" dir="ltr">Behind the mark <span aria-hidden="true">＋</span></span></summary>
+    <summary><span>جزئیات فنی و راهنما</span><span aria-hidden="true">＋</span></summary>
     <div class="tech"><div class="box">عدد ترکیبی<b id="code">—</b></div><div class="box">ثانیه از مبدأ<b id="sec">—</b></div><div class="box digits">۲۱ رقم مبنای چهار<b id="digits">—</b></div></div>
     <button id="helpBtn" type="button">راهنما و فرمول Timestamp</button>
-    <p class="caption">تقویم‌ها با Intl مرورگر محاسبه می‌شوند. قمری: islamic-civil، روش حسابی با چرخهٔ ۳۰ساله و مبدأ مدنی؛ ممکن است با رؤیت محلی هلال یک روز اختلاف داشته باشد.</p>
+    <div class="technical-notes">
+      <p>تاریخ امروز، ساعت و منطقهٔ زمانی از تنظیمات همین دستگاه گرفته می‌شوند. نمایش ساعت هر ثانیه به‌روز می‌شود.</p>
+      <p>تقویم‌ها با Intl مرورگر محاسبه می‌شوند. قمری از نوع حسابی islamic-civil با چرخهٔ ۳۰ساله و مبدأ مدنی است و ممکن است با رؤیت محلی هلال یک روز اختلاف داشته باشد.</p>
+      <p>بازهٔ تبدیل تقویم از ۱۹ ژوئیهٔ ۶۲۲ تا ۳۱ دسامبر ۳۰۰۰ میلادی است و هر روز از نیمه‌شب محاسبه می‌شود.</p>
+    </div>
   </details>
   <footer><a href="/">بازگشت به صفحهٔ اصلی</a><span lang="en" dir="ltr">soheil.info / time</span></footer>
 </main>
