@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;500;600;700&family=Vazirmatn:wght@100..900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="time.css">
+  <link rel="stylesheet" href="time.css?v=20260926-2">
   <script src="calendars.js" defer></script>
   <script src="timestamp.js" defer></script>
   <script src="page.js" defer></script>
@@ -29,7 +29,7 @@
   <section class="composition" aria-label="زمان و نشان">
     <div class="timestamp-panel">
       <div class="panel-heading"><h2 lang="en" dir="ltr">Tokenomist Timestamp</h2><span class="caption">۲۱ خانه، یک لحظه</span></div>
-      <div id="mark" class="mark" aria-label="نشان زمان؛ برای ویرایش روی خانه‌ها بزنید"></div>
+      <div class="visual-stage"><div id="mark" class="mark" aria-label="نشان زمان؛ برای ویرایش روی خانه‌ها بزنید"></div></div>
       <div class="stamp-reading">
         <div id="localClock" class="time" dir="ltr">—</div>
         <div class="stamp-meta"><span id="utcClock" dir="ltr">—</span><span id="offsetClock" dir="ltr">—</span></div>
@@ -37,16 +37,16 @@
     </div>
     <div class="clock-panel">
       <div class="panel-heading"><h2>اکنون</h2><span lang="en" dir="ltr" class="caption">Local time</span></div>
-      <svg id="analogClock" viewBox="0 0 200 200" role="img" aria-label="ساعت دستگاه" class="analog">
+      <div class="visual-stage"><svg id="analogClock" viewBox="0 0 200 200" role="img" aria-label="ساعت دستگاه" class="analog">
         <circle class="clock-ring" cx="100" cy="100" r="88"/>
         <g id="clockTicks"></g>
         <line id="hourHand" class="hand hour" x1="100" y1="100" x2="100" y2="52"/>
         <line id="minuteHand" class="hand minute" x1="100" y1="100" x2="100" y2="31"/>
         <line id="secondHand" class="hand second" x1="100" y1="112" x2="100" y2="25"/>
         <circle class="clock-pin" cx="100" cy="100" r="4"/>
-      </svg>
-      <div id="deviceTime" class="device-time" lang="en" dir="ltr">—</div>
-      <span id="deviceZone" class="caption" dir="ltr"></span>
+      </svg></div>
+      <div class="clock-reading"><div id="deviceTime" class="device-time" lang="en" dir="ltr">—</div>
+      <span id="deviceZone" class="caption" dir="ltr"></span></div>
     </div>
   </section>
   <section class="tool" aria-labelledby="timestampTitle">

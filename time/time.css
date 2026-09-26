@@ -6,3 +6,12 @@
 /* Keep the visible analog face larger than the timestamp at every breakpoint. */
 @media(max-width:640px){.clock-panel{display:flex;flex-direction:column;align-items:center}.clock-panel>.panel-heading{margin-bottom:12px}.analog{width:min(100%,380px);margin:0 auto 12px}.device-time{align-self:center;font-size:26px}#deviceZone{align-self:center;font-size:11px}}
 :root[data-theme="dark"] .mark .fixed,:root[data-theme="dark"] .mark .v[data-value="0"]{background:#fff!important}
+
+/* Shared visual rows align the two centers and the readings beneath them. */
+.timestamp-panel,.clock-panel{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:44px auto 1fr;gap:12px;align-items:start}
+.timestamp-panel>.panel-heading,.clock-panel>.panel-heading{margin:0;min-height:44px;grid-column:auto;align-content:center}
+.visual-stage{display:grid;place-items:center;width:min(100%,380px);aspect-ratio:1;margin-inline:auto}
+.visual-stage>.analog{width:100%;max-width:100%;margin:0;grid-column:auto;grid-row:auto;justify-self:center}
+.stamp-reading,.clock-reading{margin:0;text-align:center}
+.time,.device-time{font-size:clamp(15px,2.1vw,22px);line-height:1.6}
+.clock-reading>#deviceZone{display:block;margin-top:6px;font-size:11px;line-height:1.7}
