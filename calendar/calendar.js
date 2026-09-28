@@ -1,241 +1,345 @@
 (() => {
-  'use strict';
+  "use strict";
 
-  /*
-   * Public input contract:
-   * ./busy.json
-   *
-   * {
-   *   "updated": "2026-09-28T02:00:00Z",
-   *   "timezone": "Asia/Tehran",
-   *   "busy": [
-   *     {"start":"2026-09-28T09:00:00+03:30","end":"2026-09-28T10:30:00+03:30"}
-   *   ]
-   * }
-   *
-   * Never put event title, description, guests, location or private metadata
-   * in busy.json. This page intentionally consumes start/end only.
-   */
+  const TZ = "Asia/Tehran";
+  const SLOT_HOURS = [8, 10, 12, 14, 16, 18];
+  const SLOT_MS = 2 * 60 * 60 * 1000;
 
-  const DATA_URL = './busy.json';
-  const START_HOUR = 8;
-  const END_HOUR = 22;
-  const HOUR_HEIGHT = 52;
+  const POLICY = {
+    publicDays: new Set([0, 1, 2, 3, 4, 6]),
+    availableStart: 8,
+    availableEnd: 18,
+    preferred: [
+      { days: new Set([0, 1, 2, 3, 4, 6]), start: 10, end: 14 }
+    ]
+  };
 
-  const $ = id => document.getElementById(id);
-  const preference = matchMedia('(prefers-color-scheme: dark)');
-  let explicitTheme = false;
+  const els = {
+    grid: document.getElementById("weekGrid"),
+    title: document.getElementById("weekTitle"),
+    status: document.getElementById("status"),
+    updated: document.getElementById("updatedAt"),
+    prev: document.getElementById("prevWeek"),
+    next: document.getElementById("nextWeek"),
+    today: document.getElementById("todayButton"),
+    theme: document.getElementById("themeToggle")
+  };
 
-  try {
-    explicitTheme = ['light','dark'].includes(localStorage.getItem('soheil-calendar-theme'));
-  } catch {}
+  let weekOffset = 0;
+  let busy = [];
 
-  function themeLabel() {
-    const dark = document.documentElement.dataset.theme === 'dark';
-    $('themeToggle').textContent = dark ? '☀ روز' : '☾ شب';
-    $('themeToggle').setAttribute('aria-pressed', String(dark));
-    $('themeToggle').setAttribute(
-      'aria-label',
-      dark ? 'فعال‌کردن حالت روشن' : 'فعال‌کردن حالت تاریک'
+  const faDate = new Intl.DateTimeFormat("fa-IR-u-ca-persian", {
+    timeZone: TZ, month: "long", day: "numeric"
+  });
+
+  const faDay = new Intl.DateTimeFormat("fa-IR", {
+    timeZone: TZ, weekday: "short"
+  });
+
+  const faNumber = new Intl.NumberFormat("fa-IR", {
+    useGrouping: false
+  });
+
+  const faUpdated = new Intl.DateTimeFormat("fa-IR-u-ca-persian", {
+    timeZone: TZ,
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+
+  function partsInTehran(date) {
+    const p = new Intl.DateTimeFormat("en-CA", {
+      timeZone: TZ,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
+    }).formatToParts(date);
+
+    return Object.fromEntries(
+      p.filter(x => x.type !== "literal")
+       .map(x => [x.type, Number(x.value)])
     );
   }
 
-  $('themeToggle').addEventListener('click', () => {
-    const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-    document.documentElement.dataset.theme = next;
-    explicitTheme = true;
-    try { localStorage.setItem('soheil-calendar-theme', next); } catch {}
-    themeLabel();
-  });
+  function tehranMidnight(date = new Date()) {
+    const { year, month, day } = partsInTehran(date);
 
-  preference.addEventListener('change', event => {
-    if (!explicitTheme) {
-      document.documentElement.dataset.theme = event.matches ? 'dark' : 'light';
-      themeLabel();
+    return new Date(
+      `${year}-${String(month).padStart(2,"0")}-${String(day).padStart(2,"0")}T00:00:00+03:30`
+    );
+  }
+
+  function saturdayOf(date = new Date()) {
+    const d = tehranMidnight(date);
+
+    const { year, month, day } = partsInTehran(d);
+
+    const noon = new Date(
+      `${year}-${String(month).padStart(2,"0")}-${String(day).padStart(2,"0")}T12:00:00+03:30`
+    );
+
+    const localDow = noon.getUTCDay();
+    const back = (localDow - 6 + 7) % 7;
+
+    return new Date(d.getTime() - back * 86400000);
+  }
+
+  function dayAt(base, n) {
+    return new Date(base.getTime() + n * 86400000);
+  }
+
+  function slotAt(day, hour) {
+    const { year, month, day: dd } = partsInTehran(day);
+
+    return new Date(
+      `${year}-${String(month).padStart(2,"0")}-${String(dd).padStart(2,"0")}T${String(hour).padStart(2,"0")}:00:00+03:30`
+    );
+  }
+
+  function jsDayInTehran(date) {
+    const { year, month, day } = partsInTehran(date);
+
+    return new Date(
+      `${year}-${String(month).padStart(2,"0")}-${String(day).padStart(2,"0")}T12:00:00+03:30`
+    ).getUTCDay();
+  }
+
+  function overlapsBusy(start, end) {
+    return busy.some(b => b.start < end && b.end > start);
+  }
+
+  function isPreferred(dayNo, hour) {
+    return POLICY.preferred.some(
+      p => p.days.has(dayNo) && hour >= p.start && hour < p.end
+    );
+  }
+
+  function stateFor(day, hour) {
+    const dayNo = jsDayInTehran(day);
+    const start = slotAt(day, hour);
+    const end = new Date(start.getTime() + SLOT_MS);
+
+    if (
+      !POLICY.publicDays.has(dayNo) ||
+      hour < POLICY.availableStart ||
+      hour >= POLICY.availableEnd
+    ) {
+      return "unavailable";
     }
-  });
 
-  themeLabel();
+    if (overlapsBusy(start, end)) return "busy";
+    if (isPreferred(dayNo, hour)) return "preferred";
 
-  const faDay = new Intl.DateTimeFormat('fa-IR', {weekday:'short'});
-  const faDate = new Intl.DateTimeFormat('fa-IR-u-ca-persian', {month:'short',day:'numeric'});
-  const faRange = new Intl.DateTimeFormat('fa-IR-u-ca-persian', {
-    year:'numeric',month:'long',day:'numeric'
-  });
-
-  let anchor = startOfWeek(new Date());
-  let payload = {busy:[]};
-
-  function startOfDay(d) {
-    const x = new Date(d);
-    x.setHours(0,0,0,0);
-    return x;
+    return "available";
   }
 
-  // Week starts Saturday, matching common Iranian calendar layout.
-  function startOfWeek(d) {
-    const x = startOfDay(d);
-    const delta = (x.getDay() + 1) % 7;
-    x.setDate(x.getDate() - delta);
-    return x;
-  }
-
-  function addDays(d,n) {
-    const x = new Date(d);
-    x.setDate(x.getDate() + n);
-    return x;
-  }
-
-  function sameDay(a,b) {
-    return a.getFullYear() === b.getFullYear() &&
-      a.getMonth() === b.getMonth() &&
-      a.getDate() === b.getDate();
-  }
-
-  function minutesFromDayStart(d) {
-    return d.getHours() * 60 + d.getMinutes() + d.getSeconds() / 60;
-  }
-
-  function safeBusy(raw) {
-    if (!raw || typeof raw !== 'object' || !Array.isArray(raw.busy)) return [];
-    return raw.busy
-      .map(item => ({
-        start: new Date(item && item.start),
-        end: new Date(item && item.end)
-      }))
-      .filter(item =>
-        Number.isFinite(item.start.getTime()) &&
-        Number.isFinite(item.end.getTime()) &&
-        item.end > item.start
-      );
-  }
-
-  function setStatus(text='',error=false) {
-    $('status').textContent = text;
-    $('status').classList.toggle('error',error);
-  }
-
-  function make(tag,className,text) {
-    const el = document.createElement(tag);
-    if (className) el.className = className;
-    if (text != null) el.textContent = text;
-    return el;
+  function stateLabel(state) {
+    return ({
+      preferred: "ترجیحی",
+      available: "آزاد",
+      busy: "مشغول",
+      unavailable: "خارج از دسترس"
+    })[state];
   }
 
   function render() {
-    const grid = $('calendarGrid');
-    grid.replaceChildren();
+    const base = dayAt(saturdayOf(), weekOffset * 7);
+    const last = dayAt(base, 6);
 
-    const now = new Date();
-    const weekEnd = addDays(anchor,6);
-    $('weekRange').textContent = `${faRange.format(anchor)} — ${faRange.format(weekEnd)}`;
+    els.title.textContent =
+      `${faDate.format(base)} تا ${faDate.format(last)}`;
 
-    const corner = make('div','corner');
-    grid.append(corner);
+    els.grid.replaceChildren();
 
-    for (let i=0;i<7;i++) {
-      const day = addDays(anchor,i);
-      const head = make('div','day-head');
-      if (sameDay(day,now)) head.classList.add('today-head');
-      head.style.gridColumn = String(i + 2);
-      head.append(
-        make('b','',faDay.format(day)),
-        make('span','',faDate.format(day))
+    const todayKey =
+      JSON.stringify(partsInTehran(new Date()));
+
+    for (let i = 0; i < 7; i++) {
+      const day = dayAt(base, i);
+
+      const col = document.createElement("div");
+      col.className = "day-column";
+
+      if (
+        JSON.stringify(partsInTehran(day)) === todayKey
+      ) {
+        col.classList.add("today");
+      }
+
+      const head = document.createElement("div");
+      head.className = "day-head";
+
+      const wd = document.createElement("b");
+      wd.textContent = faDay.format(day);
+
+      const dn = document.createElement("span");
+
+      dn.textContent = faNumber.format(
+        Number(
+          new Intl.DateTimeFormat(
+            "en-US-u-ca-persian",
+            {
+              timeZone: TZ,
+              day: "numeric"
+            }
+          ).format(day)
+        )
       );
-      grid.append(head);
-    }
 
-    const axis = make('div','time-axis');
-    for (let hour=START_HOUR;hour<=END_HOUR;hour++) {
-      const label = make('div','time-label',`${String(hour).padStart(2,'0')}:00`);
-      label.style.top = `${(hour - START_HOUR) * HOUR_HEIGHT}px`;
-      axis.append(label);
-    }
-    grid.append(axis);
+      head.append(wd, dn);
+      col.append(head);
 
-    const busy = safeBusy(payload);
-    const visibleStart = START_HOUR * 60;
-    const visibleEnd = END_HOUR * 60;
+      for (const hour of SLOT_HOURS) {
+        const state = stateFor(day, hour);
 
-    for (let i=0;i<7;i++) {
-      const day = addDays(anchor,i);
-      const nextDay = addDays(day,1);
-      const column = make('div','day-column');
-      column.style.gridColumn = String(i + 2);
-      if (sameDay(day,now)) column.classList.add('today-column');
+        const slot = document.createElement("div");
+        slot.className = `slot ${state}`;
+        slot.tabIndex = 0;
 
-      for (const event of busy) {
-        if (event.end <= day || event.start >= nextDay) continue;
+        const range =
+          `${String(hour).padStart(2,"0")}:00–${String(hour + 2).padStart(2,"0")}:00`;
 
-        const clippedStart = event.start < day ? day : event.start;
-        const clippedEnd = event.end > nextDay ? nextDay : event.end;
+        slot.setAttribute(
+          "aria-label",
+          `${faDay.format(day)}، ${range}، ${stateLabel(state)}`
+        );
 
-        const startMin = Math.max(visibleStart, minutesFromDayStart(clippedStart));
-        const endMin = Math.min(visibleEnd, minutesFromDayStart(clippedEnd));
+        slot.title =
+          `${range} — ${stateLabel(state)}`;
 
-        if (endMin <= startMin) continue;
+        const time =
+          document.createElement("span");
 
-        const block = make('div','busy');
-        block.setAttribute('aria-label','مشغول');
-        block.style.top = `${((startMin - visibleStart) / 60) * HOUR_HEIGHT}px`;
-        block.style.height = `${((endMin - startMin) / 60) * HOUR_HEIGHT}px`;
-        column.append(block);
+        time.className = "slot-time";
+        time.textContent = range;
+
+        slot.append(time);
+        col.append(slot);
       }
 
-      if (sameDay(day,now)) {
-        const minute = minutesFromDayStart(now);
-        if (minute >= visibleStart && minute <= visibleEnd) {
-          const line = make('div','now-line');
-          line.style.top = `${((minute - visibleStart) / 60) * HOUR_HEIGHT}px`;
-          column.append(line);
-        }
-      }
-
-      grid.append(column);
+      els.grid.append(col);
     }
   }
 
-  async function load() {
-    setStatus('در حال دریافت تقویم…');
+  async function loadBusy() {
     try {
-      const response = await fetch(`${DATA_URL}?v=${Date.now()}`, {cache:'no-store'});
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const data = await response.json();
-      payload = {busy:safeBusy(data)};
+      const r = await fetch(
+        `./busy.json?t=${Date.now()}`,
+        { cache: "no-store" }
+      );
 
-      let status = '';
-      if (data.updated) {
-        const updated = new Date(data.updated);
-        if (Number.isFinite(updated.getTime())) {
-          status = `آخرین به‌روزرسانی: ${new Intl.DateTimeFormat('fa-IR',{
-            dateStyle:'short',timeStyle:'short'
-          }).format(updated)}`;
-        }
+      if (!r.ok) {
+        throw new Error(`HTTP ${r.status}`);
       }
-      setStatus(status);
-    } catch (error) {
-      payload = {busy:[]};
-      setStatus('دادهٔ تقویم هنوز آماده نشده است.',true);
+
+      const data = await r.json();
+
+      if (!data || !Array.isArray(data.busy)) {
+        throw new Error("invalid busy.json");
+      }
+
+      busy = data.busy
+        .map(x => ({
+          start: new Date(x.start),
+          end: new Date(x.end)
+        }))
+        .filter(
+          x =>
+            Number.isFinite(x.start.getTime()) &&
+            Number.isFinite(x.end.getTime()) &&
+            x.end > x.start
+        );
+
+      els.status.textContent = "";
+      els.status.classList.remove("error");
+
+      els.updated.textContent = data.updated
+        ? `به‌روزرسانی: ${faUpdated.format(new Date(data.updated))}`
+        : "تقویم به‌روز است";
+
+    } catch (err) {
+      busy = [];
+
+      els.status.textContent =
+        "دادهٔ تقویم هنوز آماده نشده است.";
+
+      els.status.classList.add("error");
+
+      els.updated.textContent =
+        "اتصال تقویم در انتظار داده";
     }
+
     render();
   }
 
-  $('prevWeek').addEventListener('click', () => {
-    anchor = addDays(anchor,-7);
-    render();
-  });
+  function setTheme(theme) {
+    document.documentElement.dataset.theme = theme;
 
-  $('nextWeek').addEventListener('click', () => {
-    anchor = addDays(anchor,7);
-    render();
-  });
+    localStorage.setItem(
+      "soheil-calendar-theme",
+      theme
+    );
+  }
 
-  $('today').addEventListener('click', () => {
-    anchor = startOfWeek(new Date());
-    render();
-  });
+  els.prev.addEventListener(
+    "click",
+    () => {
+      weekOffset--;
+      render();
+    }
+  );
+
+  els.next.addEventListener(
+    "click",
+    () => {
+      weekOffset++;
+      render();
+    }
+  );
+
+  els.today.addEventListener(
+    "click",
+    () => {
+      weekOffset = 0;
+      render();
+    }
+  );
+
+  els.theme.addEventListener(
+    "click",
+    () => {
+      const current =
+        document.documentElement.dataset.theme ||
+        (
+          matchMedia(
+            "(prefers-color-scheme: dark)"
+          ).matches
+            ? "dark"
+            : "light"
+        );
+
+      setTheme(
+        current === "dark"
+          ? "light"
+          : "dark"
+      );
+    }
+  );
+
+  const savedTheme =
+    localStorage.getItem(
+      "soheil-calendar-theme"
+    );
+
+  if (
+    savedTheme === "light" ||
+    savedTheme === "dark"
+  ) {
+    document.documentElement.dataset.theme =
+      savedTheme;
+  }
 
   render();
-  load();
-  setInterval(render,60_000);
+  loadBusy();
 })();
