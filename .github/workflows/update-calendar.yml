@@ -5,6 +5,7 @@ on:
   schedule:
     - cron: "*/15 * * * *"
 
+# Scheduler resync: 2026-09-28
 permissions:
   contents: write
 
