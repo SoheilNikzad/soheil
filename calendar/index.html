@@ -1,56 +1,42 @@
 <!doctype html>
 <html lang="fa" dir="rtl">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="color-scheme" content="light dark">
-  <title>soheil.info / calendar</title>
-  <meta name="description" content="زمان‌های آزاد و مشغول سهیل؛ بدون نمایش جزئیات رویدادها.">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@500;600&family=Vazirmatn:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./calendar.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>soheil.info / calendar</title>
+<meta name="description" content="وضعیت زمانی هفت روز؛ بدون نمایش جزئیات رویدادها.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;500&family=Vazirmatn:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./calendar.css">
 </head>
 <body>
-  <main class="root">
-    <header class="topbar">
-      <a class="brand" href="/" aria-label="soheil.info">soheil.info <span>/ calendar</span></a>
-      <button id="themeToggle" class="icon-button" type="button" aria-label="تغییر پوسته" title="تغییر پوسته">◐</button>
-    </header>
+<main class="wrap">
+  <div class="title">
+    <span>برنامهٔ هفتگی</span>
+    <a href="/">soheil.info / calendar</a>
+  </div>
 
-    <section class="intro">
-      <h1>تقویم من</h1>
-      <p>برای هماهنگی، وضعیت زمان‌ها را ببین. جزئیات برنامه‌های من نمایش داده نمی‌شود.</p>
-    </section>
+  <div class="days" id="days" aria-hidden="true"></div>
 
-    <section class="legend" aria-label="راهنمای وضعیت‌ها">
-      <div><i class="swatch preferred"></i><span>ترجیحی</span></div>
-      <div><i class="swatch available"></i><span>آزاد</span></div>
-      <div><i class="swatch busy"></i><span>مشغول</span></div>
-      <div><i class="swatch unavailable"></i><span>خارج از دسترس</span></div>
-    </section>
+  <div class="stage">
+    <div class="scale" id="scale" aria-hidden="true"></div>
+    <div class="viewport" id="viewport" aria-label="تقویم هفتگی قابل پیمایش">
+      <div class="grid" id="grid"></div>
+    </div>
+  </div>
 
-    <section class="calendar-card" aria-label="تقویم هفتگی">
-      <div class="calendar-head">
-        <button id="prevWeek" class="nav-button" type="button" aria-label="هفته قبل">‹</button>
-        <div>
-          <strong id="weekTitle">—</strong>
-          <small id="timezoneLabel">Asia/Tehran</small>
-        </div>
-        <button id="nextWeek" class="nav-button" type="button" aria-label="هفته بعد">›</button>
-      </div>
+  <div class="legend" aria-label="راهنمای رنگ‌ها">
+    <div class="legend-item"><div class="legend-box blue"></div><span class="legend-label">زمان پیشنهادی</span></div>
+    <div class="legend-item"><div class="legend-box yellow"></div><span class="legend-label">قابل هماهنگی</span></div>
+    <div class="legend-item"><div class="legend-box red"></div><span class="legend-label">مشغول</span></div>
+    <div class="legend-item"><div class="legend-box navy"></div><span class="legend-label">خارج از دسترس</span></div>
+  </div>
 
-      <div id="weekGrid" class="week-grid" aria-live="polite"></div>
-
-      <div class="calendar-foot">
-        <button id="todayButton" class="today-button" type="button">این هفته</button>
-        <span id="updatedAt">در حال دریافت تقویم…</span>
-      </div>
-    </section>
-
-    <p id="status" class="status" role="status"></p>
-  </main>
-
-  <script src="./calendar.js" defer></script>
+  <p class="note">برای دیدن ساعت‌های دیگر، بالا یا پایین برو.</p>
+  <p id="status" class="status" role="status"></p>
+</main>
+<script src="./calendar.js" defer></script>
 </body>
 </html>
