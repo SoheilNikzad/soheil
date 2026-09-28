@@ -25,6 +25,11 @@ body {
   color: var(--text);
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 body,
 button {
   font-family: "Vazirmatn", sans-serif;
