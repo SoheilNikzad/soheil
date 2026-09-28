@@ -85,12 +85,12 @@ jobs:
       - name: Commit busy.json if changed
         shell: bash
         run: |
-          if git diff --quiet -- calendar/busy.json; then
+          git add calendar/busy.json
+          if git diff --cached --quiet; then
             echo "No calendar changes."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add calendar/busy.json
           git commit -m "Update calendar availability"
           git push
