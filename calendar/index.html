@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="description" content="زمان‌های آزاد و مشغول سهیل">
+  <title>Calendar · soheil.info | زمان‌های آزاد</title>
+
+  <script>
+    (() => {
+      let saved;
+      try { saved = localStorage.getItem('soheil-calendar-theme'); } catch {}
+      const dark = saved === 'dark' ||
+        (saved !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
+      document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+    })();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;500;600;700&family=Vazirmatn:wght@100..900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="calendar.css">
+  <script src="calendar.js" defer></script>
+</head>
+
+<body>
+<main>
+  <header class="topbar">
+    <a class="brand" href="/" lang="en" dir="ltr">soheil.info <span>/ calendar</span></a>
+    <button id="themeToggle" type="button" aria-label="حالت تاریک" aria-pressed="false">شب / روز</button>
+  </header>
+
+  <section class="intro">
+    <div>
+      <h1>تقویم</h1>
+      <p>زمان‌های مشغول من در این صفحه مشخص‌اند. جزئیات رویدادها نمایش داده نمی‌شوند.</p>
+    </div>
+    <div class="legend" aria-label="راهنمای تقویم">
+      <span><i class="legend-dot busy-dot"></i>مشغول</span>
+      <span><i class="legend-dot free-dot"></i>آزاد</span>
+    </div>
+  </section>
+
+  <section class="calendar-shell" aria-labelledby="weekTitle">
+    <div class="calendar-head">
+      <div>
+        <h2 id="weekTitle">این هفته</h2>
+        <p id="weekRange" class="caption"></p>
+      </div>
+      <div class="week-nav">
+        <button id="prevWeek" type="button" aria-label="هفتهٔ قبل">‹</button>
+        <button id="today" type="button">امروز</button>
+        <button id="nextWeek" type="button" aria-label="هفتهٔ بعد">›</button>
+      </div>
+    </div>
+
+    <div id="status" class="status" role="status" aria-live="polite">در حال دریافت تقویم…</div>
+
+    <div class="calendar-scroll">
+      <div id="calendarGrid" class="calendar-grid" aria-label="تقویم هفتگی"></div>
+    </div>
+  </section>
+
+  <section class="privacy-note">
+    <h2>حریم خصوصی</h2>
+    <p>این صفحه فقط بازه‌های زمانی اشغال‌شده را دریافت می‌کند. عنوان، توضیح، مهمان‌ها، محل و سایر اطلاعات رویدادها در دادهٔ عمومی این صفحه قرار نمی‌گیرند.</p>
+  </section>
+
+  <footer>
+    <a href="/">بازگشت به صفحهٔ اصلی</a>
+    <span lang="en" dir="ltr">soheil.info / calendar</span>
+  </footer>
+</main>
+</body>
+</html>
