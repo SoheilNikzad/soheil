@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0b0c">
+<title>Silas</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:#0b0b0c;color:#f5f5f7;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Tahoma,sans-serif}
+body{min-height:100vh;display:flex;justify-content:center}
+main{width:min(720px,100%);padding:56px 22px 40px}
+header{display:flex;align-items:end;justify-content:space-between;gap:16px;margin-bottom:34px}
+h1{font-size:42px;line-height:1;margin:0;letter-spacing:-1px}
+.live{font-size:12px;color:#9a9aa0}
+#feed{display:grid;gap:12px}
+article{background:#161618;border:1px solid #26262a;border-radius:18px;padding:18px 18px 16px}
+time{display:block;color:#8e8e93;font-size:12px;direction:ltr;text-align:right;margin-bottom:8px}
+.message{font-size:18px;line-height:1.8;white-space:pre-wrap}
+.status{margin-top:22px;padding-top:18px;border-top:1px solid #242428;color:#8e8e93;font-size:12px}
+.error{color:#ff9f9f;line-height:1.8}
+button{appearance:none;border:1px solid #333338;background:#19191c;color:#f5f5f7;border-radius:999px;padding:9px 14px;font:inherit;cursor:pointer}
+</style>
+</head>
+<body>
+<main>
+<header>
+<div>
+<h1>Silas</h1>
+<div class="live" id="meta">در حال خواندن Feed…</div>
+</div>
+<button id="refresh" type="button">تازه‌سازی</button>
+</header>
+<section id="feed"></section>
+</main>
+<script>
+const SOURCE = '[https://docs.google.com/spreadsheets/d/e/2PACX-1vSxps14N55q7PdoeeJ3P5svo8o52VIFDkJOC9A8UFjGMc-2vgl5EMu1Z6fb663lqvsMsFHFWjuub1yV/pub?gid=1717636707&single=true&output=csv](https://docs.google.com/spreadsheets/d/e/2PACX-1vSxps14N55q7PdoeeJ3P5svo8o52VIFDkJOC9A8UFjGMc-2vgl5EMu1Z6fb663lqvsMsFHFWjuub1yV/pub?gid=1717636707&single=true&output=csv)';
+
+function parseCSV(text) {
+const rows=[]; let row=[], cell='', quoted=false;
+for(let i=0;i<text.length;i++) {
+const c=text[i], n=text[i+1];
+if(c==='"') {
+if(quoted && n==='"') { cell+='"'; i++; }
+else quoted=!quoted;
+} else if(c===',' && !quoted) { row.push(cell); cell=''; }
+else if((c==='\n' || c==='\r') && !quoted) {
+if(c==='\r' && n==='\n') i++;
+row.push(cell); rows.push(row); row=[]; cell='';
+} else cell+=c;
+}
+if(cell.length || row.length) { row.push(cell); rows.push(row); }
+return rows;
+}
+
+async function load() {
+const feed=document.getElementById('feed');
+const meta=document.getElementById('meta');
+meta.textContent='در حال خواندن Feed…';
+try {
+const res=await fetch(SOURCE + '&_=' + Date.now(), {cache:'no-store'});
+if(!res.ok) throw new Error('HTTP '+res.status);
+const rows=parseCSV(await res.text());
+const [header,...data]=rows;
+feed.replaceChildren();
+let status='';
+for(const r of data) {
+const date=(r[0]||'').trim(), message=(r[1]||'').trim();
+if(!date && !message) continue;
+if(date.toLowerCase()==='status') { status=message; continue; }
+const card=document.createElement('article');
+const t=document.createElement('time'); t.textContent=date;
+const m=document.createElement('div'); m.className='message'; m.textContent=message;
+card.append(t,m); feed.append(card);
+}
+if(status) {
+const s=document.createElement('div'); s.className='status';
+s.textContent='Feed status: '+status; feed.append(s);
+}
+meta.textContent='آخرین خواندن: '+new Date().toLocaleTimeString('fa-IR',{hour:'2-digit',minute:'2-digit'});
+} catch(e) {
+feed.innerHTML='<div class="error">خواندن Feed ناموفق بود. اگر مرورگر دسترسی مستقیم به CSV گوگل را مسدود کرده باشد، مرحلهٔ بعد همان محدودیت را جداگانه حل می‌کنیم.</div>';
+meta.textContent='خطا در خواندن';
+}
+}
+document.getElementById('refresh').addEventListener('click',load);
+load();
+</script>
+</body>
+</html>
