@@ -1,0 +1,27 @@
+{
+  "id": "/metabank-demo/",
+  "name": "MetaBank | متابانک",
+  "short_name": "MetaBank",
+  "lang": "fa",
+  "dir": "rtl",
+  "start_url": "/metabank-demo/",
+  "scope": "/metabank-demo/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "description": "دموی یکپارچهٔ بانکداری، رمزارز و توکن‌سازی متابانک",
+  "icons": [
+    {
+      "src": "assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

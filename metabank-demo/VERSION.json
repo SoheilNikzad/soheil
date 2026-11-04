@@ -1,0 +1,98 @@
+{
+  "version": "V3",
+  "source_commit": "f22ed09b7c6bdb5193f100314ef932b1362871f5",
+  "files": [
+    {
+      "file": "README.md",
+      "sha256": "61e341bfab0fedf58c132b3f444037adfbbc2ed945e39933e5fb9e52e3a1b840"
+    },
+    {
+      "file": "assets/deck-cover.png",
+      "sha256": "4f556bf4782e34a81febd42d15dfad0bd9f48fc1849b1ea2ce8a8a0a44276f59"
+    },
+    {
+      "file": "assets/fonts/1Pt_g8LJRfWJmhDAuUsSQamb1W0lwk4S4VrMPrQ.ttf",
+      "sha256": "9e526c661ee58581a44aea8c7c4dd3c87600d3cf491c89bfe269dd15775ccf5b"
+    },
+    {
+      "file": "assets/fonts/1Pt_g8LJRfWJmhDAuUsSQamb1W0lwk4S4WjMPrQ.ttf",
+      "sha256": "c5633dc8323c788158d456e461bacc78d251f713e33228527765a1f3fa84ec03"
+    },
+    {
+      "file": "assets/fonts/1Pt_g8LJRfWJmhDAuUsSQamb1W0lwk4S4Y_LPrQ.ttf",
+      "sha256": "990742fd8ec75da91f4eabcce954f36316de713e1ff0140eeefda0db1c44f91f"
+    },
+    {
+      "file": "assets/fonts/1Pt_g8LJRfWJmhDAuUsSQamb1W0lwk4S4bbLPrQ.ttf",
+      "sha256": "3f9fce2197b5dd79d13e4c3c1c49068e303798d98ff99ada055f5a6eaa34a5aa"
+    },
+    {
+      "file": "assets/fonts/Dxx78j6PP2D_kU2muijPEe1n2vVbfJRklVozORc.ttf",
+      "sha256": "17eeef398c3fba0f4e1ca63df880ce2c4d35e4a01d77c58213cc1197b8609b10"
+    },
+    {
+      "file": "assets/fonts/Dxx78j6PP2D_kU2muijPEe1n2vVbfJRklWgzORc.ttf",
+      "sha256": "7f3c44f0a0b45cd748519b2ad5729f8af5f7bf58dd48767c956d79f46611a3fb"
+    },
+    {
+      "file": "assets/fonts/Dxx78j6PP2D_kU2muijPEe1n2vVbfJRklY80ORc.ttf",
+      "sha256": "489c29f4ba685a8f4aeb3f15e66f51197362cc60ae96bc7cdaa8ea1a52d58235"
+    },
+    {
+      "file": "assets/fonts/Dxx78j6PP2D_kU2muijPEe1n2vVbfJRklbY0ORc.ttf",
+      "sha256": "592ee06087937cd8703af1ffa0fda1db26b15e327a45d855aa745ea92217bb5c"
+    },
+    {
+      "file": "assets/fonts/Dxx78j6PP2D_kU2muijPEe1n2vVbfJRkleg0ORc.ttf",
+      "sha256": "83af90d73619a6cbd22b8e35656fdf83744214ed073b5823835de2569cd10bad"
+    },
+    {
+      "file": "assets/icon-180.png",
+      "sha256": "8f3a6d154ed9e5ab04f1bbde377d5dc4d480b189260cc7364ffc2f3e00bbdce7"
+    },
+    {
+      "file": "assets/icon-192.png",
+      "sha256": "b4ec2e6074dd6b931664e9c3f6ec5d354b4273dacc2a366371b27809a1e36d08"
+    },
+    {
+      "file": "assets/icon-32.png",
+      "sha256": "a1b23fd153e455eade3f0b515a6322eada15d52df81c468ffee54bc753324f8d"
+    },
+    {
+      "file": "assets/icon-512.png",
+      "sha256": "2dee369f3013034a07c567939deffbb06ab30ed05da8751e96a0cf15df655fca"
+    },
+    {
+      "file": "css/fonts.css",
+      "sha256": "25bdebb3ca16790421f66a13af9f8e1606f057276279bd4cbb0ec26fa472ab20"
+    },
+    {
+      "file": "css/styles.css",
+      "sha256": "b043041694cf19aa2138637cebbab30b705640d5de10b11ec1b434a4385c3321"
+    },
+    {
+      "file": "css/v3.css",
+      "sha256": "608f7e261e24498236dcfc9e1532c6d476588910d4e16576432f09cc086603a9"
+    },
+    {
+      "file": "index.html",
+      "sha256": "56e18d1cd00578e2bbaa13a514cbde4762ced0f3600b462ac225200b839da1c4"
+    },
+    {
+      "file": "js/app.js",
+      "sha256": "f43f8464a8d7c90eeb329f7e033dd2e3e2368c1209b028ed581b7ea580a16ed5"
+    },
+    {
+      "file": "js/data.js",
+      "sha256": "210dbdc7e0c0e32efd771e036ac1abed7fd7cd79b2da64c598b62c54df5f975b"
+    },
+    {
+      "file": "manifest.webmanifest",
+      "sha256": "739848194cbf68906f6d51e1bcc993c687f1de63e949253efba01e3fda7f47cd"
+    },
+    {
+      "file": "metabank-preview.html",
+      "sha256": "806690ed268e6c17d729b70a3e18322a791d3ca0a9203dd00321f9d510a03034"
+    }
+  ]
+}
