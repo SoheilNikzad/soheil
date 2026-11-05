@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#131311">
+<meta name="description" content="بازسازی تعاملی الگوریتم آتش پیکسلی DOOM برای پلی‌استیشن، با ذره‌بین عددی و اجرای فریم‌به‌فریم.">
+<title>آتش پیکسلی | DOOM FIRE</title>
+<style>
+:root{color-scheme:dark;--base:#131311;--panel:#191917;--ink:#f6eee0;--dim:#b2aea5;--line:#45423a;--accent:#ff7547;--mono:ui-monospace,Menlo,Consolas,monospace;--fa:Vazirmatn,"Noto Sans Arabic",system-ui,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:var(--base);color:var(--ink);font-family:var(--fa);line-height:1.6}
+.page{width:min(1176px,calc(100% - 80px));margin:0 auto;padding:36px 0 22px}
+.mono{direction:ltr;unicode-bidi:isolate;font-family:var(--mono);font-variant-numeric:tabular-nums}
+header{direction:ltr;display:flex;align-items:flex-end;justify-content:space-between;gap:24px;padding:18px 0 26px;border-bottom:1px solid var(--line)}
+h1{font-size:clamp(36px,6.8vw,98px);line-height:.87;margin:0;color:#f7efe0;letter-spacing:-.075em;font-family:Impact,"Arial Narrow","Arial Black",system-ui,sans-serif;font-weight:1000}
+h1 em{color:var(--accent);font-style:normal}
+.history{display:grid;gap:5px;text-align:right;direction:rtl}.history strong{font-size:clamp(18px,2vw,25px);font-weight:750}.history small{font-size:11px;letter-spacing:.08em;color:var(--dim)}
+.instrument{direction:ltr;display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:24px;align-items:start;margin-top:24px}
+.monitor{overflow:hidden;border:1px solid var(--line);background:#070707}
+.monitor-bar{display:flex;align-items:center;justify-content:space-between;min-height:40px;background:var(--panel);padding:0 15px;color:var(--dim);font:11px var(--mono);letter-spacing:.07em;border-bottom:1px solid var(--line)}
+.status{display:flex;align-items:center;gap:9px}.lamp{width:7px;height:7px;background:var(--accent)}body.paused .lamp{background:#aaa69b}
+.screen{position:relative;aspect-ratio:176 / 94;cursor:crosshair}
+#fire{width:100%;height:100%;display:block;image-rendering:pixelated;touch-action:pan-y}
+#selection{position:absolute;pointer-events:none;border:1px solid white;box-shadow:0 0 0 1px #141414,inset 0 0 0 1px #141414;left:0;top:0}
+.monitor-controls{direction:rtl;display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px;background:var(--panel);border-top:1px solid var(--line)}
+button{font:600 14px var(--fa);line-height:1.5;color:var(--ink);border:1px solid var(--line);background:transparent;padding:8px 13px;min-height:40px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:3px}
+button:hover{border-color:var(--dim)}button:focus-visible,a:focus-visible,#fire:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button.primary{background:var(--ink);color:#191814;border-color:var(--ink);min-width:84px}
+button svg{width:14px;height:14px;fill:currentColor}
+#source{margin-inline-start:auto}.switch{width:23px;height:12px;display:inline-flex;align-items:center;padding:2px;border:1px solid #918e83;direction:ltr;border-radius:20px}.switch:before{content:"";width:6px;height:6px;border-radius:50%;background:#aaa69b}#source[aria-pressed=true] .switch{border-color:var(--accent);justify-content:flex-end}#source[aria-pressed=true] .switch:before{background:var(--accent)}
+.inspector{direction:rtl;padding:2px 0}
+.section-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+h2{font-size:19px;margin:0;line-height:1.5}p{margin:0}.small,.swatch-caption{font-size:13px;color:var(--dim);line-height:1.9}
+.coords{font-size:11px;line-height:1.5;color:var(--dim);white-space:nowrap}
+.zoom{direction:ltr;display:grid;grid-template-columns:repeat(9,1fr);gap:1px;border:1px solid var(--line);background:#413a30;margin:12px 0 10px}
+.cell{display:grid;place-items:center;aspect-ratio:1.12;font:11px/1 var(--mono);font-variant-numeric:tabular-nums}
+.cell.selected{outline:2px solid var(--ink);outline-offset:-2px;position:relative;box-shadow:inset 0 0 0 3px #2b251f}
+.selected-data{display:flex;align-items:center;gap:9px;margin:7px 0 10px;font-size:13px}.sample{width:14px;height:14px;border:1px solid #88847a}#level{font-size:17px;color:var(--ink)}#hex{margin-inline-start:auto;color:var(--dim);font-size:12px}
+.palette{margin-top:20px;border-top:1px solid var(--line);padding-top:12px}.palette h2{font-size:15px}
+.strip{display:flex;direction:ltr;height:17px;margin-top:10px;border:1px solid var(--line)}.strip i{flex:1}
+.scale{display:flex;justify-content:space-between;direction:ltr;margin-top:3px;font:11px/1.8 var(--mono);color:var(--dim)}
+.foot{direction:rtl;display:flex;align-items:center;justify-content:space-between;gap:24px;border-top:1px solid var(--line);margin-top:24px;padding-top:16px;color:var(--dim);font-size:13px;line-height:1.9}
+.foot a{color:var(--ink);text-decoration-color:var(--accent);text-underline-offset:5px;white-space:nowrap}
+@media(max-width:850px){.page{width:calc(100% - 40px);padding-top:22px}.instrument{grid-template-columns:minmax(0,1fr) 222px;gap:16px}.monitor-controls{padding:8px}button{font-size:13px;padding:7px 9px}.small{font-size:12px}}
+@media(max-width:680px){.page{width:calc(100% - 28px);padding:15px 0 20px}header{padding:10px 0 18px;gap:12px;align-items:center}h1{font-size:clamp(35px,9vw,60px)}.history{gap:0}.history strong{font-size:16px}.history small{font-size:9px;letter-spacing:.015em}.instrument{grid-template-columns:1fr;gap:22px;margin-top:16px}.screen{aspect-ratio:1.66}.monitor-controls{gap:6px}.inspector{display:grid;grid-template-columns:minmax(140px,1fr) minmax(128px,.9fr);column-gap:15px}.section-head{grid-column:1/-1}.zoom{grid-column:1;grid-row:2/6;margin:10px 0 0}.selected-data{grid-column:2;flex-wrap:wrap;align-self:end;gap:5px;margin:8px 0 2px}#hex{font-size:10px}.small{grid-column:2}.palette{grid-column:2;margin-top:9px;padding-top:7px}.palette h2{font-size:13px}.strip{margin-top:5px}.cell{font-size:10px}.foot{display:block;margin-top:18px}.foot a{display:inline-block;margin-top:5px}}
+@media(max-width:350px){#source{margin-inline-start:0}.inspector{column-gap:8px}.monitor-controls{gap:4px}button{padding:7px}.history small{font-size:8px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<main class="page">
+<header>
+  <h1 lang="en">DOOM <em>FIRE</em></h1>
+  <div class="history"><strong>آتش پیکسلی</strong><small class="mono">PLAYSTATION / 1995</small></div>
+</header>
+<div class="instrument">
+  <section class="monitor" aria-label="شبیه‌سازی آتش">
+    <div class="monitor-bar"><span class="status"><i class="lamp"></i><span id="state">LIVE</span></span><span>176 × 94 PX</span></div>
+    <div class="screen">
+      <canvas id="fire" width="176" height="94" tabindex="0" aria-label="آتش پیکسلی. برای انتخاب نقطه، تصویر را لمس کنید یا از کلیدهای جهت‌دار استفاده کنید.">برای نمایش آتش، مرورگر باید از Canvas پشتیبانی کند.</canvas>
+      <i id="selection" aria-hidden="true"></i>
+    </div>
+    <div class="monitor-controls">
+      <button class="primary" id="play" type="button"><svg aria-hidden="true" viewBox="0 0 16 16"><path id="playIcon" d="M3 2h4v12H3z M10 2h4v12h-4z"/></svg><span id="playLabel">مکث</span></button>
+      <button id="step" type="button"><svg aria-hidden="true" viewBox="0 0 16 16"><path d="M2 2l9 6-9 6z M12 2h2v12h-2z"/></svg>یک فریم</button>
+      <button id="source" type="button" aria-pressed="true"><span class="switch" aria-hidden="true"></span>منبع حرارت</button>
+    </div>
+  </section>
+  <aside class="inspector" aria-label="مشاهدهٔ اعداد پیکسل‌ها">
+    <div class="section-head"><h2>ذره‌بین پیکسل</h2><span class="coords mono" id="coords"></span></div>
+    <div class="zoom" id="zoom" aria-label="شدت حرارت در ناحیهٔ انتخاب‌شده"></div>
+    <div class="selected-data"><i class="sample" id="sample"></i><span>شدت</span><b class="mono" id="level"></b><span class="mono" id="hex"></span></div>
+    <p class="small">روی آتش بزن تا عدد پیکسل‌های همان نقطه را ببینی.</p>
+    <div class="palette"><h2>۳۷ سطح حرارت</h2><div class="strip" id="strip" aria-hidden="true"></div><div class="scale"><span>00</span><span>36</span></div></div>
+  </aside>
+</div>
+<footer class="foot">
+  <p>ردیف پایین با شدت ۳۶ می‌سوزد. گرما با هر گام به ردیف بالاتر می‌رسد، کمی جابه‌جا می‌شود و به‌تدریج افت می‌کند.</p>
+  <a href="https://www.fabiensanglard.net/doom_fire_psx/index.html" target="_blank" rel="noopener noreferrer">دربارهٔ الگوریتم ↗</a>
+</footer>
+</main>
+<script>
+'use strict';
+const byId = id => document.getElementById(id);
+const fire = byId('fire');
+const width = fire.width, height = fire.height;
+const context = fire.getContext('2d', {alpha:false});
+const image = context.createImageData(width,height);
+// Palette indices from the published PSX fire reconstruction by Fabien Sanglard.
+const colors = (
+  '070707 1f0707 2f0f07 470f07 571707 671f07 771f07 8f2707 9f2f07 af3f07 bf4707 c74707 df4f07 df5707 df5707 d75f07 d75f07 d7670f ' +
+  'cf6f0f cf770f cf7f0f cf8717 c78717 c78f17 c7971f bf9f1f bf9f1f bfa727 bfa727 bfaf2f b7af2f b7b72f b7b737 cfcf6f dfdf9f efefc7 ffffff'
+).split(' ').map(value => '#' + value);
+const rgb = colors.map(hex => [1,3,5].map(start => parseInt(hex.slice(start,start+2),16)));
+const heat = new Uint8Array(width*height);
+const sourceOffset = width * (height-1);
+let fuel = true, running = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+let spotX = 99, spotY = 51;
+const columns = 9, rows = 7;
+const cells = [];
+for(let i=0; i<columns*rows; i++){
+  const cell = document.createElement('span');
+  cell.className = 'cell';
+  byId('zoom').append(cell);
+  cells.push(cell);
+}
+for(const color of colors){
+  const swatch = document.createElement('i');
+  swatch.style.backgroundColor = color;
+  byId('strip').append(swatch);
+}
+function tick(){
+  heat.fill(fuel ? 36 : 0, sourceOffset);
+  // Read each source before its row is updated. Wrap the horizontal drift at the sides.
+  for(let y=1; y<height; y++){
+    const upper = (y-1)*width;
+    for(let x=0; x<width; x++){
+      const value = heat[y*width+x];
+      if(value === 0){heat[upper+x]=0; continue;}
+      const shift = Math.round(Math.random()*3);
+      const targetX = (x+1-shift+width)%width;
+      heat[upper+targetX] = value-(shift & 1);
+    }
+  }
+}
+const clamp = (n,min,max) => Math.max(min,Math.min(n,max));
+function inspect(){
+  const left = clamp(spotX-Math.floor(columns/2),0,width-columns);
+  const top = clamp(spotY-Math.floor(rows/2),0,height-rows);
+  const marker = byId('selection');
+  Object.assign(marker.style,{left:(100*left/width)+'%',top:(100*top/height)+'%',width:(100*columns/width)+'%',height:(100*rows/height)+'%'});
+  for(let i=0; i<cells.length; i++){
+    const x = left+i%columns, y = top+Math.floor(i/columns);
+    const value = heat[y*width+x];
+    const cell = cells[i];
+    if(cell.dataset.value !== String(value)){
+      cell.textContent = value;
+      cell.dataset.value = value;
+      cell.style.backgroundColor = colors[value];
+      cell.style.color = value >= 12 ? '#110d08' : '#fff4df';
+    }
+    cell.classList.toggle('selected',x===spotX && y===spotY);
+  }
+  const value = heat[spotY*width+spotX];
+  byId('level').textContent = String(value).padStart(2,'0');
+  byId('hex').textContent = colors[value].toUpperCase();
+  byId('sample').style.backgroundColor = colors[value];
+  byId('coords').textContent = 'X '+String(spotX).padStart(3,'0')+' / Y '+String(spotY).padStart(2,'0');
+}
+function draw(){
+  for(let i=0; i<heat.length; i++){
+    const color = rgb[heat[i]];
+    const p = i*4;
+    image.data[p]=color[0]; image.data[p+1]=color[1]; image.data[p+2]=color[2]; image.data[p+3]=255;
+  }
+  context.putImageData(image,0,0);
+  inspect();
+}
+function syncControls(){
+  document.body.classList.toggle('paused',!running);
+  byId('state').textContent = running ? 'LIVE' : 'PAUSED';
+  byId('playLabel').textContent = running ? 'مکث' : 'پخش';
+  byId('playIcon').setAttribute('d',running ? 'M3 2h4v12H3z M10 2h4v12h-4z' : 'M3 2l10 6-10 6z');
+  byId('source').setAttribute('aria-pressed',String(fuel));
+}
+let previous = null;
+function togglePlay(){
+  running = !running;
+  previous = null;
+  syncControls();
+}
+byId('play').addEventListener('click',togglePlay);
+byId('step').addEventListener('click',()=>{
+  running = false;
+  previous = null;
+  tick(); draw(); syncControls();
+});
+byId('source').addEventListener('click',()=>{
+  fuel = !fuel;
+  heat.fill(fuel ? 36 : 0,sourceOffset);
+  draw(); syncControls();
+});
+function selectPoint(e){
+  const rect = fire.getBoundingClientRect();
+  spotX = clamp(Math.floor((e.clientX-rect.left)/rect.width*width),0,width-1);
+  spotY = clamp(Math.floor((e.clientY-rect.top)/rect.height*height),0,height-1);
+  inspect();
+}
+fire.addEventListener('pointerdown',selectPoint);
+fire.addEventListener('pointermove',e=>{if(e.buttons & 1) selectPoint(e);});
+fire.addEventListener('keydown',e=>{
+  const directions={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]};
+  if(e.code==='Space'){e.preventDefault(); togglePlay(); return;}
+  const delta = directions[e.key];
+  if(!delta) return;
+  e.preventDefault();
+  spotX = clamp(spotX+delta[0],0,width-1);
+  spotY = clamp(spotY+delta[1],0,height-1);
+  inspect();
+});
+// Start with a settled fire, including a still first view for reduced-motion users.
+for(let i=0; i<195; i++) tick();
+draw(); syncControls();
+const interval = 1000/25;
+function frame(now){
+  if(running && !document.hidden){
+    if(previous === null) previous=now;
+    if(now-previous >= interval){
+      tick(); draw();
+      previous=now-((now-previous)%interval);
+    }
+  }
+  requestAnimationFrame(frame);
+}
+document.addEventListener('visibilitychange',()=>{previous=null;});
+requestAnimationFrame(frame);
+</script>
+</body></html>
