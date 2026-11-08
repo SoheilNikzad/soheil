@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <g transform="translate(256,256)">
+    <!-- Top Sector: Black -->
+    <path d="M 0 0 L -181 -181 A 256 256 0 0 1 181 -181 Z" fill="#111111"/>
+    <!-- Right Sector: Yellow / Gold -->
+    <path d="M 0 0 L 181 -181 A 256 256 0 0 1 181 181 Z" fill="#ffb600"/>
+    <!-- Bottom Sector: Blue -->
+    <path d="M 0 0 L 181 181 A 256 256 0 0 1 -181 181 Z" fill="#1155cc"/>
+    <!-- Left Sector: Red -->
+    <path d="M 0 0 L -181 181 A 256 256 0 0 1 -181 -181 Z" fill="#cc0000"/>
+    <!-- Center Circle with Greek letters ΩΦ -->
+    <circle cx="0" cy="0" r="100" fill="#111111" stroke="#ffffff" stroke-width="8"/>
+    <text x="0" y="10" font-family="'Outfit', sans-serif" font-size="80" font-weight="300" fill="#ffffff" text-anchor="middle" dominant-baseline="middle" letter-spacing="-2">ΩΦ</text>
+  </g>
+</svg>

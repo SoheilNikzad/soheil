@@ -1,0 +1,21 @@
+{
+  "id": "/accounting/",
+  "name": "امگافای | ΩΦ",
+  "short_name": "ΩΦ",
+  "lang": "fa",
+  "dir": "rtl",
+  "start_url": "/accounting/",
+  "scope": "/accounting/",
+  "display": "standalone",
+  "background_color": "#f7f7f8",
+  "theme_color": "#1155cc",
+  "description": "سامانه مدیریت مالی و حسابداری استاندارد امگافای (ΩΦ)",
+  "icons": [
+    {
+      "src": "/accounting/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
