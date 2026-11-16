@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Arjhang — کارگاه نقش و هندسه</title>
+<meta name="description" content="هشت کاشی‌کاری نیمه‌منتظم را بساز، رنگ کن و هندسهٔ هر رأس را کشف کن.">
+<meta name="theme-color" content="#f5f2e9">
+<link rel="icon" href="icon.svg" type="image/svg+xml"><link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+ <a class="brand" href="./" aria-label="ارژنگ، صفحهٔ اصلی"><img src="icon.svg" width="38" height="38" alt=""><span><b dir="ltr">Arjhang</b><small>کارگاه نقش و هندسه</small></span></a>
+ <div class="edition"><span class="dot"></span> نسخهٔ آزمایشی <span class="edition-num" dir="ltr">01 / 08</span></div>
+ <button class="export" id="export"><span>↓</span> خروجی طرح</button>
+</header>
+<main class="workspace">
+<aside class="sidebar" aria-label="ابزار طراحی">
+ <div class="section-head"><div><span class="eyebrow">از یک قاعده، هزار نقش</span><h1>نقش خودت را پیدا کن.</h1></div></div>
+ <div class="section-title"><h2>شبکهٔ هندسی</h2><span>۸ الگوی نیمه‌منتظم</span></div>
+ <div class="patterns" id="patterns" aria-label="انتخاب الگو"></div>
+ <div class="settings-head"><h2>رنگ و ساختار</h2><button id="reset" class="text-button">بازنشانی</button></div>
+ <div class="palette-list" id="palettes" aria-label="ترکیب رنگ"></div>
+ <div id="custom-colors" class="custom-colors"></div>
+ <div class="slider-row"><label for="size">اندازهٔ نقش</label><output id="size-out">۱۰۰٪</output></div><input id="size" type="range" min="20" max="400" value="100" aria-label="اندازهٔ نقش"><div class="range-hints"><span>۲۰٪</span><span>۴۰۰٪</span></div>
+ <div class="slider-row"><label for="rotation">چرخش شبکه</label><output id="rotation-out">۰°</output></div><input id="rotation" type="range" min="0" max="180" step="5" value="0" aria-label="چرخش شبکه">
+ <div class="slider-row"><label for="stroke">ضخامت خط</label><output id="stroke-out">۱٫۲</output></div><input id="stroke" type="range" min="0" max="3" step="0.2" value="1.2" aria-label="ضخامت خط">
+ <p class="sidebar-foot">هندسه را بساز. نظم را کشف کن.</p>
+</aside>
+<section class="canvas-area" aria-label="بوم تعاملی">
+ <div class="canvas-top"><div class="mode-switch" role="group" aria-label="حالت کار"><button class="active" id="explore">کشف هندسه</button><button id="paint">رنگ‌آمیزی</button></div><button class="icon-button" id="center" title="مرکز کردن نقش" aria-label="مرکز کردن نقش">⌖</button></div>
+ <div class="stage" id="stage"><svg id="canvas" viewBox="-9 -7 18 14" preserveAspectRatio="xMidYMid slice" role="img" aria-label="شبکهٔ مربع و هشت‌ضلعی؛ برای بررسی یک رأس را لمس کنید"><rect id="bg" x="-100" y="-100" width="200" height="200" fill="#eee8db"></rect><g id="world"><g id="tiles"></g><g id="selection"></g></g></svg><div id="loading" class="loading">در حال آماده‌کردن نقش…</div><div class="canvas-note" id="canvas-note">یک رأس را لمس کن؛ قاعده‌اش را ببین.</div><div class="zoom-control"><button id="zoom-in" aria-label="بزرگ‌نمایی">+</button><span id="zoom-label">۱۰۰٪</span><button id="zoom-out" aria-label="کوچک‌نمایی">−</button></div></div>
+ <div class="inspector" aria-live="polite"><div class="inspector-title"><div><span class="eyebrow">در این نقطه چه می‌گذرد؟</span><h2 id="pattern-name">مربع و هشت‌ضلعی</h2></div><button id="next-vertex" class="text-button">رأس بعدی ←</button></div><div class="vertex-content"><div id="vertex-chips" class="vertex-chips" dir="ltr"></div><div class="angle-result"><div id="equation" dir="ltr"></div><strong dir="ltr">= 360° <span>✓</span></strong></div></div><p id="vertex-description">یک مربع و دو هشت‌ضلعی، بدون فاصله، یک دور کامل را می‌پوشانند.</p></div>
+ <footer class="canvas-footer"><span id="pattern-code" dir="ltr">4.8.8</span><span>بکش برای جابه‌جایی · لمس برای انتخاب</span><button id="share" class="text-button" title="آدرسی برای بازکردن دوبارهٔ همین الگو، رنگ‌ها و اندازه">کپی لینک این طرح ↗</button></footer>
+</section>
+</main>
+<dialog id="export-dialog" aria-labelledby="export-title">
+ <div class="dialog-head"><div><span class="eyebrow">طرح تو، با اندازهٔ دلخواه</span><h2 id="export-title">خروجی گرفتن از طرح</h2></div><button id="close-export" class="icon-button" aria-label="بستن پنجرهٔ خروجی">×</button></div>
+ <div class="export-layout"><form id="export-form">
+  <label class="export-label" for="export-format">نوع فایل</label><select id="export-format"><option value="png">PNG — تصویر باکیفیت</option><option value="jpeg">JPEG — تصویر کم‌حجم</option><option value="svg">SVG — طرح برداری</option></select>
+  <div class="export-dimensions"><label for="export-width">عرض <small>پیکسل</small><input id="export-width" type="number" min="256" max="4096" step="1" value="2048" required inputmode="numeric"></label><span>×</span><label for="export-height">ارتفاع <small>پیکسل</small><input id="export-height" type="number" min="256" max="4096" step="1" value="1600" required inputmode="numeric"></label></div>
+  <label class="aspect-lock"><input type="checkbox" id="export-lock" checked> حفظ نسبت ابعاد</label>
+  <div class="export-presets" aria-label="اندازه‌های آماده"><button type="button" data-pixels="1024">۱K</button><button type="button" data-pixels="2048">۲K</button><button type="button" data-pixels="4096">۴K</button></div>
+  <div id="jpeg-settings" hidden><div class="slider-row"><label for="jpeg-quality">کیفیت JPEG</label><output id="jpeg-quality-out">۹۲٪</output></div><input type="range" id="jpeg-quality" min="60" max="100" value="92"></div>
+  <p id="format-help" class="export-help">ابعاد تصویر را از ۲۵۶ تا ۴۰۹۶ پیکسل تنظیم کن.</p><button class="export generate-file" id="generate-file" type="submit">آماده‌کردن فایل</button>
+ </form><div class="export-preview"><img id="export-image" alt="پیش‌نمایش فایل خروجی"><p id="export-status" role="status">در حال آماده‌سازی…</p><div id="export-actions" hidden><a id="download-file" class="export" download>دانلود فایل</a><button id="share-file" class="secondary-action" hidden>ذخیره / اشتراک‌گذاری</button><a id="open-file" class="secondary-action" target="_blank" rel="noopener">باز کردن فایل ↗</a></div></div></div>
+ <p class="export-note">اگر دانلود در نمایشگر داخل برنامه شروع نشد، «باز کردن فایل» را بزن؛ برای PNG و JPEG می‌توانی روی تصویر نگه داری و گزینهٔ ذخیره را انتخاب کنی. گزینه‌های ذخیره به مرورگرت بستگی دارند.</p>
+</dialog>
+<div class="toast" id="toast" role="status"></div>
+<script src="app.js" type="module"></script>
+</body></html>
